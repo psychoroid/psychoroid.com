@@ -2,11 +2,12 @@
 
 ## Project Description
 
-This project is a 3D product viewer application built with React and Three.js. It allows users to upload an image and map it onto a 3D cube. Users can also enter text that will be rendered as a 3D text object above the cube. The application provides controls to rotate, pan, and zoom the 3D model.
+This project is a 3D product viewer application built with Next.js App Router, React, and Three.js. It allows users to upload an image and map it onto a 3D cube. Users can also enter text that will be rendered as a 3D text object above the cube. The application provides controls to rotate, pan, and zoom the 3D model.
 
 ## Key Components
 
-- App.tsx: The main component that brings everything together and manages the state for the uploaded image, rotation toggle, and product text.
+- app/layout.tsx: The root layout component that provides the base HTML structure and global styles.
+- app/page.tsx: The main page component that brings everything together and manages the state for the uploaded image, rotation toggle, and product text.
 - ImageUpload.tsx: Handles the image upload functionality.
 - ProductViewer.tsx: Renders the 3D scene using react-three-fiber.
 - Product.tsx: Represents the 3D cube model and maps the uploaded image texture onto it. Also renders the 3D text.
@@ -26,6 +27,7 @@ This project is a 3D product viewer application built with React and Three.js. I
 
 ## Dependencies
 
+- Next.js
 - React
 - react-three-fiber
 - three.js
