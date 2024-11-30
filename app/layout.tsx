@@ -47,6 +47,16 @@ export const metadata: Metadata = {
         yandex: 'your-yandex-verification',
         yahoo: 'your-yahoo-verification',
     },
+    icons: {
+        icon: [
+            { url: '/favicon.ico' },
+            { url: '/psychoroid.png' },
+        ],
+        apple: [
+            { url: '/psychoroid.png' },
+        ],
+        shortcut: ['/favicon.ico'],
+    },
 }
 
 export default function RootLayout({
@@ -58,7 +68,6 @@ export default function RootLayout({
         <html lang="en">
             <head>
                 <link rel="canonical" href="https://psychoroid.com" />
-                <link rel="icon" href="/favicon.ico" />
                 <meta name="theme-color" content="#ffffff" />
             </head>
             <body className={inter.className}>
