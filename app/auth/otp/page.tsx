@@ -1,8 +1,6 @@
 'use client'
 
-import { Suspense } from 'react';
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { OtpForm } from '@/components/auth/otp-form'
 import { supabase } from '@/lib/supabase';
@@ -12,18 +10,14 @@ export default function Otp() {
   const [isResending, setIsResending] = useState(false)
   const [email, setEmail] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Get email from query parameter or localStorage
-    const emailFromQuery = searchParams.get('email')
+    // Get email from localStorage
     const emailFromStorage = localStorage.getItem('userEmail')
-    if (emailFromQuery) {
-      setEmail(emailFromQuery)
-    } else if (emailFromStorage) {
+    if (emailFromStorage) {
       setEmail(emailFromStorage)
     }
-  }, [searchParams])
+  }, [])
 
   const handleResendOtp = async () => {
     setIsResending(true)
@@ -60,9 +54,7 @@ export default function Otp() {
               </p>
             </div>
             <div className='mb-4'></div>
-            <Suspense fallback={<div>Loading...</div>}>
-              <OtpForm email={email} errorMessage={errorMessage} setErrorMessage={setErrorMessage} />
-            </Suspense>
+            <OtpForm email={email} errorMessage={errorMessage} setErrorMessage={setErrorMessage} />
             <p className='mt-4 px-8 text-center text-sm text-muted-foreground'>
               Haven&apos;t received it?{' '}
               <button
