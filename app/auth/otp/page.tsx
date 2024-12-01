@@ -82,13 +82,3 @@ export default function Otp() {
     </>
   )
 }
-
-export const generateMetadata = () => {
-  return {
-    viewport: {
-      width: 'device-width',
-      initialScale: 1,
-      maximumScale: 1,
-    },
-  };
-};
