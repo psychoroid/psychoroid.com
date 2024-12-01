@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
@@ -59,7 +60,9 @@ export default function Otp() {
               </p>
             </div>
             <div className='mb-4'></div>
-            <OtpForm email={email} errorMessage={errorMessage} setErrorMessage={setErrorMessage} />
+            <Suspense fallback={<div>Loading...</div>}>
+              <OtpForm email={email} errorMessage={errorMessage} setErrorMessage={setErrorMessage} />
+            </Suspense>
             <p className='mt-4 px-8 text-center text-sm text-muted-foreground'>
               Haven&apos;t received it?{' '}
               <button
@@ -79,3 +82,13 @@ export default function Otp() {
     </>
   )
 }
+
+export const generateMetadata = () => {
+  return {
+    viewport: {
+      width: 'device-width',
+      initialScale: 1,
+      maximumScale: 1,
+    },
+  };
+};
