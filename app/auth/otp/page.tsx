@@ -5,19 +5,24 @@ import { Card } from '@/components/ui/card'
 import { OtpForm } from '@/components/auth/otp-form'
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast'
+import { useSearchParams } from 'next/navigation';
 
 export default function Otp() {
   const [isResending, setIsResending] = useState(false)
   const [email, setEmail] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Get email from localStorage
+    // Get email from query parameter or localStorage
+    const emailFromQuery = searchParams.get('email');
     const emailFromStorage = localStorage.getItem('userEmail')
-    if (emailFromStorage) {
+    if (emailFromQuery) {
+      setEmail(emailFromQuery)
+    } else if (emailFromStorage) {
       setEmail(emailFromStorage)
     }
-  }, [])
+  }, [searchParams])
 
   const handleResendOtp = async () => {
     setIsResending(true)
