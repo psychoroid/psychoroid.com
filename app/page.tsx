@@ -20,7 +20,10 @@ export default function Home() {
                 </div>
 
                 <div className="relative">
-                    <ProductViewer imageUrl={uploadedImage} />
+                    <ProductViewer 
+                        imageUrl={uploadedImage} 
+                        isRotating={isRotating}
+                    />
                     <ProductControls
                         isRotating={isRotating}
                         onRotateToggle={() => setIsRotating(!isRotating)}

@@ -6,14 +6,15 @@ import { Mesh, TextureLoader } from 'three';
 
 interface ProductProps {
   imageUrl?: string;
+  isRotating?: boolean;
 }
 
-export function Product({ imageUrl }: ProductProps) {
+export function Product({ imageUrl, isRotating = true }: ProductProps) {
   const meshRef = useRef<Mesh>(null);
   const texture = imageUrl ? useLoader(TextureLoader, imageUrl) : null;
 
   useFrame((state, delta) => {
-    if (meshRef.current) {
+    if (meshRef.current && isRotating) {
       meshRef.current.rotation.y += delta * 0.5;
     }
   });
