@@ -12,9 +12,9 @@ export default function Home() {
     const [uploadedImagePath, setUploadedImagePath] = useState<string>('')
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50 dark:bg-background">
             <Navbar />
-            <div className="p-8">
+            <div className="p-8 pt-24">
                 <div className="max-w-4xl mx-auto text-gray-900 dark:text-white">
                     <h1 className="text-3xl font-bold mb-8">3D Product Viewer</h1>
 

@@ -79,7 +79,11 @@ export function ForgotForm({ className, onSuccess, ...props }: ForgotFormProps) 
                 </FormItem>
               )}
             />
-            <Button type="submit" className='w-full mt-2' disabled={isLoading}>
+            <Button
+              type="submit"
+              className='w-full h-12 mt-2 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
+              disabled={isLoading}
+            >
               {isLoading ? 'Sending...' : 'Send Reset Link'}
             </Button>
           </div>

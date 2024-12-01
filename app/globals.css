@@ -6,6 +6,7 @@
   :root {
     /* Custom CSS Variables */
     --header-height: 4rem;
+    --navbar-color: 240 7.7% 7.1%;
 
     /* CSS Variables for light theme */
     --background: 0 0% 100%;
@@ -31,14 +32,14 @@
   }
 
   .dark {
-    --background: 240 10% 4.3%;
+    --background: 240 7.7% 7.1%;
     --foreground: 210 40% 98%;
     --card: 240 7.7% 7.1%; /* #121317 */
     --card-foreground: 210 40% 98%;
     --popover: 240 7.7% 7.1%;
     --popover-foreground: 210 40% 98%;
     --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-foreground: 240 7.7% 7.1%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 240 7.7% 7.1%; /* Update the --muted variable for dark mode */
@@ -62,4 +63,14 @@
   body > #root {
     @apply h-svh;
   }
-} 
+}
+
+@layer components {
+  .oauth-button {
+    @apply bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200;
+  }
+
+  .dark .oauth-button {
+    @apply bg-gray-700 text-white hover:bg-gray-600 focus:bg-gray-600 active:bg-gray-500;
+  }
+}

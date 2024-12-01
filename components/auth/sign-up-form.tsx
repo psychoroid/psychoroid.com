@@ -163,7 +163,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
         </div>
       </div>
       <div className='flex flex-col gap-4'>
-        <Button className="w-full h-12" variant="outline" onClick={() => handleOAuthSignUp('google')}>
+        <Button className="w-full h-12 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500" onClick={() => handleOAuthSignUp('google')}>
           <div className="flex items-center justify-center">
             <svg
               className="w-5 h-5 mr-2"
@@ -192,8 +192,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
           </div>
         </Button>
         <Button
-          variant='outline'
-          className='w-full h-12'
+          className='w-full h-12 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
           type='button'
           disabled={isLoading}
           onClick={() => handleOAuthSignUp('github')}

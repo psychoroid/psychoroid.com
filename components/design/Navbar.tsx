@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
 import { useTheme } from 'next-themes';
+import { Dock } from '../ui/dock';
 
 export function Navbar() {
     const router = useRouter();
@@ -39,44 +40,46 @@ export function Navbar() {
     };
 
     return (
-        <nav className="bg-gray-800 dark:bg-gray-900">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
-                    <div className="flex items-center">
-                        <button
-                            onClick={toggleTheme}
-                            className="text-white text-xl font-bold focus:outline-none"
-                        >
-                            psychoroid.com
-                        </button>
-                    </div>
-                    <div className="flex">
-                        {session ? (
+        <Dock>
+            <nav className="bg-[#121317]">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-12">
+                        <div className="flex items-center space-x-8">
                             <button
-                                onClick={handleSignOut}
-                                className="text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                                onClick={toggleTheme}
+                                className="text-gray-300 text-base font-bold focus:outline-none mr-40"
                             >
-                                Sign Out
+                                psychoroid.com
                             </button>
-                        ) : (
-                            <>
-                                <Link
-                                    href="/auth/sign-up"
-                                    className="text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                            <div className="border-l border-transparent h-4 mx-2"></div>
+                            <Link href="/3d-engine" className="text-gray-300 hover:text-white rounded-md text-xs font-medium">
+                                3D Engine
+                            </Link>
+                            <Link href="/products" className="text-gray-300 hover:text-white rounded-md text-xs font-medium">
+                                Products
+                            </Link>
+                            <Link href="/story" className="text-gray-300 hover:text-white  rounded-md text-xs font-medium">
+                                Story
+                            </Link>
+                            <div className="border-l border-gray-700 h-4 mx-4"></div>
+                        </div>
+                        <div className="flex items-center">
+                            {session ? (
+                                <button
+                                    onClick={handleSignOut}
+                                    className="text-gray-300 hover:bg-gray-700 rounded-md text-xs font-medium"
                                 >
-                                    Sign Up
-                                </Link>
-                                <Link
-                                    href="/auth/sign-in"
-                                    className="text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium ml-4"
-                                >
+                                    Sign out
+                                </button>
+                            ) : (
+                                <Link href="/auth/sign-in" className="text-gray-300 hover:text-white rounded-md text-xs font-medium">
                                     Sign In
                                 </Link>
-                            </>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
-        </nav>
+            </nav>
+        </Dock>
     );
 } 

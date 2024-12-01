@@ -174,7 +174,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       </div>
       <div className='flex flex-col gap-4'>
         <Button
-          className="w-full h-12"
+          className="w-full h-12 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500"
           onClick={() => handleOAuthSignIn('google')}
           disabled={isGoogleLoading || isGithubLoading || isMicrosoftLoading}
         >
@@ -211,7 +211,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         </Button>
 
         <Button
-          className='w-full h-12'
+          className='w-full h-12 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
           type='button'
           disabled={isGoogleLoading || isGithubLoading || isMicrosoftLoading}
           onClick={() => handleOAuthSignIn('github')}
@@ -229,7 +229,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         <p className='px-8 text-center text-sm text-muted-foreground'>
           Don&apos;t have an account?{' '}
           <Link
-            href='/sign-up'
+            href='/auth/sign-up'
             className='underline underline-offset-4 text-blue-600 hover:text-blue-600'
           >
             Sign up
