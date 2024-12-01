@@ -1,51 +1,27 @@
--- Create users table extension
-create extension if not exists "uuid-ossp";
-
--- Create users table
-create table public.users (
-    id uuid references auth.users on delete cascade not null primary key,
-    email text unique not null,
-    full_name text,
-    avatar_url text,
-    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
+--------------- TABLES ---------------
 
 -- Create products table
-create table public.products (
-    id uuid default uuid_generate_v4() primary key,
-    user_id uuid references public.users(id) on delete cascade not null,
+create table products (
+    id uuid primary key default uuid_generate_v4(),
     name text not null,
     description text,
-    image_url text,
+    image_path text,
     model_url text,
-    price decimal(10,2),
-    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
 );
 
--- Enable RLS
-alter table public.users enable row level security;
-alter table public.products enable row level security;
+-- Create updated_at trigger function
+create or replace function public.handle_updated_at()
+returns trigger as $$
+begin
+    new.updated_at = now();
+    return new;
+end;
+$$ language plpgsql security definer set search_path = public;
 
--- Create policies
-create policy "Users can view their own data." on users
-    for select using (auth.uid() = id);
+-- Create trigger for products table
+create trigger handle_products_updated_at
+    before update on products
+    for each row execute function public.handle_updated_at();
 
-create policy "Users can insert their own data." on users
-    for insert with check (auth.uid() = id);
-
-create policy "Users can update their own data." on users
-    for update using (auth.uid() = id);
-
-create policy "Anyone can view products." on products
-    for select using (true);
-
-create policy "Users can insert their own products." on products
-    for insert with check (auth.uid() = user_id);
-
-create policy "Users can update their own products." on products
-    for update using (auth.uid() = user_id);
-
-create policy "Users can delete their own products." on products
-    for delete using (auth.uid() = user_id); 

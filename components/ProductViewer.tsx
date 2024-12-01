@@ -7,10 +7,11 @@ import { Product } from './Product';
 
 interface ProductViewerProps {
     imageUrl?: string;
+    modelUrl?: string;
     isRotating?: boolean;
 }
 
-export function ProductViewer({ imageUrl, isRotating = true }: ProductViewerProps) {
+export function ProductViewer({ imageUrl, modelUrl, isRotating = true }: ProductViewerProps) {
     const controlsRef = useRef<any>(null);
 
     // Update controls when isRotating changes
@@ -26,7 +27,7 @@ export function ProductViewer({ imageUrl, isRotating = true }: ProductViewerProp
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
                 <Suspense fallback={null}>
-                    <Product imageUrl={imageUrl} isRotating={isRotating} />
+                    <Product imageUrl={imageUrl} modelUrl={modelUrl} isRotating={isRotating} />
                 </Suspense>
                 <OrbitControls
                     ref={controlsRef}
