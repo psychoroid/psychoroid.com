@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Analytics } from "@vercel/analytics/react"
 import './globals.css'
+import { ThemeProvider } from 'next-themes';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -71,7 +72,9 @@ export default function RootLayout({
                 <meta name="theme-color" content="#ffffff" />
             </head>
             <body className={inter.className}>
-                {children}
+                <ThemeProvider attribute="class">
+                    {children}
+                </ThemeProvider>
                 <Analytics />
             </body>
         </html>

@@ -1,27 +1,44 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { Navbar } from '@/components/Navbar';
-import { UserAuthForm } from '@/components/UserAuthForm';
+import { UserAuthForm } from '@/components/auth/user-auth-form'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+
 
 export default function SignIn() {
-    const router = useRouter();
-
-    const handleSignIn = () => {
-        router.push('/');
-    };
-
     return (
         <>
-            <Navbar />
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-md w-full space-y-8">
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Sign in to your account
-                    </h2>
-                    <UserAuthForm onSignIn={handleSignIn} />
+            <div className='container relative grid h-svh flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0'>
+                <div className='relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex'>
+                    <div className='absolute inset-0 bg-black' />
+                    <Link
+                        href="/"
+                        className="relative z-20 w-1/6 flex items-center text-sage-100 hover:text-sage-200 transition-colors bg-black px-4 py-2 rounded-md border border-transparent"
+                    >
+                        <ArrowLeft className="w-5 h-5 mr-2" />
+                        <span className="text-lg font-medium">Home</span>
+                    </Link>
+                    <div className='relative z-20 mt-auto'>
+                        <blockquote className='space-y-2'>
+                            <p className='text-lg text-sage-100'>
+                                &ldquo;We&apos;re just getting started.&rdquo;
+                            </p>
+                            <footer className='text-sm text-sage-200'>Founder</footer>
+                        </blockquote>
+                    </div>
+                </div>
+                <div className='lg:p-8'>
+                    <div className='mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[480px] lg:p-8'>
+                        <div className='flex flex-col space-y-2 text-left'>
+                            <h1 className='text-2xl font-semibold tracking-tight'>Welcome back</h1>
+                            <p className='text-sm text-muted-foreground'>
+                                Enter your email below to sign in to your account.
+                            </p>
+                        </div>
+                        <UserAuthForm />
+                    </div>
                 </div>
             </div>
         </>
-    );
-} 
+    )
+}

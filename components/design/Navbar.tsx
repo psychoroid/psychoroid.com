@@ -3,12 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
+import { useTheme } from 'next-themes';
 
 export function Navbar() {
     const router = useRouter();
     const [session, setSession] = useState<Session | null>(null);
+    const { theme, setTheme } = useTheme();
 
     useEffect(() => {
         const getSession = async () => {
@@ -32,14 +34,21 @@ export function Navbar() {
         router.push('/');
     };
 
+    const toggleTheme = () => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+    };
+
     return (
-        <nav className="bg-gray-800">
+        <nav className="bg-gray-800 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <div className="flex items-center">
-                        <Link href="/" className="text-white text-xl font-bold">
+                        <button
+                            onClick={toggleTheme}
+                            className="text-white text-xl font-bold focus:outline-none"
+                        >
                             psychoroid.com
-                        </Link>
+                        </button>
                     </div>
                     <div className="flex">
                         {session ? (

@@ -1,10 +1,10 @@
 'use client'
 
-import { ProductViewer } from '@/components/ProductViewer'
-import { ProductControls } from '@/components/ProductControls'
-import { ImageUpload } from '@/components/ImageUpload'
-import { Navbar } from '@/components/Navbar'
-import { ImagePreview } from '@/components/ImagePreview'
+import { ProductViewer } from '@/components/3D/ProductViewer'
+import { ProductControls } from '@/components/3D/ProductControls'
+import { ImageUpload } from '@/components/3D/ImageUpload'
+import { Navbar } from '@/components/design/Navbar'
+import { ImagePreview } from '@/components/3D/ImagePreview'
 import { useState } from 'react'
 
 export default function Home() {
@@ -12,11 +12,11 @@ export default function Home() {
     const [uploadedImagePath, setUploadedImagePath] = useState<string>('')
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
             <div className="p-8">
-                <div className="max-w-4xl mx-auto">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-8">3D Product Viewer</h1>
+                <div className="max-w-4xl mx-auto text-gray-900 dark:text-white">
+                    <h1 className="text-3xl font-bold mb-8">3D Product Viewer</h1>
 
                     <div className="mb-8">
                         <ImageUpload onImageUpload={setUploadedImagePath} />
@@ -38,8 +38,8 @@ export default function Home() {
                     </div>
 
                     <div className="mt-8">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-4">Instructions</h2>
-                        <ul className="list-disc list-inside text-gray-600 space-y-2">
+                        <h2 className="text-xl font-semibold mb-4">Instructions</h2>
+                        <ul className="list-disc list-inside text-gray-400 space-y-2">
                             <li>Upload a product image using the upload area above</li>
                             <li>The image will be mapped onto a 3D cube</li>
                             <li>Use your mouse to interact with the 3D model:</li>
