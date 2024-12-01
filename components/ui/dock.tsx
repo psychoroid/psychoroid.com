@@ -6,7 +6,7 @@ interface DockProps {
 
 export const Dock: React.FC<DockProps> = ({ children }) => {
   return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-fit border border-white">
+    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-3xl border border-border">
       {children}
     </div>
   );

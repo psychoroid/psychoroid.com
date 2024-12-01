@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
 import { useTheme } from 'next-themes';
-import { Dock } from '../ui/dock';
+import { Dock } from '@/components/ui/dock';
+import Image from 'next/image';
 
 export function Navbar() {
     const router = useRouter();
@@ -41,38 +42,41 @@ export function Navbar() {
 
     return (
         <Dock>
-            <nav className="bg-[#121317]">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav className="bg-background/80 backdrop-blur-sm">
+                <div className="max-w-3xl mx-auto px-4">
                     <div className="flex items-center justify-between h-12">
-                        <div className="flex items-center space-x-8">
+                        <div className="flex items-center">
+                            <Image
+                                src="/max.png"
+                                alt="Logo"
+                                width={35}
+                                height={35}
+                                className="mr-4"
+                            />
                             <button
                                 onClick={toggleTheme}
-                                className="text-gray-300 text-base font-bold focus:outline-none mr-40"
+                                className="text-foreground text-sm font-bold focus:outline-none"
                             >
                                 psychoroid.com
                             </button>
-                            <div className="border-l border-transparent h-4 mx-2"></div>
-                            <Link href="/3d-engine" className="text-gray-300 hover:text-white rounded-md text-xs font-medium">
+                        </div>
+                        <div className="flex items-center space-x-6">
+                            <Link href="/3d-engine" className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
                                 3D Engine
                             </Link>
-                            <Link href="/products" className="text-gray-300 hover:text-white rounded-md text-xs font-medium">
-                                Products
+                            <Link href="/products" className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
+                                — Other
                             </Link>
-                            <Link href="/story" className="text-gray-300 hover:text-white  rounded-md text-xs font-medium">
-                                Story
-                            </Link>
-                            <div className="border-l border-gray-700 h-4 mx-4"></div>
-                        </div>
-                        <div className="flex items-center">
+                            <div className="h-4 w-px bg-border"></div>
                             {session ? (
                                 <button
                                     onClick={handleSignOut}
-                                    className="text-gray-300 hover:bg-gray-700 rounded-md text-xs font-medium"
+                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
                                 >
                                     Sign out
                                 </button>
                             ) : (
-                                <Link href="/auth/sign-in" className="text-gray-300 hover:text-white rounded-md text-xs font-medium">
+                                <Link href="/auth/sign-in" className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
                                     Sign In
                                 </Link>
                             )}
@@ -82,4 +86,5 @@ export function Navbar() {
             </nav>
         </Dock>
     );
-} 
+}
+
