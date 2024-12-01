@@ -37,3 +37,6 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Supabase migrations
+supabase/migrations/
