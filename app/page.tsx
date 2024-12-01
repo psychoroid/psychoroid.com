@@ -4,11 +4,12 @@ import { ProductViewer } from '@/components/ProductViewer'
 import { ProductControls } from '@/components/ProductControls'
 import { ImageUpload } from '@/components/ImageUpload'
 import { Navbar } from '@/components/Navbar'
+import { ImagePreview } from '@/components/ImagePreview'
 import { useState } from 'react'
 
 export default function Home() {
     const [isRotating, setIsRotating] = useState(true)
-    const [uploadedImage, setUploadedImage] = useState<string>()
+    const [uploadedImagePath, setUploadedImagePath] = useState<string>('')
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -18,12 +19,16 @@ export default function Home() {
                     <h1 className="text-3xl font-bold text-gray-900 mb-8">3D Product Viewer</h1>
 
                     <div className="mb-8">
-                        <ImageUpload onImageUpload={setUploadedImage} />
+                        <ImageUpload onImageUpload={setUploadedImagePath} />
                     </div>
+
+                    {uploadedImagePath && (
+                        <ImagePreview imagePath={uploadedImagePath} />
+                    )}
 
                     <div className="relative">
                         <ProductViewer
-                            imageUrl={uploadedImage}
+                            imagePath={uploadedImagePath}
                             isRotating={isRotating}
                         />
                         <ProductControls

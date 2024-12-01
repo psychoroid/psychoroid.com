@@ -41,25 +41,20 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
       if (data) {
         const imagePath = data.path;
         const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(imagePath);
-        onImageUpload(publicUrl);
+        onImageUpload(imagePath);
 
-        // Insert the product into the database with the public URL
+        // Create a product record using the RPC function
         const { data: productData, error: productError } = await supabase
-          .from('products')
-          .insert({ name: 'New Product', description: 'Product description', image_path: publicUrl })
+          .rpc('create_product', {
+            p_name: 'New Product',
+            p_description: 'Product description',
+            p_image_path: imagePath,
+          })
           .single();
 
         if (productError) {
-          console.error('Error inserting product:', productError);
-          throw new Error('Failed to insert product');
-        }
-
-        if (productData) {
-          // Update the product's image path in the database with the public URL
-          await supabase.rpc('update_product_image', {
-            p_product_id: (productData as Product).id,
-            p_image_path: publicUrl,
-          });
+          console.error('Error creating product:', productError);
+          throw new Error('Failed to create product');
         }
 
         toast.success('Image uploaded successfully');

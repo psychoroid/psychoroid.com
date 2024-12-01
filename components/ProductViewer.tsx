@@ -6,13 +6,15 @@ import { OrbitControls } from '@react-three/drei';
 import { Product } from './Product';
 
 interface ProductViewerProps {
-    imageUrl?: string;
+    imagePath?: string;
     modelUrl?: string;
     isRotating?: boolean;
 }
 
-export function ProductViewer({ imageUrl, modelUrl, isRotating = true }: ProductViewerProps) {
+export function ProductViewer({ imagePath, modelUrl, isRotating = true }: ProductViewerProps) {
     const controlsRef = useRef<any>(null);
+
+    const imageUrl = imagePath ? `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}` : undefined;
 
     // Update controls when isRotating changes
     React.useEffect(() => {

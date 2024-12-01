@@ -9,6 +9,9 @@ const nextConfig = {
         });
         return config;
     },
+    images: {
+        domains: ['peyzpnmmgsxjydvpussg.supabase.co', 'peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images'],
+    },
 }
 
 module.exports = nextConfig 
