@@ -41,6 +41,7 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
               p_name: 'New Product',
               p_description: 'Product description',
               p_image_path: imagePath,
+              p_user_id: user.id
             })
             .single()
 
@@ -48,6 +49,8 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
             console.error('Error creating product:', productError)
             throw new Error('Failed to create product')
           }
+
+          return productData
         }
       })
 

@@ -3,6 +3,7 @@
 -- Create products table
 create table products (
     id uuid primary key default uuid_generate_v4(),
+    user_id uuid references auth.users(id),
     name text not null,
     description text,
     image_path text,

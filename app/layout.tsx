@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Analytics } from "@vercel/analytics/react"
 import './globals.css'
-import { ThemeProvider } from 'next-themes';
+import { ThemeProviderWrapper } from '../components/ui/ThemeProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -66,15 +66,11 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en">
-            <head>
-                <link rel="canonical" href="https://psychoroid.com" />
-                <meta name="theme-color" content="#ffffff" />
-            </head>
+        <html lang="en" suppressHydrationWarning>
             <body className={inter.className}>
-                <ThemeProvider attribute="class">
+                <ThemeProviderWrapper>
                     {children}
-                </ThemeProvider>
+                </ThemeProviderWrapper>
                 <Analytics />
             </body>
         </html>
