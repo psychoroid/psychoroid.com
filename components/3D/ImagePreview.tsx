@@ -27,6 +27,7 @@ export function ImagePreview({
     const startIndex = (currentPage - 1) * imagesPerPage;
     const endIndex = startIndex + imagesPerPage;
     const displayedImages = imagePaths.slice(startIndex, endIndex);
+    const showPlusButton = currentPage === 1 && imagePaths.length > imagesPerPage;
 
     const totalPages = Math.ceil(imagePaths.length / imagesPerPage);
 
@@ -86,31 +87,39 @@ export function ImagePreview({
                         </div>
                     );
                 })}
-                {currentPage < totalPages && (
-                    <div
-                        className="flex items-center justify-center text-4xl font-bold text-blue-500 cursor-pointer"
-                        onClick={() => onPageChange(currentPage + 1)}
-                    >
-                        +
+                {showPlusButton && (
+                    <div className="col-start-3 flex items-center justify-end">
+                        <div
+                            className="text-2xl font-bold cursor-pointer rounded-lg w-full h-full flex items-center justify-center bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300 ease-in-out"
+                            onClick={() => onPageChange(currentPage + 1)}
+                        >
+                            +
+                        </div>
                     </div>
                 )}
             </div>
-            {totalPages > 1 && (
-                <div className="mt-4 flex justify-center space-x-2">
-                    <button
-                        className="px-2 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                    >
-                        &lt;
-                    </button>
-                    <button
-                        className="px-2 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        onClick={() => onPageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                    >
-                        &gt;
-                    </button>
+            {currentPage > 1 && totalPages > 1 && (
+                <div className="mt-4 grid grid-cols-3 gap-4">
+                    <div className="flex items-center justify-start">
+                        <button
+                            className="text-2xl font-bold cursor-pointer rounded-lg w-full h-full flex items-center justify-center bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 ease-in-out"
+                            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            &lt;
+                        </button>
+                    </div>
+                    <div></div>
+                    {currentPage < totalPages && (
+                        <div className="flex items-center justify-end">
+                            <button
+                                className="text-2xl font-bold cursor-pointer rounded-lg w-full h-full flex items-center justify-center bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 ease-in-out"
+                                onClick={() => onPageChange(currentPage + 1)}
+                            >
+                                &gt;
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </>

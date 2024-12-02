@@ -20,6 +20,8 @@ export default function Home() {
     const [uploadedImages, setUploadedImages] = useState<string[]>([])
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
     const [page, setPage] = useState(1)
+    const [zoom, setZoom] = useState(1);
+    const [isExpanded, setIsExpanded] = useState(false);
     const { user } = useUser()
 
     useEffect(() => {
@@ -77,6 +79,27 @@ export default function Home() {
         }
     }
 
+    const handleReset = () => {
+        setIsRotating(true);
+        setZoom(1);
+    };
+
+    const handleZoomIn = () => {
+        setZoom(prevZoom => prevZoom + 0.1);
+    };
+
+    const handleZoomOut = () => {
+        setZoom(prevZoom => Math.max(prevZoom - 0.1, 0.1));
+    };
+
+    const handleExpand = () => {
+        setIsExpanded(true);
+    };
+
+    const handleClose = () => {
+        setIsExpanded(false);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-background">
             <Navbar />
@@ -107,10 +130,17 @@ export default function Home() {
                                     <ProductViewer
                                         imagePath={selectedImage || ''}
                                         isRotating={isRotating}
+                                        zoom={zoom}
+                                        isExpanded={isExpanded}
+                                        onClose={handleClose}
                                     />
                                     <ProductControls
                                         isRotating={isRotating}
                                         onRotateToggle={() => setIsRotating(!isRotating)}
+                                        onReset={handleReset}
+                                        onZoomIn={handleZoomIn}
+                                        onZoomOut={handleZoomOut}
+                                        onExpand={handleExpand}
                                     />
                                 </div>
                             </div>

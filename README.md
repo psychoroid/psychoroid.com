@@ -1,4 +1,4 @@
-# Psychoroid Studios — psychoroid.com
+# —psychoroid.com
 
 React-native 3D digital asset creation and distribution platform.
 
@@ -17,21 +17,20 @@ React-native 3D digital asset creation and distribution platform.
 
 ### Game Development Resources
 - 🎮 Ready-to-use game assets
-- 🛠️ Game Character Designer (GCD)
-- 🔧 Unity & Unreal Engine compatible formats
-- 📦 Optimized asset packaging
+- 🛠️ AI Game Character Design (AI-GCD) w/ Unity & Unreal Engine compatible formats
+- 📦 Optimized Production-grade Game Assets
 
 ### E-commerce & Manufacturing
 - 🏭 3D printing-ready files
-- 🛍️ E-commerce product visualization
-- 📱 AR product preview support
-- 📊 Technical specifications export
+- 🛍️ E-commerce product generation & visualization
+- 📱 AR product preview
 
 ### Professional Tools
 - 💾 Batch processing capabilities
 - 🔍 Quality validation tools
 - 📐 Measurement and scaling tools
 - 🎯 Format-specific optimizations
+- 📚 API & Documentation
 
 ## Hosted version
 
@@ -44,7 +43,8 @@ React-native 3D digital asset creation and distribution platform.
 - Node.js
 - npm or yarn
 
-### It is an open source project; part of the applicaiton is free to use.
+### It is an open source project; 80% of the application is free to use i.e you can host your own version of the application and tools
 
-Clone the repository.
-Enjoy
+- Clone the repo.
+- Star the project!
+- Enjoy

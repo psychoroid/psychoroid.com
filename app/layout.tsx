@@ -8,9 +8,9 @@ import { UserProvider } from '@/lib/contexts/UserContext'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-    title: '3D Product Viewer | Interactive 3D Image Visualization',
-    description: 'Upload and view your images in 3D with our interactive product viewer. Features include rotation, zoom, and pan controls with real-time 3D rendering.',
-    keywords: '3D viewer, product visualization, 3D modeling, image upload, Three.js, WebGL, interactive 3D',
+    title: 'psychoroid.com | AI driven 3D Tools',
+    description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
+    keywords: '3D viewer, AI 3D tool, product visualization, 3D modeling, Game tools, WebGL, interactive 3D',
     authors: [{ name: 'Prince Muichkine' }],
     creator: 'Prince Muichkine',
     publisher: 'Prince Muichkine',
@@ -29,14 +29,14 @@ export const metadata: Metadata = {
         type: 'website',
         locale: 'en_US',
         url: 'https://psychoroid.com',
-        title: '3D Product Viewer | Interactive 3D Image Visualization',
-        description: 'Upload and view your images in 3D with our interactive product viewer. Features include rotation, zoom, and pan controls with real-time 3D rendering.',
+        title: 'psychoroid.com | AI driven 3D Tools',
+        description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
         siteName: 'PsychoRoid',
     },
     twitter: {
         card: 'summary_large_image',
-        title: '3D Product Viewer | Interactive 3D Image Visualization',
-        description: 'Upload and view your images in 3D with our interactive product viewer.',
+        title: 'psychoroid.com | AI driven 3D Tools',
+        description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
         creator: '@PrinceMuichkine',
     },
     viewport: {
