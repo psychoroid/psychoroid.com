@@ -63,7 +63,7 @@ export function Navbar() {
                             </button>
                             {session && (
                                 <Link
-                                    href="/settings"
+                                    href="/dashboard"
                                     className="ml-2 mt-0.5 text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
                                 >
                                     Dashboard
@@ -71,14 +71,17 @@ export function Navbar() {
                             )}
                         </div>
                         <div className="flex items-center space-x-6">
-                            <Link href="/3d-engine" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
+                            <Link href="/" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
                                 3D Engine
                             </Link>
-                            <Link href="/comic-generator" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
-                                Comic Gen'
-                            </Link>
-                            <Link href="/game-character-design" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
+                            <Link href="/GCD" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
                                 — GCD
+                            </Link>
+                            <Link href="/game-assets" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
+                                Game assets
+                            </Link>
+                            <Link href="/pricing" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
+                                Pricing
                             </Link>
                             <div className="h-4 w-px bg-border"></div>
                             {session ? (

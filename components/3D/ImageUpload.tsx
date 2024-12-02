@@ -14,61 +14,64 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true)
-      const file = event.target.files?.[0]
-      if (!file) return
+      const files = event.target.files
+      if (!files || files.length === 0) return
 
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError) throw new Error('Error getting user: ' + userError.message)
       if (!user) throw new Error('No user found')
 
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`
-      const filePath = `${fileName}`
+      const uploadPromises = Array.from(files).map(async (file, index) => {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${user.id}/${Date.now()}_${index}.${fileExt}`
+        const filePath = `${fileName}`
 
-      const { data, error } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file)
+        const { data, error } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, file)
 
-      if (error) throw error
+        if (error) throw error
 
-      if (data) {
-        const imagePath = data.path
-        onImageUpload(imagePath)
+        if (data) {
+          const imagePath = data.path
+          onImageUpload(imagePath)
 
-        const { data: productData, error: productError } = await supabase
-          .rpc('create_product', {
-            p_name: 'New Product',
-            p_description: 'Product description',
-            p_image_path: imagePath,
-          })
-          .single()
+          const { data: productData, error: productError } = await supabase
+            .rpc('create_product', {
+              p_name: 'New Product',
+              p_description: 'Product description',
+              p_image_path: imagePath,
+            })
+            .single()
 
-        if (productError) {
-          console.error('Error creating product:', productError)
-          throw new Error('Failed to create product')
+          if (productError) {
+            console.error('Error creating product:', productError)
+            throw new Error('Failed to create product')
+          }
         }
+      })
 
-        toast.success('Image uploaded successfully')
-      }
+      await Promise.all(uploadPromises)
+      toast.success('Images uploaded successfully')
     } catch (error) {
-      console.error('Error uploading image:', error)
-      toast.error('Error uploading image: ' + (error instanceof Error ? error.message : String(error)))
+      console.error('Error uploading images:', error)
+      toast.error('Error uploading images: ' + (error instanceof Error ? error.message : String(error)))
     } finally {
       setUploading(false)
     }
   }, [onImageUpload])
 
   return (
-    <div className="w-full">
+    <div className="max-w-3xl mx-auto">
       <label
         htmlFor="image-upload"
-        className={`w-full h-64 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`w-full h-40 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
-        <span className="text-lg text-gray-500">
-          {uploading ? 'Uploading...' : 'Click or drag to upload product image'}
+        <span className="text-base text-gray-500">
+          {uploading ? 'Uploading...' : 'Click or drag to upload product images'}
         </span>
         <input
           id="image-upload"
@@ -77,11 +80,14 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
           accept="image/*"
           onChange={handleFileUpload}
           disabled={uploading}
+          multiple
         />
       </label>
-      <p className="mt-2 text-sm text-gray-500 text-center">
-        Supported formats: JPG, PNG (max 5MB)
-      </p>
+      <div className="mt-2 flex justify-end">
+        <p className="text-xs text-gray-500">
+          Supported formats: JPG, PNG (max 5MB each)
+        </p>
+      </div>
     </div>
   )
 }

@@ -16,7 +16,6 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true }: Produc
 
     const imageUrl = imagePath ? `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}` : undefined;
 
-    // Update controls when isRotating changes
     React.useEffect(() => {
         if (controlsRef.current) {
             controlsRef.current.autoRotate = isRotating;
@@ -24,7 +23,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true }: Produc
     }, [isRotating]);
 
     return (
-        <div className="h-[400px] w-full bg-gray-100 rounded-lg">
+        <div className="h-full w-full rounded-lg">
             <Canvas shadows>
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[5, 5, 5]} intensity={1} castShadow />

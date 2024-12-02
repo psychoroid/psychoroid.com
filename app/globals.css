@@ -59,6 +59,7 @@
   body {
     @apply min-h-svh w-full bg-background text-foreground;
     overflow-x: hidden;
+    overflow-y: hidden;
   }
   body > #root {
     @apply h-svh;
@@ -73,4 +74,15 @@
   .dark .oauth-button {
     @apply bg-gray-700 text-white hover:bg-gray-600 focus:bg-gray-600 active:bg-gray-500;
   }
+}
+
+/* Hide the vertical scrollbar */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* For IE, Edge and Firefox */
+body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
