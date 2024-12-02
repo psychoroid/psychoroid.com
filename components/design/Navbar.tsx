@@ -46,37 +46,50 @@ export function Navbar() {
                 <div className="max-w-3xl mx-auto px-4">
                     <div className="flex items-center justify-between h-12">
                         <div className="flex items-center">
-                            <Image
-                                src="/max.png"
-                                alt="Logo"
-                                width={35}
-                                height={35}
-                                className="mr-4"
-                            />
+                            <Link href="/">
+                                <Image
+                                    src="/main.png"
+                                    alt="Logo"
+                                    width={60}
+                                    height={60}
+                                    className="mr-2"
+                                />
+                            </Link>
                             <button
                                 onClick={toggleTheme}
                                 className="text-foreground text-sm font-bold focus:outline-none"
                             >
                                 psychoroid.com
                             </button>
+                            {session && (
+                                <Link
+                                    href="/settings"
+                                    className="ml-2 mt-0.5 text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                >
+                                    Dashboard
+                                </Link>
+                            )}
                         </div>
                         <div className="flex items-center space-x-6">
-                            <Link href="/3d-engine" className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
+                            <Link href="/3d-engine" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
                                 3D Engine
                             </Link>
-                            <Link href="/products" className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
-                                — Other
+                            <Link href="/comic-generator" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
+                                Comic Gen'
+                            </Link>
+                            <Link href="/game-character-design" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
+                                — GCD
                             </Link>
                             <div className="h-4 w-px bg-border"></div>
                             {session ? (
                                 <button
                                     onClick={handleSignOut}
-                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                    className="text-muted-foreground hover:text-foreground transition-colors mt-0.5 text-xs font-medium"
                                 >
                                     Sign out
                                 </button>
                             ) : (
-                                <Link href="/auth/sign-in" className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
+                                <Link href="/auth/sign-in" className="text-muted-foreground hover:text-foreground mt-0.5 transition-colors text-xs font-medium">
                                     Sign In
                                 </Link>
                             )}

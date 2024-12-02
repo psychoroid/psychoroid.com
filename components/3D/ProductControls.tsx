@@ -1,24 +1,47 @@
 'use client';
 
 import React from 'react';
+import { Button } from "@/components/ui/button"
+import { PlayCircle, PauseCircle, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 
 interface ProductControlsProps {
-  onRotateToggle: () => void;
   isRotating: boolean;
+  onRotateToggle: () => void;
 }
 
-export function ProductControls({ onRotateToggle, isRotating }: ProductControlsProps) {
+export function ProductControls({ isRotating, onRotateToggle }: ProductControlsProps) {
   return (
-    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
-      <button
+    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <Button
         onClick={onRotateToggle}
-        className={`px-4 py-2 rounded-lg transition-colors ${isRotating
-            ? 'bg-red-600 hover:bg-red-700 text-white'
-            : 'bg-blue-600 hover:bg-blue-700 text-white'
-          }`}
+        variant="outline"
+        size="icon"
+        className="bg-white/80 hover:bg-white transition-colors duration-200"
       >
-        {isRotating ? '⏹ Stop Rotation' : '▶ Start Rotation'}
-      </button>
+        {isRotating ? <PauseCircle className="h-6 w-6" /> : <PlayCircle className="h-6 w-6" />}
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="bg-white/80 hover:bg-white transition-colors duration-200"
+      >
+        <RotateCcw className="h-6 w-6" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="bg-white/80 hover:bg-white transition-colors duration-200"
+      >
+        <ZoomIn className="h-6 w-6" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="bg-white/80 hover:bg-white transition-colors duration-200"
+      >
+        <ZoomOut className="h-6 w-6" />
+      </Button>
     </div>
   );
 }
+
