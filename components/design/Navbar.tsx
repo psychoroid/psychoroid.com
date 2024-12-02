@@ -8,32 +8,21 @@ import { Session } from '@supabase/supabase-js';
 import { useTheme } from 'next-themes';
 import { Dock } from '@/components/ui/dock';
 import Image from 'next/image';
+import { useUser } from '@/contexts/UserContext';
 
 export function Navbar() {
     const router = useRouter();
-    const [session, setSession] = useState<Session | null>(null);
+    const { session } = useUser();
     const { theme, setTheme } = useTheme();
 
-    useEffect(() => {
-        const getSession = async () => {
-            const { data } = await supabase.auth.getSession();
-            setSession(data.session);
-        };
-
-        getSession();
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-        });
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, []);
-
     const handleSignOut = async () => {
+        // Clear local storage
+        localStorage.removeItem('cachedImages');
+        localStorage.removeItem('cachedSelectedImage');
+
         await supabase.auth.signOut();
         router.push('/');
+        window.location.reload();
     };
 
     const toggleTheme = () => {

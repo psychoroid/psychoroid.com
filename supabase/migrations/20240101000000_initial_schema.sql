@@ -8,6 +8,7 @@ create table products (
     description text,
     image_path text,
     model_url text,
+    is_visible boolean default true,
     created_at timestamptz default now(),
     updated_at timestamptz default now()
 );

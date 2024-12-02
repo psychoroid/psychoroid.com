@@ -6,48 +6,62 @@ import { ImageUpload } from '@/components/3D/ImageUpload'
 import { Navbar } from '@/components/design/Navbar'
 import { ImagePreview } from '@/components/3D/ImagePreview'
 import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useUser } from '@/contexts/UserContext'
+
+interface UserUpload {
+    id: string;
+    image_path: string;
+    created_at: string;
+}
 
 export default function Home() {
     const [isRotating, setIsRotating] = useState(true)
     const [uploadedImages, setUploadedImages] = useState<string[]>([])
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
     const [page, setPage] = useState(1)
+    const { user } = useUser()
 
     useEffect(() => {
-        const storedImages = localStorage.getItem('uploadedImages');
-        const storedSelectedImage = localStorage.getItem('selectedImage');
-        const storedPage = localStorage.getItem('currentPage');
+        const cachedImages = localStorage.getItem('cachedImages')
+        const cachedSelectedImage = localStorage.getItem('cachedSelectedImage')
 
-        if (storedImages) {
-            setUploadedImages(JSON.parse(storedImages));
+        if (cachedImages) {
+            setUploadedImages(JSON.parse(cachedImages))
         }
-        if (storedSelectedImage) {
-            setSelectedImage(storedSelectedImage);
+        if (cachedSelectedImage) {
+            setSelectedImage(cachedSelectedImage)
         }
-        if (storedPage) {
-            setPage(parseInt(storedPage, 10));
-        }
-    }, []);
+    }, [])
 
     useEffect(() => {
-        if (uploadedImages.length > 0) {
-            localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
-        } else {
-            localStorage.removeItem('uploadedImages');
-        }
-    }, [uploadedImages]);
+        async function fetchUserUploads() {
+            if (!user) return
 
-    useEffect(() => {
-        if (selectedImage) {
-            localStorage.setItem('selectedImage', selectedImage);
-        } else {
-            localStorage.removeItem('selectedImage');
-        }
-    }, [selectedImage]);
+            const { data: uploads, error } = await supabase
+                .rpc('get_user_uploads', {
+                    p_user_id: user.id
+                }) as { data: UserUpload[] | null, error: any }
 
-    useEffect(() => {
-        localStorage.setItem('currentPage', page.toString());
-    }, [page]);
+            if (error) {
+                console.error('Error fetching uploads:', error)
+                return
+            }
+
+            if (uploads) {
+                const imagePaths = uploads.map(upload => upload.image_path)
+                setUploadedImages(imagePaths)
+                localStorage.setItem('cachedImages', JSON.stringify(imagePaths))
+
+                if (!selectedImage && imagePaths.length > 0) {
+                    setSelectedImage(imagePaths[0])
+                    localStorage.setItem('cachedSelectedImage', imagePaths[0])
+                }
+            }
+        }
+
+        fetchUserUploads()
+    }, [user])
 
     const handleImageUpload = (imagePath: string) => {
         setUploadedImages(prev => [...prev, imagePath])

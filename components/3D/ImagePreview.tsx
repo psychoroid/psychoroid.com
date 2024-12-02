@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
 
 interface ImagePreviewProps {
     imagePaths: string[];
@@ -28,6 +29,25 @@ export function ImagePreview({
     const displayedImages = imagePaths.slice(startIndex, endIndex);
 
     const totalPages = Math.ceil(imagePaths.length / imagesPerPage);
+
+    const handleImageRemove = async (imagePath: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('No user found');
+
+            const { error } = await supabase.rpc('toggle_product_visibility', {
+                p_product_path: imagePath,
+                p_user_id: user.id
+            });
+
+            if (error) throw error;
+
+            onImageRemove(imagePath);
+        } catch (error) {
+            console.error('Error hiding image:', error);
+        }
+    };
 
     return (
         <>
@@ -57,11 +77,8 @@ export function ImagePreview({
                             )}
                             {selectedImage === imagePath && hoveredImage === imagePath && (
                                 <button
-                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-md w-5 h-5 flex items-center justify-center text-xs"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onImageRemove(imagePath);
-                                    }}
+                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-tr-lg rounded-bl-md w-5 h-5 flex items-center justify-center text-xs"
+                                    onClick={(e) => handleImageRemove(imagePath, e)}
                                 >
                                     &times;
                                 </button>
