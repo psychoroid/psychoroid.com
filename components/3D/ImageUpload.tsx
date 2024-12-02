@@ -4,7 +4,7 @@ import React, { useCallback, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { AuthModal } from '@/components/auth/AuthModal'
-import { useUser } from '@/contexts/UserContext'
+import { useUser } from '@/lib/contexts/UserContext'
 
 interface ImageUploadProps {
   onImageUpload: (imagePath: string) => void

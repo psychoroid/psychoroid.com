@@ -7,7 +7,7 @@ import { Navbar } from '@/components/design/Navbar'
 import { ImagePreview } from '@/components/3D/ImagePreview'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useUser } from '@/contexts/UserContext'
+import { useUser } from '@/lib/contexts/UserContext'
 
 interface UserUpload {
     id: string;

@@ -8,7 +8,7 @@ import { Session } from '@supabase/supabase-js';
 import { useTheme } from 'next-themes';
 import { Dock } from '@/components/ui/dock';
 import Image from 'next/image';
-import { useUser } from '@/contexts/UserContext';
+import { useUser } from '@/lib/contexts/UserContext';
 
 export function Navbar() {
     const router = useRouter();

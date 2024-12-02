@@ -1,18 +1,41 @@
-# 3D Product Viewer
+# Psychoroid Studios — psychoroid.com
 
-A modern 3D product viewer built with Next.js. Upload images and view them mapped onto a 3D figure with interactive controls.
+React-native 3D digital asset creation and distribution platform.
 
 ## Features
 
-- 🖼️ Image upload and 3D mapping
-- 🔄 Interactive 3D controls (rotate, pan, zoom)
-- 🎮 Auto-rotation toggle
-- 📱 Responsive design
-- ⚡ Fast performance with Next.js
+### 3D Conversion Engine
+- 🖼️ 2D to 3D automated conversion
+- 🎯 Multiple export formats:
+  - GLTF/GLB for web and games
+  - STL/OBJ for 3D printing
+  - USDZ for AR Quick Look
+  - FBX for animation workflows
+- 🔄 Real-time 3D preview and editing
+- 📏 Scale and measurement tools
+- 🎨 Texture and material editing
 
-## Demo
+### Game Development Resources
+- 🎮 Ready-to-use game assets
+- 🛠️ Game Character Designer (GCD)
+- 🔧 Unity & Unreal Engine compatible formats
+- 📦 Optimized asset packaging
 
-[Live Demo](https://psychoroid.com)
+### E-commerce & Manufacturing
+- 🏭 3D printing-ready files
+- 🛍️ E-commerce product visualization
+- 📱 AR product preview support
+- 📊 Technical specifications export
+
+### Professional Tools
+- 💾 Batch processing capabilities
+- 🔍 Quality validation tools
+- 📐 Measurement and scaling tools
+- 🎯 Format-specific optimizations
+
+## Hosted version
+
+[Live Platform](https://psychoroid.com)
 
 ## Getting Started
 
@@ -21,6 +44,7 @@ A modern 3D product viewer built with Next.js. Upload images and view them mappe
 - Node.js
 - npm or yarn
 
-### Installation
+### It is an open source project; part of the applicaiton is free to use.
 
-Clone the repository: git clone 'https://github.com/PrinceMuichkine/psychoroid.com.git'
+Clone the repository.
+Enjoy

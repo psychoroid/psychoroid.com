@@ -1,29 +1,35 @@
-# Cursor Rules for 3D Product Viewer
+# Cursor Rules for Psychoroid Studios
 
 ## Project Description
 
-This project is a 3D product viewer application built with Next.js App Router, React, and Three.js. It allows users to upload an image and map it onto a 3D cube. Users can also enter text that will be rendered as a 3D text object above the cube. The application provides controls to rotate, pan, and zoom the 3D model.
+Psychoroid Studios is a React-native 3D digital asset creation and distribution platform. It allows users to convert 2D images into various 3D formats, supporting game development, 3D printing, e-commerce, and digital content creation. The platform provides a range of features and tools for 3D asset management, editing, and optimization.
 
-## Key Components
+## Key Features
 
-- app/layout.tsx: The root layout component that provides the base HTML structure and global styles.
-- app/page.tsx: The main page component that brings everything together and manages the state for the uploaded image, rotation toggle, and product text.
-- ImageUpload.tsx: Handles the image upload functionality.
-- ProductViewer.tsx: Renders the 3D scene using react-three-fiber.
-- Product.tsx: Represents the 3D cube model and maps the uploaded image texture onto it. Also renders the 3D text.
-- ProductControls.tsx: Provides a button to toggle the auto-rotation of the 3D model.
-- TextInput.tsx: Allows the user to enter text that will be rendered as a 3D text object.
+1. 3D Conversion Engine:
+   - Automated 2D to 3D conversion
+   - Multiple export formats (GLTF/GLB, STL/OBJ, USDZ, FBX)
+   - Real-time 3D preview and editing
+   - Scale and measurement tools
+   - Texture and material editing
 
-## Usage Instructions
+2. Game Development Resources:
+   - Ready-to-use game assets
+   - Game Character Designer (GCD)
+   - Unity & Unreal Engine compatible formats
+   - Optimized asset packaging
 
-1. Upload a product image using the upload area.
-2. Enter the desired product text in the input field.
-3. The uploaded image will be mapped onto a 3D cube, and the entered text will be rendered as a 3D text object above the cube.
-4. Use the mouse to interact with the 3D model:
-   - Left click and drag to rotate manually.
-   - Right click and drag to pan.
-   - Scroll to zoom in/out.
-5. Use the "Start Rotation" / "Stop Rotation" button to toggle the auto-rotation of the model.
+3. E-commerce & Manufacturing:
+   - 3D printing-ready files
+   - E-commerce product visualization
+   - AR product preview support
+   - Technical specifications export
+
+4. Professional Tools:
+   - Batch processing capabilities
+   - Quality validation tools
+   - Measurement and scaling tools
+   - Format-specific optimizations
 
 ## Dependencies
 
@@ -32,4 +38,36 @@ This project is a 3D product viewer application built with Next.js App Router, R
 - react-three-fiber
 - three.js
 - @react-three/drei
+- @react-three/postprocessing
+- @react-three/xr
+- @react-three/flex
 - troika-three-text
+
+## Deployment
+
+- The platform is hosted at https://psychoroid.com.
+- It is deployed using a modern hosting service: Vercel.
+- Continuous Integration and Continuous Deployment (CI/CD) pipelines are set up for automated deployments.
+
+## Target Audience
+
+- Game developers
+- 3D artists and designers
+- E-commerce businesses
+- Manufacturers and 3D printing enthusiasts
+- Digital content creators
+
+## Monetization
+
+- Freemium model with basic features available for free
+- Subscription-based access to advanced features and tools
+- Pay-per-use model for specific services (e.g., batch processing, high-quality exports)
+- Marketplace for selling and purchasing 3D assets
+
+## Future Enhancements
+
+- Integration with popular 3D modeling software (e.g., Blender, Maya, 3ds Max)
+- Collaborative editing and version control for 3D assets
+- AI-powered asset generation and optimization
+- Expanded support for more 3D file formats
+- Integration with popular e-commerce platforms (e.g., Shopify, WooCommerce)
