@@ -6,6 +6,12 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { Product } from './Product';
 import { ProductViewerProps, ModelState } from '@/types/components';
 import { Vector3 } from 'three';
+import { ProductControls } from './ProductControls';
+
+// Add initial state constants
+const INITIAL_CAMERA_POSITION: [number, number, number] = [0, 0, 5];
+const INITIAL_TARGET: [number, number, number] = [0, 0, 0];
+const INITIAL_ZOOM = 1;
 
 export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1, isExpanded = false, onClose }: ProductViewerProps) {
     const controlsRef = useRef<any>(null);
@@ -15,20 +21,70 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         scale: [1, 1, 1] as [number, number, number]
     });
 
-    // Properly type the camera position as a fixed-length tuple
-    const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 0, 5]);
+    const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(INITIAL_CAMERA_POSITION);
     const [controlsState, setControlsState] = useState({
-        target: [0, 0, 0] as [number, number, number],
-        zoom: zoom
+        target: INITIAL_TARGET,
+        zoom: INITIAL_ZOOM
     });
+    const [isAutoRotating, setIsAutoRotating] = useState(isRotating);
 
     const imageUrl = imagePath ? `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}` : undefined;
 
+    // Update zoom constants
+    const ZOOM_STEP = 1.2;
+    const MIN_ZOOM = 0.5;
+    const MAX_ZOOM = 10;
+    const MIN_DISTANCE = 1;  // Reduced from 2
+    const MAX_DISTANCE = 50; // Increased from 20
+
+    // Handle zoom in
+    const handleZoomIn = () => {
+        if (controlsRef.current) {
+            const newZoom = controlsState.zoom * ZOOM_STEP;
+            setControlsState(prev => ({
+                ...prev,
+                zoom: Math.min(newZoom, MAX_ZOOM)
+            }));
+            controlsRef.current.object.zoom = Math.min(newZoom, MAX_ZOOM);
+            controlsRef.current.object.updateProjectionMatrix();
+        }
+    };
+
+    // Handle zoom out
+    const handleZoomOut = () => {
+        if (controlsRef.current) {
+            const newZoom = controlsState.zoom / ZOOM_STEP;
+            setControlsState(prev => ({
+                ...prev,
+                zoom: Math.max(newZoom, MIN_ZOOM)
+            }));
+            controlsRef.current.object.zoom = Math.max(newZoom, MIN_ZOOM);
+            controlsRef.current.object.updateProjectionMatrix();
+        }
+    };
+
+    // Handle rotation toggle
+    const handleRotateToggle = () => {
+        setIsAutoRotating(prev => !prev);
+    };
+
+    // Sync rotation state with props
+    useEffect(() => {
+        setIsAutoRotating(isRotating);
+    }, [isRotating]);
+
+    // Update controls when rotation state changes
     useEffect(() => {
         if (controlsRef.current) {
-            controlsRef.current.autoRotate = isRotating;
+            controlsRef.current.autoRotate = isAutoRotating;
         }
-    }, [isRotating]);
+    }, [isAutoRotating]);
+
+    useEffect(() => {
+        if (controlsRef.current) {
+            controlsRef.current.autoRotate = isAutoRotating;
+        }
+    }, [isAutoRotating]);
 
     const handleControlsChange = () => {
         if (controlsRef.current) {
@@ -48,6 +104,31 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
     const cameraPositionVector = new Vector3(...cameraPosition);
     const targetVector = new Vector3(...controlsState.target);
 
+    // Add reset function
+    const handleReset = () => {
+        setCameraPosition(INITIAL_CAMERA_POSITION);
+        setControlsState({
+            target: INITIAL_TARGET,
+            zoom: INITIAL_ZOOM
+        });
+
+        if (controlsRef.current) {
+            controlsRef.current.reset();
+            controlsRef.current.object.position.set(...INITIAL_CAMERA_POSITION);
+            controlsRef.current.target.set(...INITIAL_TARGET);
+            controlsRef.current.object.zoom = INITIAL_ZOOM;
+            controlsRef.current.object.updateProjectionMatrix();
+            controlsRef.current.update();
+        }
+
+        // Reset model state if needed
+        setModelState({
+            rotation: [0, 0, 0] as [number, number, number],
+            position: [0, 0, 0] as [number, number, number],
+            scale: [1, 1, 1] as [number, number, number]
+        });
+    };
+
     const renderCanvas = (expanded: boolean) => (
         <Canvas
             gl={{ preserveDrawingBuffer: true }}
@@ -65,7 +146,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                 <Product
                     imageUrl={imageUrl}
                     modelUrl={modelUrl}
-                    isRotating={isRotating}
+                    isRotating={isAutoRotating}
                     zoom={zoom}
                     modelState={modelState}
                     onModelStateChange={handleModelStateChange}
@@ -76,12 +157,13 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                 enableZoom={true}
                 enablePan={true}
                 enableRotate={true}
-                autoRotate={isRotating}
-                autoRotateSpeed={2}
+                autoRotate={isAutoRotating}
+                autoRotateSpeed={1}
                 onChange={handleControlsChange}
                 target={targetVector}
-                minDistance={2}
-                maxDistance={20}
+                minDistance={MIN_DISTANCE}
+                maxDistance={MAX_DISTANCE}
+                zoomSpeed={1}
             />
         </Canvas>
     );
@@ -94,6 +176,11 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         if (controlsRef.current) {
             handleControlsChange();
         }
+        onClose?.();
+    };
+
+    // Add a safe handler for expand/close
+    const handleExpand = () => {
         onClose?.();
     };
 
@@ -127,11 +214,27 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                                 ESC
                             </button>
                         </div>
+                        <ProductControls
+                            isRotating={isAutoRotating}
+                            onRotateToggle={handleRotateToggle}
+                            onReset={handleReset}
+                            onZoomIn={handleZoomIn}
+                            onZoomOut={handleZoomOut}
+                            hideExpand
+                        />
                     </div>
                 </div>
             ) : (
                 <div className="h-full w-full rounded-lg">
                     {renderCanvas(false)}
+                    <ProductControls
+                        isRotating={isAutoRotating}
+                        onRotateToggle={handleRotateToggle}
+                        onReset={handleReset}
+                        onZoomIn={handleZoomIn}
+                        onZoomOut={handleZoomOut}
+                        onExpand={handleExpand}
+                    />
                 </div>
             )}
         </>

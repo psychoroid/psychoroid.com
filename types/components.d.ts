@@ -43,5 +43,6 @@ export interface ProductControlsProps {
   onReset: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
-  onExpand: () => void;
+  onExpand?: () => void;
+  hideExpand?: boolean;
 } 

@@ -12,6 +12,7 @@ export function ProductControls({
   onZoomIn,
   onZoomOut,
   onExpand,
+  hideExpand = false,
 }: ProductControlsProps) {
   return (
     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
@@ -47,14 +48,16 @@ export function ProductControls({
       >
         <ZoomOut className="h-6 w-6" />
       </Button>
-      <Button
-        onClick={onExpand}
-        variant="outline"
-        size="icon"
-        className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-      >
-        <Expand className="h-6 w-6" />
-      </Button>
+      {!hideExpand && (
+        <Button
+          onClick={onExpand}
+          variant="outline"
+          size="icon"
+          className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+        >
+          <Expand className="h-6 w-6" />
+        </Button>
+      )}
     </div>
   );
 }
