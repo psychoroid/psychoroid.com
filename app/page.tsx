@@ -8,17 +8,13 @@ import { ImagePreview } from '@/components/3D/ImagePreview'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/lib/contexts/UserContext'
-
-interface UserUpload {
-    id: string;
-    image_path: string;
-    created_at: string;
-}
+import { UserUpload } from '@/types/product'
 
 export default function Home() {
     const [isRotating, setIsRotating] = useState(true)
     const [uploadedImages, setUploadedImages] = useState<string[]>([])
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [modelUrl, setModelUrl] = useState<string | null>(null)
     const [page, setPage] = useState(1)
     const [zoom, setZoom] = useState(1);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -107,10 +103,11 @@ export default function Home() {
                 <div className="max-w-7xl mx-auto text-gray-900 dark:text-white">
                     <ImageUpload
                         onImageUpload={handleImageUpload}
+                        onModelUrlChange={setModelUrl}
                     />
 
-                    {uploadedImages.length > 0 && (
-                        <div className="grid grid-cols-10 gap-8 mt-[-136px]">
+                    {selectedImage && (
+                        <div className="grid grid-cols-10 gap-8 mt-2">
                             {/* Left Panel - 2D Preview */}
                             <div className="rounded-lg p-6 shadow-sm col-span-3 border dark:border-gray-300 border-gray-200 bg-transparent overflow-hidden">
                                 <ImagePreview
@@ -129,7 +126,8 @@ export default function Home() {
                                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">3D Preview</h2>
                                 <div className="relative h-96">
                                     <ProductViewer
-                                        imagePath={selectedImage || ''}
+                                        imagePath={selectedImage}
+                                        modelUrl={modelUrl}
                                         isRotating={isRotating}
                                         zoom={zoom}
                                         isExpanded={isExpanded}

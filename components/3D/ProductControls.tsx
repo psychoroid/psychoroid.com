@@ -3,15 +3,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button"
 import { PlayCircle, PauseCircle, RotateCcw, ZoomIn, ZoomOut, Expand } from 'lucide-react'
-
-interface ProductControlsProps {
-  isRotating: boolean;
-  onRotateToggle: () => void;
-  onReset: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onExpand: () => void;
-}
+import { ProductControlsProps } from '@/types/components';
 
 export function ProductControls({
   isRotating,

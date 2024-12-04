@@ -1,17 +1,15 @@
 'use client'
 
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { AuthModal } from '@/components/auth/AuthModal'
 import { useUser } from '@/lib/contexts/UserContext'
-import { ProductViewer } from './ProductViewer'
+import { ImageUploadProps } from '@/types/components'
+import { ProductDetails } from '@/types/product'
 
-interface ImageUploadProps {
-  onImageUpload: (imagePath: string) => void
-}
 
-export function ImageUpload({ onImageUpload }: ImageUploadProps) {
+export function ImageUpload({ onImageUpload, onModelUrlChange }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const { user } = useUser()
@@ -30,10 +28,10 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
         if (userUploadsError) {
           console.error('Error fetching user uploads:', userUploadsError);
         } else {
-          setImagePaths(userUploads.map((upload: { image_path: string; model_url: string }) => upload.image_path));
+          setImagePaths(userUploads.map((upload: { image_path: string; model_path: string }) => upload.image_path));
           if (userUploads.length > 0) {
             setSelectedImage(userUploads[0].image_path);
-            setModelUrl(userUploads[0].model_url);
+            setModelUrl(userUploads[0].model_path);
           }
         }
       }
@@ -42,23 +40,27 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
     fetchUserUploads();
   }, [user]);
 
+  const memoizedSelectedImage = useMemo(() => selectedImage, [selectedImage]);
   useEffect(() => {
     const fetchProductDetails = async () => {
-      if (selectedImage) {
+      if (memoizedSelectedImage) {
         const { data: productDetails, error: productDetailsError } = await supabase
-          .rpc('get_product_details', { p_product_path: selectedImage })
-          .single();
+          .rpc('get_product_details', {
+            p_image_path: memoizedSelectedImage
+          })
+          .single<ProductDetails>();
 
         if (productDetailsError) {
           console.error('Error fetching product details:', productDetailsError);
-        } else {
-          setModelUrl((productDetails as { model_url: string }).model_url);
+        } else if (productDetails) {
+          setModelUrl(productDetails.model_path);
+          onModelUrlChange(productDetails.model_path);
         }
       }
     };
 
     fetchProductDetails();
-  }, [selectedImage]);
+  }, [memoizedSelectedImage, onModelUrlChange]);
 
   const onImageClick = (imagePath: string) => {
     setSelectedImage(imagePath)
@@ -67,6 +69,10 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
   const onImageRemove = (imagePath: string) => {
     setImagePaths((prevImagePaths) => prevImagePaths.filter((path) => path !== imagePath))
     if (selectedImage === imagePath) {
+      setSelectedImage(null)
+      setModelUrl(null)
+    }
+    if (imagePaths.length === 1 && imagePaths[0] === imagePath) {
       setSelectedImage(null)
       setModelUrl(null)
     }
@@ -113,7 +119,7 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
               p_name: 'New Product',
               p_description: 'Product description',
               p_image_path: imagePath,
-              p_model_url: modelUrl,
+              p_model_path: modelUrl,
               p_user_id: user.id
             })
             .single()
@@ -174,15 +180,6 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-      />
-
-      <ProductViewer
-        imagePath={selectedImage}
-        modelUrl={modelUrl}
-        isRotating={true}
-        zoom={1}
-        isExpanded={false}
-        onClose={() => setSelectedImage(null)}
       />
     </>
   )

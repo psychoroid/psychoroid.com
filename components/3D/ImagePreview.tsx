@@ -3,16 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
-
-interface ImagePreviewProps {
-    imagePaths: string[];
-    selectedImage: string | null;
-    onImageClick: (imagePath: string) => void;
-    onImageRemove: (imagePath: string) => void;
-    currentPage: number;
-    onPageChange: (page: number) => void;
-    isLoading: boolean;
-}
+import { ImagePreviewProps } from '@/types/components';
 
 export function ImagePreview({
     imagePaths,

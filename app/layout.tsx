@@ -7,6 +7,12 @@ import { UserProvider } from '@/lib/contexts/UserContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
+export const viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+}
+
 export const metadata: Metadata = {
     title: 'psychoroid.com | AI driven 3D Tools',
     description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
@@ -38,11 +44,6 @@ export const metadata: Metadata = {
         title: 'psychoroid.com | AI driven 3D Tools',
         description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
         creator: '@PrinceMuichkine',
-    },
-    viewport: {
-        width: 'device-width',
-        initialScale: 1,
-        maximumScale: 1,
     },
     verification: {
         google: 'your-google-site-verification',

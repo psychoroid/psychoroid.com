@@ -1,5 +1,0 @@
--- -- Insert sample products
--- insert into products (name, description, image_path, model_url)
--- values
---     ('Sample Product 1', 'This is a sample product', 'sample/image1.jpg', 'https://example.com/model1.glb'),
---     ('Sample Product 2', 'This is another sample product', 'sample/image2.jpg', 'https://example.com/model2.glb');
