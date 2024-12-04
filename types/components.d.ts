@@ -40,7 +40,6 @@ export interface ProductProps {
 export interface ProductControlsProps {
   isRotating: boolean;
   onRotateToggle: () => void;
-  onReset: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onExpand?: () => void;

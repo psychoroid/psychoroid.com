@@ -8,15 +8,18 @@ import { ProductViewerProps, ModelState } from '@/types/components';
 import { Vector3 } from 'three';
 import { ProductControls } from './ProductControls';
 
-// Add initial state constants
-const INITIAL_CAMERA_POSITION: [number, number, number] = [0, 0, 5];
+// Update initial state constants for better front view
+const INITIAL_CAMERA_POSITION: [number, number, number] = [0, 0, 3]; // Moved camera closer and at eye level
 const INITIAL_TARGET: [number, number, number] = [0, 0, 0];
-const INITIAL_ZOOM = 1;
+const INITIAL_ZOOM = 1.5; // Increased initial zoom
+
+// Add initial model rotation to face forward
+const INITIAL_MODEL_ROTATION: [number, number, number] = [0, Math.PI, 0]; // Rotate 180 degrees around Y axis
 
 export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1, isExpanded = false, onClose }: ProductViewerProps) {
     const controlsRef = useRef<any>(null);
     const [modelState, setModelState] = useState<ModelState>({
-        rotation: [0, 0, 0] as [number, number, number],
+        rotation: INITIAL_MODEL_ROTATION,
         position: [0, 0, 0] as [number, number, number],
         scale: [1, 1, 1] as [number, number, number]
     });
@@ -104,7 +107,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
     const cameraPositionVector = new Vector3(...cameraPosition);
     const targetVector = new Vector3(...controlsState.target);
 
-    // Add reset function
+    // Update reset function to use initial model rotation
     const handleReset = () => {
         setCameraPosition(INITIAL_CAMERA_POSITION);
         setControlsState({
@@ -121,9 +124,8 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
             controlsRef.current.update();
         }
 
-        // Reset model state if needed
         setModelState({
-            rotation: [0, 0, 0] as [number, number, number],
+            rotation: INITIAL_MODEL_ROTATION,
             position: [0, 0, 0] as [number, number, number],
             scale: [1, 1, 1] as [number, number, number]
         });
@@ -217,7 +219,6 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                         <ProductControls
                             isRotating={isAutoRotating}
                             onRotateToggle={handleRotateToggle}
-                            onReset={handleReset}
                             onZoomIn={handleZoomIn}
                             onZoomOut={handleZoomOut}
                             hideExpand
@@ -230,7 +231,6 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                     <ProductControls
                         isRotating={isAutoRotating}
                         onRotateToggle={handleRotateToggle}
-                        onReset={handleReset}
                         onZoomIn={handleZoomIn}
                         onZoomOut={handleZoomOut}
                         onExpand={handleExpand}

@@ -2,13 +2,12 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button"
-import { PlayCircle, PauseCircle, RotateCcw, ZoomIn, ZoomOut, Expand } from 'lucide-react'
+import { PlayCircle, PauseCircle, ZoomIn, ZoomOut, Expand } from 'lucide-react'
 import { ProductControlsProps } from '@/types/components';
 
 export function ProductControls({
   isRotating,
   onRotateToggle,
-  onReset,
   onZoomIn,
   onZoomOut,
   onExpand,
@@ -23,14 +22,6 @@ export function ProductControls({
         className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
       >
         {isRotating ? <PauseCircle className="h-6 w-6" /> : <PlayCircle className="h-6 w-6" />}
-      </Button>
-      <Button
-        onClick={onReset}
-        variant="outline"
-        size="icon"
-        className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-      >
-        <RotateCcw className="h-6 w-6" />
       </Button>
       <Button
         onClick={onZoomIn}

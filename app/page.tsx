@@ -136,7 +136,6 @@ export default function Home() {
                                     <ProductControls
                                         isRotating={isRotating}
                                         onRotateToggle={() => setIsRotating(!isRotating)}
-                                        onReset={handleReset}
                                         onZoomIn={handleZoomIn}
                                         onZoomOut={handleZoomOut}
                                         onExpand={handleExpand}
