@@ -12,6 +12,10 @@
 /.next/
 /out/
 
+# Backend
+/backend/
+/sf3d-backend/
+
 # Misc
 .DS_Store
 .env

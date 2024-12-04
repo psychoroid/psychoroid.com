@@ -11,6 +11,7 @@ interface ImagePreviewProps {
     onImageRemove: (imagePath: string) => void;
     currentPage: number;
     onPageChange: (page: number) => void;
+    isLoading: boolean;
 }
 
 export function ImagePreview({
@@ -20,6 +21,7 @@ export function ImagePreview({
     onImageRemove,
     currentPage,
     onPageChange,
+    isLoading,
 }: ImagePreviewProps) {
     const [hoveredImage, setHoveredImage] = useState<string | null>(null);
     const imagesPerPage = 9;

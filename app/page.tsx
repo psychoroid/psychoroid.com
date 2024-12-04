@@ -120,6 +120,7 @@ export default function Home() {
                                     onImageRemove={handleImageRemove}
                                     currentPage={page}
                                     onPageChange={setPage}
+                                    isLoading={false}
                                 />
                             </div>
 

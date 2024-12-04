@@ -6,8 +6,8 @@ import { OrbitControls } from '@react-three/drei';
 import { Product } from './Product';
 
 interface ProductViewerProps {
-    imagePath?: string;
-    modelUrl?: string;
+    imagePath?: string | null;
+    modelUrl?: string | null;
     isRotating?: boolean;
     zoom?: number;
     isExpanded?: boolean;

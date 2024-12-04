@@ -39,3 +39,29 @@ select 'product-models', 'product-models', true
 where not exists (
     select 1 from storage.buckets where id = 'product-models'  
 );
+
+-- Set up storage policy for product models bucket
+create policy "Public Access to Product Models"
+    on storage.objects for select
+    using ( bucket_id = 'product-models' );
+
+create policy "Authenticated Users Can Upload Product Models"
+    on storage.objects for insert
+    with check (
+        bucket_id = 'product-models'
+        and auth.uid() is not null
+    );
+
+create policy "Authenticated Users Can Update Their Own Product Models"
+    on storage.objects for update
+    using (
+        bucket_id = 'product-models'
+        and auth.uid() = owner
+    );
+
+create policy "Authenticated Users Can Delete Their Own Product Models"
+    on storage.objects for delete
+    using (
+        bucket_id = 'product-models'
+        and auth.uid() = owner
+    );
