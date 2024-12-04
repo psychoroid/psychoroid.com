@@ -203,7 +203,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         <>
             {isExpanded ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={handleClose}>
-                    <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+                    <div className="absolute inset-0 bg-black"></div>
                     <div className="relative w-full h-full max-w-7xl mx-auto cursor-default" onClick={(e) => e.stopPropagation()}>
                         <div className="w-full h-full flex items-center justify-center">
                             {renderCanvas(true)}
@@ -216,25 +216,20 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                                 ESC
                             </button>
                         </div>
-                        <ProductControls
-                            isRotating={isAutoRotating}
-                            onRotateToggle={handleRotateToggle}
-                            onZoomIn={handleZoomIn}
-                            onZoomOut={handleZoomOut}
-                            hideExpand
-                        />
+                        <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
+                            <ProductControls
+                                isRotating={isAutoRotating}
+                                onRotateToggle={handleRotateToggle}
+                                onZoomIn={handleZoomIn}
+                                onZoomOut={handleZoomOut}
+                                hideExpand
+                            />
+                        </div>
                     </div>
                 </div>
             ) : (
                 <div className="h-full w-full rounded-lg">
                     {renderCanvas(false)}
-                    <ProductControls
-                        isRotating={isAutoRotating}
-                        onRotateToggle={handleRotateToggle}
-                        onZoomIn={handleZoomIn}
-                        onZoomOut={handleZoomOut}
-                        onExpand={handleExpand}
-                    />
                 </div>
             )}
         </>

@@ -11,6 +11,7 @@ export interface ImagePreviewProps {
   currentPage: number;
   onPageChange: (page: number) => void;
   isLoading: boolean;
+  isExpanded?: boolean;
 }
 
 export interface ProductViewerProps {

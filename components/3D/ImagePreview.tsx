@@ -13,6 +13,7 @@ export function ImagePreview({
     currentPage,
     onPageChange,
     isLoading,
+    isExpanded = false,
 }: ImagePreviewProps) {
     const [hoveredImage, setHoveredImage] = useState<string | null>(null);
     const imagesPerPage = 9;
@@ -42,6 +43,8 @@ export function ImagePreview({
             console.error('Error hiding image:', error);
         }
     };
+
+    if (isExpanded) return null;
 
     return (
         <>

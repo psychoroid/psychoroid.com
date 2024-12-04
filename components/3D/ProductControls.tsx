@@ -14,7 +14,7 @@ export function ProductControls({
   hideExpand = false,
 }: ProductControlsProps) {
   return (
-    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+    <div className="flex flex-col space-y-2">
       <Button
         onClick={onRotateToggle}
         variant="outline"
