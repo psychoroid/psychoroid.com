@@ -164,9 +164,9 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
             multiple
           />
         </label>
-        <div className="mt-2 flex justify-end">
+        <div className="mt-2 mb-4 flex justify-end">
           <p className="text-xs text-gray-500">
-            Supported formats: JPG, PNG (max 5MB each)
+            Supported formats: JPG, PNG [max 5MB each]
           </p>
         </div>
       </div>

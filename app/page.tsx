@@ -110,7 +110,7 @@ export default function Home() {
                     />
 
                     {uploadedImages.length > 0 && (
-                        <div className="grid grid-cols-10 gap-8 mt-8">
+                        <div className="grid grid-cols-10 gap-8 mt-[-136px]">
                             {/* Left Panel - 2D Preview */}
                             <div className="rounded-lg p-6 shadow-sm col-span-3 border dark:border-gray-300 border-gray-200 bg-transparent overflow-hidden">
                                 <ImagePreview
