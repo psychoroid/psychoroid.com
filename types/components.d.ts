@@ -22,11 +22,19 @@ export interface ProductViewerProps {
   onClose?: () => void;
 }
 
+export interface ModelState {
+  rotation: [number, number, number];
+  position: [number, number, number];
+  scale: [number, number, number];
+}
+
 export interface ProductProps {
   imageUrl?: string | null;
   modelUrl?: string | null;
   isRotating?: boolean;
   zoom?: number;
+  modelState?: ModelState;
+  onModelStateChange?: (state: ModelState) => void;
 }
 
 export interface ProductControlsProps {
