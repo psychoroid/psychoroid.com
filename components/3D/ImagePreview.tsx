@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { ImagePreviewProps } from '@/types/components';
+import { ProductDetails } from '@/types/product';
 
 export function ImagePreview({
     imagePaths,
@@ -44,6 +45,28 @@ export function ImagePreview({
         }
     };
 
+    const handleImageClick = async (imagePath: string) => {
+        try {
+            const { data: productDetails, error } = await supabase
+                .rpc('get_product_details', {
+                    p_image_path: imagePath
+                })
+                .single<ProductDetails>();
+
+            if (error) {
+                console.error('Error fetching product details:', error);
+                return;
+            }
+
+            if (productDetails && productDetails.model_path) {
+                console.log('Switching to model:', productDetails.model_path);
+                onImageClick(imagePath, productDetails.model_path);
+            }
+        } catch (error) {
+            console.error('Error handling image click:', error);
+        }
+    };
+
     if (isExpanded) return null;
 
     return (
@@ -59,7 +82,7 @@ export function ImagePreview({
                         <div
                             key={index}
                             className={`relative cursor-pointer ${selectedImage === imagePath ? 'ring-2 ring-blue-500 rounded-lg' : ''}`}
-                            onClick={() => onImageClick(imagePath)}
+                            onClick={() => handleImageClick(imagePath)}
                             onMouseEnter={() => setHoveredImage(imagePath)}
                             onMouseLeave={() => setHoveredImage(null)}
                         >

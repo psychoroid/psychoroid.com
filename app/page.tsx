@@ -96,6 +96,12 @@ export default function Home() {
         setIsExpanded(false);
     };
 
+    const handleImageClick = (imagePath: string, modelUrl: string) => {
+        console.log('Updating model URL to:', modelUrl);
+        setSelectedImage(imagePath);
+        setModelUrl(modelUrl);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-background">
             <Navbar />
@@ -113,7 +119,7 @@ export default function Home() {
                                 <ImagePreview
                                     imagePaths={uploadedImages}
                                     selectedImage={selectedImage}
-                                    onImageClick={setSelectedImage}
+                                    onImageClick={handleImageClick}
                                     onImageRemove={handleImageRemove}
                                     currentPage={page}
                                     onPageChange={setPage}
@@ -128,6 +134,7 @@ export default function Home() {
                                 <div className="relative h-96 flex gap-4">
                                     <div className="flex-grow">
                                         <ProductViewer
+                                            key={modelUrl}
                                             imagePath={selectedImage}
                                             modelUrl={modelUrl}
                                             isRotating={isRotating}

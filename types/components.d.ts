@@ -6,7 +6,7 @@ export interface ImageUploadProps {
 export interface ImagePreviewProps {
   imagePaths: string[];
   selectedImage: string | null;
-  onImageClick: (imagePath: string) => void;
+  onImageClick: (imagePath: string, modelUrl: string) => void;
   onImageRemove: (imagePath: string) => void;
   currentPage: number;
   onPageChange: (page: number) => void;
