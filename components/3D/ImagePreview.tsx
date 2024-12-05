@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { ImagePreviewProps } from '@/types/components';
@@ -15,16 +15,29 @@ export function ImagePreview({
     onPageChange,
     isLoading,
     isExpanded = false,
+    processingImages = {},
 }: ImagePreviewProps) {
     const [hoveredImage, setHoveredImage] = useState<string | null>(null);
     const imagesPerPage = 9;
 
+    // Sort images by creation timestamp (extracted from filename)
+    const sortedImages = useMemo(() => {
+        return [...imagePaths].sort((a, b) => {
+            // Extract timestamps from filenames (assuming format: userId/timestamp_index.ext)
+            const getTimestamp = (path: string) => {
+                const match = path.match(/\/(\d+)_/);
+                return match ? parseInt(match[1]) : 0;
+            };
+            return getTimestamp(b) - getTimestamp(a); // Descending order (newest first)
+        });
+    }, [imagePaths]);
+
     const startIndex = (currentPage - 1) * imagesPerPage;
     const endIndex = startIndex + imagesPerPage;
-    const displayedImages = imagePaths.slice(startIndex, endIndex);
-    const showPlusButton = currentPage === 1 && imagePaths.length > imagesPerPage;
+    const displayedImages = sortedImages.slice(startIndex, endIndex);
+    const showPlusButton = currentPage === 1 && sortedImages.length > imagesPerPage;
 
-    const totalPages = Math.ceil(imagePaths.length / imagesPerPage);
+    const totalPages = Math.ceil(sortedImages.length / imagesPerPage);
 
     const handleImageRemove = async (imagePath: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -77,23 +90,33 @@ export function ImagePreview({
                     const imageUrl = imagePath ?
                         `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}` :
                         '';
+                    const progress = processingImages[imagePath];
+                    const isProcessing = progress !== undefined && progress < 100;
 
                     return (
                         <div
                             key={index}
                             className={`relative cursor-pointer ${selectedImage === imagePath ? 'ring-2 ring-blue-500 rounded-lg' : ''}`}
-                            onClick={() => handleImageClick(imagePath)}
+                            onClick={() => !isProcessing && handleImageClick(imagePath)}
                             onMouseEnter={() => setHoveredImage(imagePath)}
                             onMouseLeave={() => setHoveredImage(null)}
                         >
-                            {imageUrl && (
-                                <Image
-                                    src={imageUrl}
-                                    alt={`Uploaded Image ${index + 1}`}
-                                    width={200}
-                                    height={200}
-                                    className="object-cover rounded-lg"
-                                />
+                            {isProcessing ? (
+                                <div className="w-full h-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                                    <span className="text-2xl font-bold text-gray-500 dark:text-gray-400">
+                                        {Math.round(progress)}%
+                                    </span>
+                                </div>
+                            ) : (
+                                imageUrl && (
+                                    <Image
+                                        src={imageUrl}
+                                        alt={`Uploaded Image ${index + 1}`}
+                                        width={200}
+                                        height={200}
+                                        className="object-cover rounded-lg"
+                                    />
+                                )
                             )}
                             {selectedImage === imagePath && hoveredImage === imagePath && (
                                 <button

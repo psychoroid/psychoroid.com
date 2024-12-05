@@ -1,6 +1,7 @@
 export interface ImageUploadProps {
   onImageUpload: (imagePath: string) => void;
   onModelUrlChange: (modelUrl: string | null) => void;
+  onProgressUpdate: (imagePath: string, progress: number) => void;
 }
 
 export interface ImagePreviewProps {
@@ -12,6 +13,7 @@ export interface ImagePreviewProps {
   onPageChange: (page: number) => void;
   isLoading: boolean;
   isExpanded?: boolean;
+  processingImages?: { [key: string]: number };
 }
 
 export interface ProductViewerProps {

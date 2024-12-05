@@ -85,7 +85,7 @@ export function Product({ imageUrl, modelUrl, isRotating = true, zoom = 1, model
       <gridHelper
         ref={gridRef}
         args={[2, 10, "#67B7D1", "#67B7D1"]}
-        position={[0, -modelHeight / 2 + 0.05, 0]}
+        position={[0, -modelHeight / 2 + 0.07, 0]}
       />
 
       <mesh

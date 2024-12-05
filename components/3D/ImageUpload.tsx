@@ -7,9 +7,10 @@ import { AuthModal } from '@/components/auth/AuthModal'
 import { useUser } from '@/lib/contexts/UserContext'
 import { ImageUploadProps } from '@/types/components'
 import { ProductDetails } from '@/types/product'
+import { PROGRESS_MESSAGES } from '@/lib/constants/progressMessages'
 
 
-export function ImageUpload({ onImageUpload, onModelUrlChange }: ImageUploadProps) {
+export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const { user } = useUser()
@@ -18,6 +19,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange }: ImageUploadProp
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [modelUrl, setModelUrl] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [currentProgress, setCurrentProgress] = useState(0)
 
   useEffect(() => {
     const fetchUserUploads = async () => {
@@ -98,6 +100,8 @@ export function ImageUpload({ onImageUpload, onModelUrlChange }: ImageUploadProp
         const fileName = `${user.id}/${Date.now()}_${index}.${fileExt}`
         const filePath = `${fileName}`
 
+        onProgressUpdate(filePath, 5);
+
         const { data, error } = await supabase.storage
           .from('product-images')
           .upload(filePath, file)
@@ -110,7 +114,9 @@ export function ImageUpload({ onImageUpload, onModelUrlChange }: ImageUploadProp
           setImagePaths((prevImagePaths) => [...prevImagePaths, imagePath])
 
           setIsLoading(true)
-          const modelUrl = await generate3DModel(imagePath)
+          const modelUrl = await generate3DModel(imagePath, (progress) => {
+            onProgressUpdate(imagePath, progress)
+          })
           setModelUrl(modelUrl)
           setIsLoading(false)
 
@@ -142,10 +148,16 @@ export function ImageUpload({ onImageUpload, onModelUrlChange }: ImageUploadProp
       setUploading(false)
       setIsLoading(false)
       if (event.target) {
-        event.target.value = '' // Reset file input
+        event.target.value = ''
       }
     }
-  }, [onImageUpload, user])
+  }, [onImageUpload, onProgressUpdate, user])
+
+  const getProgressMessage = (progress: number) => {
+    const messageSet = PROGRESS_MESSAGES.find(set => progress <= set.threshold);
+    if (!messageSet) return PROGRESS_MESSAGES[0].messages[0];
+    return messageSet.messages[Math.floor(Math.random() * messageSet.messages.length)];
+  };
 
   return (
     <>
@@ -158,7 +170,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange }: ImageUploadProp
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           <span className="text-base text-gray-500">
-            {uploading ? 'Uploading...' : 'Click or drag to upload product images'}
+            {uploading ? getProgressMessage(currentProgress) : 'Click or drag to upload product images'}
           </span>
           <input
             id="image-upload"
@@ -185,8 +197,13 @@ export function ImageUpload({ onImageUpload, onModelUrlChange }: ImageUploadProp
   )
 }
 
-async function generate3DModel(imagePath: string): Promise<string> {
+async function generate3DModel(imagePath: string, onProgress: (progress: number) => void): Promise<string> {
   const imageUrl = `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}`
+
+  // Initial setup - 0 to 10%
+  onProgress(5);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  onProgress(10);
 
   const imageResponse = await fetch(imageUrl)
   const imageBlob = await imageResponse.blob()
@@ -194,6 +211,9 @@ async function generate3DModel(imagePath: string): Promise<string> {
 
   const formData = new FormData()
   formData.append('image', file)
+
+  // Start mesh generation - progress from 25% to 90%
+  onProgress(25);
 
   const meshResponse = await fetch('http://localhost:8000/generate_mesh', {
     method: 'POST',
@@ -204,7 +224,22 @@ async function generate3DModel(imagePath: string): Promise<string> {
     throw new Error(`Failed to generate 3D model: ${meshResponse.statusText}`)
   }
 
+  // Simulate gradual progress during the long processing time
+  let currentProgress = 25;
+  const progressInterval = setInterval(() => {
+    if (currentProgress < 90) {
+      // Random increment between 0.5 and 1.5
+      currentProgress += 0.5 + Math.random();
+      onProgress(Math.min(currentProgress, 90));
+    }
+  }, 2000); // Update every 2 seconds
+
   const meshBlob = await meshResponse.blob()
+  clearInterval(progressInterval);
+
+  // Final stages
+  onProgress(95);
+
   const modelFileName = `${imagePath.split('.')[0]}.glb`
   const modelPath = `models/${modelFileName}`
 
@@ -220,6 +255,8 @@ async function generate3DModel(imagePath: string): Promise<string> {
     .storage
     .from('product-models')
     .getPublicUrl(modelPath)
+
+  onProgress(100);
 
   return modelUrl
 }

@@ -19,6 +19,17 @@ export default function Home() {
     const [zoom, setZoom] = useState(1);
     const [isExpanded, setIsExpanded] = useState(false);
     const { user } = useUser()
+    const [processingImages, setProcessingImages] = useState<{ [key: string]: number }>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('processingImages');
+            return saved ? JSON.parse(saved) : {};
+        }
+        return {};
+    });
+
+    useEffect(() => {
+        localStorage.setItem('processingImages', JSON.stringify(processingImages));
+    }, [processingImages]);
 
     useEffect(() => {
         const cachedImages = localStorage.getItem('cachedImages')
@@ -102,6 +113,25 @@ export default function Home() {
         setModelUrl(modelUrl);
     };
 
+    const handleProgressUpdate = (imagePath: string, progress: number) => {
+        setProcessingImages(prev => {
+            const newState = {
+                ...prev,
+                [imagePath]: progress
+            };
+            if (progress === 100) {
+                setTimeout(() => {
+                    setProcessingImages(current => {
+                        const { [imagePath]: removed, ...rest } = current;
+                        localStorage.setItem('processingImages', JSON.stringify(rest));
+                        return rest;
+                    });
+                }, 1000);
+            }
+            return newState;
+        });
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-background">
             <Navbar />
@@ -110,6 +140,7 @@ export default function Home() {
                     <ImageUpload
                         onImageUpload={handleImageUpload}
                         onModelUrlChange={setModelUrl}
+                        onProgressUpdate={handleProgressUpdate}
                     />
 
                     {selectedImage && (
@@ -125,6 +156,7 @@ export default function Home() {
                                     onPageChange={setPage}
                                     isLoading={false}
                                     isExpanded={isExpanded}
+                                    processingImages={processingImages}
                                 />
                             </div>
 
