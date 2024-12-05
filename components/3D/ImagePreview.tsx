@@ -1,10 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { ImagePreviewProps } from '@/types/components';
 import { ProductDetails } from '@/types/product';
+
+interface ProcessingImagesState {
+    [key: string]: number;
+}
 
 export function ImagePreview({
     imagePaths,
@@ -18,6 +22,7 @@ export function ImagePreview({
     processingImages = {},
 }: ImagePreviewProps) {
     const [hoveredImage, setHoveredImage] = useState<string | null>(null);
+    const [localProcessingImages, setLocalProcessingImages] = useState<ProcessingImagesState>(processingImages);
     const imagesPerPage = 9;
 
     // Sort images by creation timestamp (extracted from filename)
@@ -80,6 +85,27 @@ export function ImagePreview({
         }
     };
 
+    useEffect(() => {
+        // Check localStorage for any ongoing processes when component mounts
+        const savedProgresses = Object.keys(localStorage)
+            .filter(key => key.startsWith('progress_'))
+            .reduce<ProcessingImagesState>((acc, key) => {
+                const imagePath = key.replace('progress_', '');
+                const progress = parseFloat(localStorage.getItem(key) || '0');
+                return { ...acc, [imagePath]: progress };
+            }, {});
+
+        // Update processing state with saved progresses
+        if (Object.keys(savedProgresses).length > 0) {
+            setLocalProcessingImages(prev => ({ ...prev, ...savedProgresses }));
+        }
+    }, []);
+
+    // Update local state when props change
+    useEffect(() => {
+        setLocalProcessingImages(processingImages);
+    }, [processingImages]);
+
     if (isExpanded) return null;
 
     return (
@@ -90,7 +116,7 @@ export function ImagePreview({
                     const imageUrl = imagePath ?
                         `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}` :
                         '';
-                    const progress = processingImages[imagePath];
+                    const progress = localProcessingImages[imagePath];
                     const isProcessing = progress !== undefined && progress < 100;
 
                     return (

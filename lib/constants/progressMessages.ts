@@ -4,7 +4,6 @@ export const PROGRESS_MESSAGES = [
     messages: [
       "Starting the magic...",
       "Warming up the 3D engine...",
-      "Prepare for the liftoff my dear..."
     ]
   },
   {

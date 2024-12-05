@@ -13,7 +13,7 @@ export interface ImagePreviewProps {
   onPageChange: (page: number) => void;
   isLoading: boolean;
   isExpanded?: boolean;
-  processingImages?: { [key: string]: number };
+  processingImages: { [key: string]: number };
 }
 
 export interface ProductViewerProps {
