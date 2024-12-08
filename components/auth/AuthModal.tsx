@@ -23,7 +23,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                         Welcome back
                     </DialogTitle>
                     <DialogDescription className="text-left">
-                        Please sign in to use the 3D Engine
+                        Please sign in to use the 3D Toolkit
                     </DialogDescription>
                 </DialogHeader>
                 <UserAuthForm className="px-4" />

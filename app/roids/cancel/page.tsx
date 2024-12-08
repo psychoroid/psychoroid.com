@@ -1,37 +1,49 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
 
 export default function CancelPage() {
     const router = useRouter();
 
-    useEffect(() => {
-        // Redirect to pricing after 5 seconds
-        const timeout = setTimeout(() => {
-            router.push('/pricing');
-        }, 5000);
-
-        return () => clearTimeout(timeout);
-    }, [router]);
+    const handleContactSupport = () => {
+        window.location.href = 'mailto:dev@psychoroid.com?subject=Payment Support Request';
+    };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center">
-            <div className="text-center p-8 bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
-                <div className="flex justify-center mb-6">
-                    <XCircle className="w-16 h-16 text-red-500" />
+        <div className="h-svh bg-background flex items-center justify-center px-4">
+            <div className="w-full max-w-md p-6 border border-border rounded-lg bg-background/50">
+                <div className="flex flex-col items-center space-y-4">
+                    <XCircle className="h-12 w-12 text-red-500" />
+
+                    <h1 className="text-xl font-semibold text-foreground">
+                        Payment Cancelled
+                    </h1>
+
+                    <p className="text-sm text-muted-foreground text-center">
+                        Your payment was cancelled. No charges were made.
+                    </p>
+
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push('/pricing')}
+                            className="min-w-[120px] border-green-500 dark:border-green-600 text-green-600 dark:text-green-500 hover:bg-green-500/10 dark:hover:bg-green-500/10"
+                        >
+                            Return to Pricing
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleContactSupport}
+                            className="min-w-[120px] border-blue-500 dark:border-blue-600 text-blue-600 dark:text-blue-500 hover:bg-blue-500/10 dark:hover:bg-blue-500/10"
+                        >
+                            Contact support
+                        </Button>
+                    </div>
                 </div>
-                <h1 className="text-3xl font-bold text-white mb-4">Purchase Cancelled</h1>
-                <p className="text-gray-300 mb-6">
-                    Your purchase was cancelled. No charges were made to your account.
-                </p>
-                <button
-                    onClick={() => router.push('/pricing')}
-                    className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                    Return to Pricing
-                </button>
             </div>
         </div>
     );

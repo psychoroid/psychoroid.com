@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react"
 import './globals.css'
 import { ThemeProviderWrapper } from '../components/ui/ThemeProvider'
 import { UserProvider } from '@/lib/contexts/UserContext'
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -76,6 +77,7 @@ export default function RootLayout({
                     </UserProvider>
                 </ThemeProviderWrapper>
                 <Analytics />
+                <Toaster />
             </body>
         </html>
     )

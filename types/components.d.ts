@@ -59,5 +59,9 @@ export interface PricingCardProps {
   features: string[];
   description: string;
   subtitle?: string;
-  onPurchase?: () => void;
+  type: 'free' | 'subscription' | 'one_time';
+  isLoading?: boolean;
+  onPurchase: () => void;
+  isLoggedIn?: boolean;
+  loadingPlan: string | null | undefined;
 } 

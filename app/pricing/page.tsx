@@ -3,27 +3,34 @@
 import React, { useState } from 'react';
 import { useUser } from '@/lib/contexts/UserContext';
 import { PricingCard } from '@/components/pricing/PricingCard';
-import { RoidsBalance } from '@/components/pricing/RoidsBalance';
 import { Navbar } from '@/components/design/Navbar';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { Footer } from '@/components/design/Footer';
+import { getStripe } from '@/lib/stripe/stripe';
+import { PricingCardProps } from '@/types/components';
+import { toast } from 'sonner';
+
+// Define the plan type - remove loadingPlan from required props
+type PricingPlan = Omit<PricingCardProps, 'onPurchase' | 'isLoading' | 'isLoggedIn' | 'loadingPlan'>;
 
 export default function PricingPage() {
     const { user } = useUser();
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-    const pricingPlans = [
+    const pricingPlans: PricingPlan[] = [
         {
             name: 'Discovery',
             price: 0,
             credits: 200,
             features: [
-                '200 credits per month',
+                '200 credits on signup',
                 '1 task waiting in queue',
                 'Limited queue priority',
                 'Assets are under public license',
             ],
-            description: 'Best for individual creators'
+            description: 'Try our technology',
+            type: 'free' as const
         },
         {
             name: 'Pro',
@@ -40,7 +47,8 @@ export default function PricingPage() {
                 'AI texture editing',
                 'Download community assets',
             ],
-            description: 'Best for studios and teams'
+            description: 'Best for studios and teams',
+            type: 'subscription' as const
         },
         {
             name: 'Intense',
@@ -59,14 +67,83 @@ export default function PricingPage() {
                 'Animate your creations',
                 'Download community assets',
             ],
-            description: 'Unlock Psychoroid\'s full potential'
+            description: 'Unlock Psychoroid\'s full potential',
+            type: 'subscription' as const
         }
     ];
 
-    const handlePurchaseClick = () => {
+    // Add one-time purchase options
+    const roidsPacks = [
+        {
+            name: 'Starter Pack',
+            price: 9.99,
+            credits: 600,
+            type: 'one_time'
+        },
+        {
+            name: 'Plus Pack',
+            price: 29.99,
+            credits: 2000,
+            type: 'one_time'
+        },
+        {
+            name: 'Max Pack',
+            price: 59.99,
+            credits: 5000,
+            type: 'one_time'
+        }
+    ];
+
+    const handlePurchaseClick = async (plan: typeof pricingPlans[0]) => {
         if (!user) {
             setShowAuthModal(true);
             return;
+        }
+
+        try {
+            setLoadingPlan(plan.name);
+            console.log('Starting checkout for plan:', plan.name);
+
+            const packageName = plan.type === 'subscription'
+                ? `sub_${plan.name.toLowerCase()}`
+                : plan.name.toLowerCase();
+
+            console.log('Package name:', packageName);
+
+            const response = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    package: packageName,
+                    userId: user.id,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to create checkout session');
+            }
+
+            console.log('Got session ID:', data.sessionId);
+
+            const stripe = await getStripe();
+            if (!stripe) {
+                throw new Error('Failed to load Stripe');
+            }
+
+            const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+            if (error) {
+                console.error('Stripe checkout error:', error);
+                throw error;
+            }
+        } catch (error) {
+            console.error('Error initiating checkout:', error);
+            toast.error(error instanceof Error ? error.message : 'Failed to start checkout');
+        } finally {
+            setLoadingPlan(null);
         }
     };
 
@@ -89,15 +166,8 @@ export default function PricingPage() {
                         {/* Right side - Content */}
                         <div className="col-span-8 text-foreground">
                             <p className="text-xs text-muted-foreground mt-4 mb-2">
-                                Purchase ROIDS bundles to generate 3D assets. The more ROIDS you have,
-                                the more assets you can create, the more tools you can use.
+                                From individual creators to professional studios - all plans include access to our AI-powered 3D engine with varying levels of features and priority.
                             </p>
-
-                            {user && (
-                                <div className="mb-8">
-                                    <RoidsBalance userId={user.id} />
-                                </div>
-                            )}
                         </div>
                     </div>
 
@@ -108,7 +178,9 @@ export default function PricingPage() {
                                 <div key={index} className="border-r border-t border-b border-border first:border-l">
                                     <PricingCard
                                         {...plan}
-                                        onPurchase={handlePurchaseClick}
+                                        onPurchase={() => handlePurchaseClick(plan)}
+                                        isLoggedIn={!!user}
+                                        loadingPlan={loadingPlan}
                                     />
                                 </div>
                             ))}

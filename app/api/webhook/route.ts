@@ -6,7 +6,25 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
 });
 
-// In App Router, we export the HTTP methods directly
+// Define our expected metadata shape
+type MetadataFields = {
+  userId: string;
+  type: 'subscription' | 'roids_purchase';
+  subscription_type?: string;
+  roids_amount?: string;
+};
+
+// Type guard function to validate metadata
+function hasValidMetadata(metadata: Stripe.Metadata | null): metadata is Stripe.Metadata & MetadataFields {
+  if (!metadata) return false;
+  
+  return (
+    typeof metadata.userId === 'string' &&
+    typeof metadata.type === 'string' &&
+    (metadata.type === 'subscription' || metadata.type === 'roids_purchase')
+  );
+}
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = headers().get('stripe-signature');
@@ -25,21 +43,23 @@ export async function POST(request: Request) {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
-        const { userId, roidsAmount } = session.metadata!;
+        
+        if (!hasValidMetadata(session.metadata)) {
+          throw new Error('Invalid or missing metadata in session');
+        }
 
-        const { error } = await supabase
-          .from('roids_transactions')
-          .insert({
-            user_id: userId,
-            amount: parseInt(roidsAmount),
-            transaction_type: 'purchase',
-            stripe_session_id: session.id,
-            description: 'ROIDS purchase via Stripe'
+        const metadata = session.metadata;
+
+        if (metadata.type === 'subscription') {
+          await supabase.rpc('add_subscription_credits', {
+            p_user_id: metadata.userId,
+            p_subscription_type: metadata.subscription_type
           });
-
-        if (error) {
-          console.error('Error recording ROIDS transaction:', error);
-          return new Response('Failed to process ROIDS purchase', { status: 500 });
+        } else if (metadata.type === 'roids_purchase' && metadata.roids_amount) {
+          await supabase.rpc('add_roids', {
+            p_user_id: metadata.userId,
+            p_amount: parseInt(metadata.roids_amount)
+          });
         }
         break;
 
@@ -51,7 +71,7 @@ export async function POST(request: Request) {
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    return new Response(JSON.stringify({ received: true }), { status: 200 });
+    return new Response('Webhook processed', { status: 200 });
   } catch (error) {
     console.error('Webhook error:', error);
     return new Response('Webhook error', { status: 400 });

@@ -13,8 +13,13 @@ export function PricingCard({
     features,
     description,
     subtitle,
+    isLoading,
+    isLoggedIn,
+    loadingPlan,
     onPurchase
 }: PricingCardProps) {
+    const isThisPlanLoading = loadingPlan === name;
+
     return (
         <div className="flex flex-col h-full p-6 hover:bg-accent transition-colors">
             <div className="mb-6">
@@ -57,14 +62,23 @@ export function PricingCard({
                 </ul>
             </div>
 
-            <Button
-                onClick={onPurchase}
-                variant="outline"
-                size="sm"
-                className="w-full hover:bg-foreground hover:text-background transition-colors"
-            >
-                {price === 0 ? 'Get Started' : 'Subscribe'}
-            </Button>
+            {(!isLoggedIn || price > 0) && (
+                <Button
+                    onClick={onPurchase}
+                    variant="outline"
+                    size="default"
+                    disabled={isThisPlanLoading}
+                    className="w-full hover:bg-foreground hover:text-background transition-colors"
+                >
+                    {isThisPlanLoading ? (
+                        <span className="flex items-center justify-center">
+                            Processing...
+                        </span>
+                    ) : (
+                        price === 0 ? 'Get Started' : 'Subscribe'
+                    )}
+                </Button>
+            )}
         </div>
     );
 }

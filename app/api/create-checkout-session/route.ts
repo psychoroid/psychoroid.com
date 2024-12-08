@@ -5,17 +5,18 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
 });
 
-const ROIDS_PACKAGES = {
-  basic: { roids: 600, price: 999 }, // $9.99
-  premium: { roids: 2000, price: 2999 }, // $29.99
-  pro: { roids: 5000, price: 5999 }, // $59.99
+const SUBSCRIPTION_PRICES = {
+  pro: process.env.STRIPE_PRO_PRICE_ID,
+  intense: process.env.STRIPE_INTENSE_PRICE_ID,
 };
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
-    const { package: packageName, userId } = body;
+    const { package: packageName, userId } = await req.json();
     
+    console.log('Received request:', { packageName, userId });
+    console.log('Available price IDs:', SUBSCRIPTION_PRICES);
+
     if (!userId) {
       return NextResponse.json(
         { message: 'User ID is required' },
@@ -23,44 +24,57 @@ export async function POST(request: Request) {
       );
     }
 
-    const selectedPackage = ROIDS_PACKAGES[packageName as keyof typeof ROIDS_PACKAGES];
+    let session;
 
-    if (!selectedPackage) {
+    if (packageName.startsWith('sub_')) {
+      const planName = packageName.replace('sub_', '') as keyof typeof SUBSCRIPTION_PRICES;
+      const priceId = SUBSCRIPTION_PRICES[planName];
+
+      console.log('Creating session for plan:', { planName, priceId });
+
+      if (!priceId) {
+        console.error('Price ID not found for plan:', planName);
+        return NextResponse.json(
+          { message: `Invalid subscription plan: ${planName}` },
+          { status: 400 }
+        );
+      }
+
+      try {
+        session = await stripe.checkout.sessions.create({
+          mode: 'subscription',
+          line_items: [
+            {
+              price: priceId,
+              quantity: 1,
+            },
+          ],
+          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/cancel`,
+          metadata: {
+            userId,
+            type: 'subscription',
+            plan: planName
+          },
+        });
+      } catch (stripeError) {
+        console.error('Stripe session creation error:', stripeError);
+        throw stripeError;
+      }
+    }
+
+    if (!session) {
       return NextResponse.json(
-        { message: 'Invalid package selected' },
-        { status: 400 }
+        { message: 'Failed to create checkout session' },
+        { status: 500 }
       );
     }
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `${selectedPackage.roids} ROIDS`,
-              description: `Get ${selectedPackage.roids} ROIDS to use on psychoroid.com`,
-            },
-            unit_amount: selectedPackage.price,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/cancel`,
-      metadata: {
-        userId,
-        roidsAmount: selectedPackage.roids.toString(),
-      },
-    });
-
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error('Detailed error:', error);
     return NextResponse.json(
-      { message: 'Error creating checkout session' },
+      { message: error instanceof Error ? error.message : 'Error creating checkout session' },
       { status: 500 }
     );
   }
