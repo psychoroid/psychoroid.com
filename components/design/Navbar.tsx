@@ -67,7 +67,7 @@ export function Navbar() {
                                 — GCD
                             </Link> */}
                             <Link href="/game-assets" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
-                                Search assets
+                                Collections
                             </Link>
                             <Link href="/pricing" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
                                 Pricing

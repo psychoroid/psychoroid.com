@@ -51,7 +51,13 @@ export interface ProductControlsProps {
 
 export interface PricingCardProps {
   name: string;
-  roids: number;
   price: number;
+  discountedPrice?: number;
+  period?: string;
+  yearlyPrice?: number;
+  credits: number;
+  features: string[];
+  description: string;
+  subtitle?: string;
   onPurchase?: () => void;
 } 
