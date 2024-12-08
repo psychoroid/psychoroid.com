@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card'
 import { ForgotForm } from '@/components/auth/forgot-form'
 import { CheckEmailMessage } from '@/components/auth/check-email-message'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { toast } from '@/components/ui/use-toast'
 
 export default function ForgotPassword() {

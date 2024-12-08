@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/supabase'
 import { toast } from '@/components/ui/use-toast'
 
 interface ForgotFormProps extends HTMLAttributes<HTMLDivElement> {

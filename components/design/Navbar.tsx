@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { Session } from '@supabase/supabase-js';
 import { useTheme } from 'next-themes';
 import { Dock } from '@/components/ui/dock';
@@ -41,7 +41,7 @@ export function Navbar() {
                                     alt="Logo"
                                     width={60}
                                     height={60}
-                                    className="mr-2"
+                                    className="mr-1"
                                 />
                             </Link>
                             <button
@@ -63,11 +63,11 @@ export function Navbar() {
                             <Link href="/" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
                                 3D Engine
                             </Link>
-                            <Link href="/GCD" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
+                            {/* <Link href="/GCD" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
                                 — GCD
-                            </Link>
+                            </Link> */}
                             <Link href="/game-assets" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
-                                Game assets
+                                Search assets
                             </Link>
                             <Link href="/pricing" className="text-muted-foreground mt-0.5 hover:text-foreground transition-colors text-xs font-medium">
                                 Pricing

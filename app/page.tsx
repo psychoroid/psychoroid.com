@@ -6,7 +6,7 @@ import { ImageUpload } from '@/components/3D/ImageUpload'
 import { Navbar } from '@/components/design/Navbar'
 import { ImagePreview } from '@/components/3D/ImagePreview'
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/supabase'
 import { useUser } from '@/lib/contexts/UserContext'
 import { UserUpload } from '@/types/product'
 

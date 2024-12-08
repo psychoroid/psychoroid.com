@@ -2,13 +2,15 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { ImagePreviewProps } from '@/types/components';
 import { ProductDetails } from '@/types/product';
 
 interface ProcessingImagesState {
     [key: string]: number;
 }
+
+const STORAGE_KEY = 'processing_images';
 
 export function ImagePreview({
     imagePaths,
@@ -22,7 +24,23 @@ export function ImagePreview({
     processingImages = {},
 }: ImagePreviewProps) {
     const [hoveredImage, setHoveredImage] = useState<string | null>(null);
-    const [localProcessingImages, setLocalProcessingImages] = useState<ProcessingImagesState>(processingImages);
+    const [localProcessingImages, setLocalProcessingImages] = useState<{ [key: string]: number }>(
+        () => {
+            if (typeof window === 'undefined') return {};
+
+            // Load saved progress from localStorage
+            const saved = Object.keys(localStorage)
+                .filter(key => key.startsWith('progress_'))
+                .reduce<{ [key: string]: number }>((acc, key) => {
+                    const imagePath = key.replace('progress_', '');
+                    const progress = parseFloat(localStorage.getItem(key) || '0');
+                    acc[imagePath] = progress;
+                    return acc;
+                }, {});
+
+            return { ...saved, ...processingImages };
+        }
+    );
     const imagesPerPage = 9;
 
     // Sort images by creation timestamp (extracted from filename)
@@ -85,26 +103,45 @@ export function ImagePreview({
         }
     };
 
+    // Update local state when props change, but only if values are different
     useEffect(() => {
-        // Check localStorage for any ongoing processes when component mounts
-        const savedProgresses = Object.keys(localStorage)
-            .filter(key => key.startsWith('progress_'))
-            .reduce<ProcessingImagesState>((acc, key) => {
-                const imagePath = key.replace('progress_', '');
-                const progress = parseFloat(localStorage.getItem(key) || '0');
-                return { ...acc, [imagePath]: progress };
-            }, {});
+        const hasChanges = Object.entries(processingImages).some(
+            ([key, value]) => localProcessingImages[key] !== value
+        );
 
-        // Update processing state with saved progresses
-        if (Object.keys(savedProgresses).length > 0) {
-            setLocalProcessingImages(prev => ({ ...prev, ...savedProgresses }));
+        if (hasChanges) {
+            setLocalProcessingImages(prev => ({ ...prev, ...processingImages }));
         }
-    }, []);
-
-    // Update local state when props change
-    useEffect(() => {
-        setLocalProcessingImages(processingImages);
     }, [processingImages]);
+
+    // Cleanup stale items every minute
+    useEffect(() => {
+        const cleanup = () => {
+            const now = Date.now();
+            const staleTimeout = 5 * 60 * 1000; // 5 minutes
+
+            setLocalProcessingImages(prev => {
+                const updated = { ...prev };
+                let hasChanges = false;
+
+                Object.entries(updated).forEach(([path, progress]) => {
+                    const timestamp = parseInt(path.split('/')[1].split('_')[0]);
+                    if (progress >= 100 || now - timestamp > staleTimeout) {
+                        delete updated[path];
+                        localStorage.removeItem(`progress_${path}`);
+                        hasChanges = true;
+                    }
+                });
+
+                return hasChanges ? updated : prev;
+            });
+        };
+
+        const interval = setInterval(cleanup, 60000);
+        cleanup(); // Run once immediately
+
+        return () => clearInterval(interval);
+    }, []);
 
     if (isExpanded) return null;
 

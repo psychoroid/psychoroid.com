@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/form'
 import { PinInput, PinInputField } from '@/components/auth/pin-input'
 import { Input } from '@/components/ui/input'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/supabase'
 import { toast } from '@/components/ui/use-toast'
 import { useRouter } from 'next/dist/client/router'
 

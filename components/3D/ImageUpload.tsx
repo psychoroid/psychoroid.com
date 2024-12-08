@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/supabase'
 import toast from 'react-hot-toast'
 import { AuthModal } from '@/components/auth/AuthModal'
 import { useUser } from '@/lib/contexts/UserContext'
@@ -87,101 +87,119 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
     setCurrentPage(page)
   }
 
-  const loadSavedProgress = useCallback(() => {
-    const savedProgresses = Object.keys(localStorage)
-      .filter(key => key.startsWith('progress_'))
-      .reduce<SavedProgresses>((acc, key) => {
-        const imagePath = key.replace('progress_', '');
-        const progress = parseFloat(localStorage.getItem(key) || '0');
-        return { ...acc, [imagePath]: progress };
-      }, {});
-
-    Object.entries(savedProgresses).forEach(([imagePath, progress]) => {
-      onProgressUpdate(imagePath, progress as number);
-    });
-  }, [onProgressUpdate]);
-
   useEffect(() => {
+    const loadSavedProgress = () => {
+      const savedProgresses = Object.keys(localStorage)
+        .filter(key => key.startsWith('progress_'))
+        .reduce<{ [key: string]: number }>((acc, key) => {
+          const imagePath = key.replace('progress_', '');
+          const progress = parseFloat(localStorage.getItem(key) || '0');
+          acc[imagePath] = progress;
+          return acc;
+        }, {});
+
+      if (Object.keys(savedProgresses).length > 0) {
+        Object.entries(savedProgresses).forEach(([imagePath, progress]) => {
+          onProgressUpdate(imagePath, progress);
+        });
+      }
+    };
+
     loadSavedProgress();
-  }, [loadSavedProgress]);
+  }, []);
 
   const generate3DModel = useCallback(async (imagePath: string, onProgress: (progress: number) => void): Promise<string> => {
-    const imageUrl = `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}`;
+    try {
+      const imageUrl = `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}`;
 
-    // Initial upload - 0 to 10%
-    onProgress(5);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    onProgress(10);
+      // Initial upload - 0 to 10%
+      onProgress(5);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      onProgress(10);
 
-    const imageResponse = await fetch(imageUrl)
-    const imageBlob = await imageResponse.blob()
-    const file = new File([imageBlob], imagePath, { type: imageBlob.type })
+      const imageResponse = await fetch(imageUrl)
+      const imageBlob = await imageResponse.blob()
+      const file = new File([imageBlob], imagePath, { type: imageBlob.type })
 
-    // Processing image - 10 to 15%
-    onProgress(15);
+      // Processing image - 10 to 15%
+      onProgress(15);
 
-    const formData = new FormData()
-    formData.append('image', file)
+      const formData = new FormData()
+      formData.append('image', file)
 
-    // Image preprocessing - 15 to 25%
-    onProgress(20);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    onProgress(25);
+      // Image preprocessing - 15 to 25%
+      onProgress(20);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      onProgress(25);
 
-    const meshResponse = await fetch('http://localhost:8000/generate_mesh', {
-      method: 'POST',
-      body: formData,
-    })
+      // Simplified progress tracking
+      const updateProgress = (progress: number) => {
+        onProgress(progress);
+        localStorage.setItem(`progress_${imagePath}`, progress.toString());
+      };
 
-    if (!meshResponse.ok) {
-      throw new Error(`Failed to generate 3D model: ${meshResponse.statusText}`)
-    }
+      updateProgress(25);
 
-    // Mesh generation (long process) - 25 to 85%
-    let currentProgress = 25;
-    const progressInterval = setInterval(() => {
-      if (currentProgress < 85) {
-        // Slower, more consistent progress
-        currentProgress += 0.2;
-        onProgress(Math.min(currentProgress, 85));
+      const meshResponse = await fetch('http://localhost:8000/generate_mesh', {
+        method: 'POST',
+        body: formData,
+      });
 
-        // Save current progress to localStorage
-        localStorage.setItem(`progress_${imagePath}`, currentProgress.toString());
+      if (!meshResponse.ok) {
+        throw new Error(`Failed to generate 3D model: ${meshResponse.statusText}`);
       }
-    }, 3000); // Update every 3 seconds
 
-    const meshBlob = await meshResponse.blob()
-    clearInterval(progressInterval);
+      updateProgress(90);
+      const meshBlob = await meshResponse.blob();
 
-    // Final processing - 85 to 95%
-    onProgress(90);
-    await new Promise(resolve => setTimeout(resolve, 500));
+      // Upload to Supabase storage
+      const modelFileName = `${imagePath.split('.')[0]}.glb`
+      const modelPath = `models/${modelFileName}`
 
-    const modelFileName = `${imagePath.split('.')[0]}.glb`
-    const modelPath = `models/${modelFileName}`
+      console.log('Uploading model to:', modelPath);
 
-    // Upload to storage - 95 to 100%
-    onProgress(95);
+      const { data: modelData, error: modelError } = await supabase.storage
+        .from('product-models')
+        .upload(modelPath, meshBlob, {
+          contentType: 'model/gltf-binary',
+          cacheControl: '3600',
+          upsert: true
+        })
 
-    const { data: modelData, error: modelError } = await supabase.storage
-      .from('product-models')
-      .upload(modelPath, meshBlob)
+      if (modelError) {
+        console.error('Failed to upload model:', modelError);
+        throw modelError;
+      }
 
-    if (modelError) {
-      throw new Error(`Failed to upload 3D model to Supabase: ${modelError.message}`)
+      console.log('Model uploaded successfully:', modelData);
+
+      const { data: { publicUrl: modelUrl } } = supabase.storage
+        .from('product-models')
+        .getPublicUrl(modelPath)
+
+      // Create product record in database
+      const { data: productData, error: productError } = await supabase
+        .rpc('create_product', {
+          p_name: 'New Product',
+          p_description: 'Product description',
+          p_image_path: imagePath,
+          p_model_path: modelPath,
+          p_user_id: user?.id
+        })
+
+      if (productError) {
+        console.error('Error creating product:', productError)
+        throw productError
+      }
+
+      updateProgress(100);
+      localStorage.removeItem(`progress_${imagePath}`);
+      return modelUrl;
+    } catch (error) {
+      console.error('Error in generate3DModel:', error);
+      throw error;
     }
-
-    const { data: { publicUrl: modelUrl } } = supabase
-      .storage
-      .from('product-models')
-      .getPublicUrl(modelPath)
-
-    // Clear progress from localStorage when complete
-    localStorage.removeItem(`progress_${imagePath}`);
-    onProgress(100);
-
-    return modelUrl
-  }, []);
+  }, [user]);
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {

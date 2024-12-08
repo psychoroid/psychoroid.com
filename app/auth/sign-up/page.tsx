@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { SignUpForm } from '@/components/auth/sign-up-form'
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { toast } from '@/components/ui/use-toast'
 import Link from 'next/link'
 
