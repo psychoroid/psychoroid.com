@@ -58,7 +58,7 @@ export default function FAQPage() {
                                 <h2 className="text-sm font-medium mb-4">— Can I use the models commercially?</h2>
                                 <p className="text-xs mb-2">
                                     Yes. Paid subscribers own full rights to their generated models. Free users receive a CC BY 4.0 license,
-                                    allowing commercial use with attribution to Psychoroid Studios.
+                                    allowing commercial use with attribution to psychoroid.com.
                                 </p>
                             </section>
 

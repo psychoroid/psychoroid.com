@@ -12,7 +12,8 @@ const SUBSCRIPTION_PRICES = {
 
 export async function POST(req: Request) {
   try {
-    const { package: packageName, userId } = await req.json();
+    const clonedReq = req.clone();
+    const { package: packageName, userId } = await clonedReq.json();
     
     console.log('Received request:', { packageName, userId });
     console.log('Available price IDs:', SUBSCRIPTION_PRICES);
@@ -61,6 +62,34 @@ export async function POST(req: Request) {
         console.error('Stripe session creation error:', stripeError);
         throw stripeError;
       }
+    }
+
+    if (packageName === 'custom') {
+      const { credits, price } = await req.json();
+      
+      session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `${credits} Credits`,
+                description: 'Custom credit purchase for psychoroid.com',
+              },
+              unit_amount: Math.round(parseFloat(price) * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/cancel`,
+        metadata: {
+          userId,
+          type: 'custom_purchase',
+          credits: credits.toString()
+        },
+      });
     }
 
     if (!session) {

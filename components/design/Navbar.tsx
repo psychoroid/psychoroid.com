@@ -91,7 +91,7 @@ export function Navbar() {
                                 3D Engine
                             </Link>
                             <Link
-                                href="/game-assets"
+                                href="/community"
                                 className="text-emerald-500 dark:text-emerald-400 mt-0.5 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors text-xs font-medium"
                             >
                                 Community

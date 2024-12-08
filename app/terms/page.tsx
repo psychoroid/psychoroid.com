@@ -32,14 +32,14 @@ export default function TermsOfService() {
                             <section className="mb-8">
                                 <h2 className="text-sm font-medium mb-4">— Content Rights</h2>
                                 <p className="text-xs mb-2">
-                                    Paid subscribers own full rights to their generated 3D models. Free tier users receive a CC BY 4.0 license, requiring attribution to Psychoroid Studios for commercial use. You retain rights to your original uploaded content.
+                                    Paid subscribers own full rights to their generated 3D models. Free tier users receive a CC BY 4.0 license, requiring attribution to psychoroid.com for commercial use. You retain rights to your original uploaded content.
                                 </p>
                             </section>
 
                             <section className="mb-8">
                                 <h2 className="text-sm font-medium mb-4">— Credits & Payments</h2>
                                 <p className="text-xs mb-2">
-                                    ROIDS credits are non-transferable and non-refundable. Subscription payments are processed at the start of each billing period. Cancellations take effect at the period end.
+                                    ROIDS credits are non-transferable and non-refundable. Subscription payments are processed at the start of each billing period. Cancellations take effect at the period end. There are no refunds except in cases of fraud.
                                 </p>
                             </section>
 
@@ -53,7 +53,14 @@ export default function TermsOfService() {
                             <section className="mb-8">
                                 <h2 className="text-sm font-medium mb-4">— Service Changes</h2>
                                 <p className="text-xs mb-2">
-                                    We may modify our services or terms with notice. Continued use after changes constitutes acceptance. For questions about these terms, contact dev@psychoroid.com.
+                                    We may modify our services or terms with notice. Continued use after changes constitutes acceptance. For questions about these terms, contact{' '}
+                                    <a
+                                        href="mailto:dev@psychoroid.com"
+                                        className="text-blue-500 dark:text-blue-400 hover:underline"
+                                    >
+                                        dev@psychoroid.com
+                                    </a>
+                                    .
                                 </p>
                             </section>
                         </div>

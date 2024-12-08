@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Twitter } from 'lucide-react';
+import { Twitter, Github } from 'lucide-react';
 
 export function Footer() {
     return (
@@ -9,6 +9,16 @@ export function Footer() {
             <div className="max-w-7xl mx-auto px-8">
                 <div className="flex items-center justify-end h-8">
                     <div className="flex items-center space-x-6 pr-12">
+                        <Link
+                            href="https://github.com/psychoroid/psychoroid"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 text-xs font-medium"
+                        >
+                            <Github className="h-3 w-3" />
+                            <span>This application is open source</span>
+                        </Link>
+                        <div className="h-4 w-px bg-border"></div>
                         <Link
                             href="https://twitter.com/PrinceMuichkine"
                             target="_blank"

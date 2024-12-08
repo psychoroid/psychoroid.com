@@ -53,7 +53,14 @@ export default function PrivacyPolicy() {
                             <section className="mb-8">
                                 <h2 className="text-sm font-medium mb-4">— Contact</h2>
                                 <p className="text-xs mb-2">
-                                    For privacy concerns or data requests, contact us at dev@psychoroid.com. We typically respond within 48 hours.
+                                    For privacy concerns or data requests, contact us at{' '}
+                                    <a
+                                        href="mailto:dev@psychoroid.com"
+                                        className="text-blue-500 dark:text-blue-400 hover:underline"
+                                    >
+                                        dev@psychoroid.com
+                                    </a>
+                                    . We typically respond within 48 hours.
                                 </p>
                             </section>
                         </div>

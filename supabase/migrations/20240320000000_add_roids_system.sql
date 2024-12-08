@@ -1,77 +1,6 @@
 --------------- ROIDS SYSTEM ---------------
 
--- Create user_roids table to track ROIDS balance
-create table user_roids (
-    id uuid primary key default uuid_generate_v4(),
-    user_id uuid references auth.users(id) unique not null,
-    balance integer default 0 not null,
-    created_at timestamptz default now(),
-    updated_at timestamptz default now(),
-    constraint positive_balance check (balance >= 0)
-);
-
--- Create roids_transactions table to track all ROIDS transactions
-create table roids_transactions (
-    id uuid primary key default uuid_generate_v4(),
-    user_id uuid references auth.users(id) not null,
-    amount integer not null,
-    transaction_type text not null check (transaction_type in ('purchase', 'usage', 'refund')),
-    stripe_session_id text,
-    product_id uuid references products(id),
-    description text,
-    created_at timestamptz default now(),
-    constraint valid_amount check (
-        (transaction_type = 'purchase' and amount > 0) or
-        (transaction_type = 'usage' and amount < 0) or
-        (transaction_type = 'refund' and amount > 0)
-    )
-);
-
--- Create updated_at trigger function if it doesn't exist
-create or replace function public.handle_updated_at()
-returns trigger as $$
-begin
-    new.updated_at = now();
-    return new;
-end;
-$$ language plpgsql security definer;
-
--- Create triggers for ROIDS tables
-create trigger handle_user_roids_updated_at
-    before update on user_roids
-    for each row execute function public.handle_updated_at();
-
--- Create function to update user_roids balance
-create or replace function update_roids_balance()
-returns trigger as $$
-begin
-    insert into user_roids (user_id, balance)
-    values (new.user_id, new.amount)
-    on conflict (user_id)
-    do update set balance = user_roids.balance + new.amount;
-    return new;
-end;
-$$ language plpgsql security definer;
-
--- Create trigger to automatically update user_roids balance
-create trigger handle_roids_transaction
-    after insert on roids_transactions
-    for each row execute function update_roids_balance();
-
 -- Create RLS policies
-alter table user_roids enable row level security;
-alter table roids_transactions enable row level security;
-
--- Policies for user_roids
-create policy "Users can view their own ROIDS balance"
-    on user_roids for select
-    using (auth.uid() = user_id);
-
--- Policies for roids_transactions
-create policy "Users can view their own transactions"
-    on roids_transactions for select
-    using (auth.uid() = user_id);
-
 create policy "System can insert transactions"
     on roids_transactions for insert
     to service_role
@@ -229,11 +158,46 @@ BEGIN
 END;
 $$;
 
--- Add RLS policies for the RPC functions
-ALTER FUNCTION get_user_roids_balance(UUID) STABLE;
-ALTER FUNCTION check_roids_balance(UUID, INTEGER) STABLE;
-ALTER FUNCTION get_user_roids_transactions(UUID, INTEGER, INTEGER) STABLE;
+-- Function to initialize user with free ROIDS on signup
+CREATE OR REPLACE FUNCTION initialize_user_roids()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+    INSERT INTO user_roids (
+        user_id,
+        balance,
+        subscription_type
+    ) VALUES (
+        NEW.id,
+        200,  -- Initial free ROIDS
+        'free'
+    );
 
+    -- Record the initial ROIDS transaction
+    PERFORM record_roids_transaction(
+        NEW.id,
+        200,
+        'purchase',
+        NULL,
+        NULL,
+        'Initial signup bonus'
+    );
+
+    RETURN NEW;
+END;
+$$;
+
+-- Create trigger to automatically give ROIDS on user creation
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION initialize_user_roids();
+
+-- Grant necessary permissions
+GRANT EXECUTE ON FUNCTION initialize_user_roids() TO service_role;
 GRANT EXECUTE ON FUNCTION get_user_roids_balance(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION check_roids_balance(UUID, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION record_roids_transaction(UUID, INTEGER, TEXT, TEXT, UUID, TEXT) TO service_role;
