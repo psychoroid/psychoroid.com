@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/supabase'
 import { useUser } from '@/lib/contexts/UserContext'
 import { UserUpload } from '@/types/product'
+import { Footer } from '@/components/design/Footer'
 
 export default function Home() {
     const [isRotating, setIsRotating] = useState(true)
@@ -133,64 +134,66 @@ export default function Home() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-background">
-            <Navbar />
-            <div className="p-8 pt-24">
-                <div className="max-w-7xl mx-auto text-gray-900 dark:text-white">
-                    <ImageUpload
-                        onImageUpload={handleImageUpload}
-                        onModelUrlChange={setModelUrl}
-                        onProgressUpdate={handleProgressUpdate}
-                    />
+        <div className="min-h-screen bg-gray-50 dark:bg-background flex flex-col justify-between">
+            <div>
+                <Navbar />
+                <div className="p-8 pt-24">
+                    <div className="max-w-7xl mx-auto text-gray-900 dark:text-white">
+                        <ImageUpload
+                            onImageUpload={handleImageUpload}
+                            onModelUrlChange={setModelUrl}
+                            onProgressUpdate={handleProgressUpdate}
+                        />
 
-                    {selectedImage && (
-                        <div className="grid grid-cols-10 gap-8 mt-2">
-                            {/* Left Panel - 2D Preview */}
-                            <div className="rounded-lg p-6 shadow-sm col-span-3 border dark:border-gray-300 border-gray-200 bg-transparent overflow-hidden">
-                                <ImagePreview
-                                    imagePaths={uploadedImages}
-                                    selectedImage={selectedImage}
-                                    onImageClick={handleImageClick}
-                                    onImageRemove={handleImageRemove}
-                                    currentPage={page}
-                                    onPageChange={setPage}
-                                    isLoading={false}
-                                    isExpanded={isExpanded}
-                                    processingImages={processingImages}
-                                />
-                            </div>
+                        {selectedImage && (
+                            <div className="grid grid-cols-10 gap-8 mt-2">
+                                {/* Left Panel - 2D Preview */}
+                                <div className="rounded-lg p-6 shadow-sm col-span-3 border dark:border-gray-300 border-gray-200 bg-transparent overflow-hidden">
+                                    <ImagePreview
+                                        imagePaths={uploadedImages}
+                                        selectedImage={selectedImage}
+                                        onImageClick={handleImageClick}
+                                        onImageRemove={handleImageRemove}
+                                        currentPage={page}
+                                        onPageChange={setPage}
+                                        isLoading={false}
+                                        isExpanded={isExpanded}
+                                        processingImages={processingImages}
+                                    />
+                                </div>
 
-                            {/* Right Panel - 3D Viewer */}
-                            <div className="rounded-lg p-6 shadow-sm col-span-7 border dark:border-gray-300 border-gray-200 bg-transparent">
-                                <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">3D Preview</h2>
-                                <div className="relative h-96 flex gap-4">
-                                    <div className="flex-grow">
-                                        <ProductViewer
-                                            key={modelUrl}
-                                            imagePath={selectedImage}
-                                            modelUrl={modelUrl}
-                                            isRotating={isRotating}
-                                            zoom={zoom}
-                                            isExpanded={isExpanded}
-                                            onClose={handleClose}
-                                        />
-                                    </div>
-                                    {/* Controls positioned on the right */}
-                                    <div className="flex flex-col justify-center space-y-2">
-                                        <ProductControls
-                                            isRotating={isRotating}
-                                            onRotateToggle={() => setIsRotating(!isRotating)}
-                                            onZoomIn={handleZoomIn}
-                                            onZoomOut={handleZoomOut}
-                                            onExpand={handleExpand}
-                                        />
+                                {/* Right Panel - 3D Viewer */}
+                                <div className="rounded-lg p-6 shadow-sm col-span-7 border dark:border-gray-300 border-gray-200 bg-transparent">
+                                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">3D Preview</h2>
+                                    <div className="relative h-96 flex gap-4">
+                                        <div className="flex-grow">
+                                            <ProductViewer
+                                                key={modelUrl}
+                                                imagePath={selectedImage}
+                                                modelUrl={modelUrl}
+                                                isRotating={isRotating}
+                                                zoom={zoom}
+                                                isExpanded={isExpanded}
+                                                onClose={handleClose}
+                                            />
+                                        </div>
+                                        <div className="flex flex-col justify-center space-y-2">
+                                            <ProductControls
+                                                isRotating={isRotating}
+                                                onRotateToggle={() => setIsRotating(!isRotating)}
+                                                onZoomIn={handleZoomIn}
+                                                onZoomOut={handleZoomOut}
+                                                onExpand={handleExpand}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
+            <Footer />
         </div>
     )
 } 

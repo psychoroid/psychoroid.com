@@ -34,7 +34,7 @@
   .dark {
     --background: 240 7.7% 7.1%;
     --foreground: 210 40% 98%;
-    --card: 240 7.7% 7.1%; /* #121317 */
+    --card: 240 7.7% 7.1%;
     --card-foreground: 210 40% 98%;
     --popover: 240 7.7% 7.1%;
     --popover-foreground: 210 40% 98%;
@@ -42,7 +42,7 @@
     --primary-foreground: 240 7.7% 7.1%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 240 7.7% 7.1%; /* Update the --muted variable for dark mode */
+    --muted: 240 7.7% 7.1%;
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
@@ -85,4 +85,15 @@ body::-webkit-scrollbar {
 body {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+@layer utilities {
+    .scrollbar-hide {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;     /* Firefox */
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;  /* Chrome, Safari and Opera */
+    }
 }

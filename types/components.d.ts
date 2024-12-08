@@ -47,4 +47,11 @@ export interface ProductControlsProps {
   onZoomOut: () => void;
   onExpand?: () => void;
   hideExpand?: boolean;
+}
+
+export interface PricingCardProps {
+  name: string;
+  roids: number;
+  price: number;
+  onPurchase?: () => void;
 } 

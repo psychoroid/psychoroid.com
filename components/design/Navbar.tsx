@@ -31,7 +31,7 @@ export function Navbar() {
 
     return (
         <Dock>
-            <nav className="bg-background/80 backdrop-blur-sm">
+            <nav className="bg-background">
                 <div className="max-w-3xl mx-auto px-4">
                     <div className="flex items-center justify-between h-12">
                         <div className="flex items-center">
