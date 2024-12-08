@@ -1,33 +1,24 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import { buffer } from 'micro';
 import { supabase } from '@/lib/supabase/supabase';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
 });
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// In App Router, we export the HTTP methods directly
+export async function POST(request: Request) {
+  const body = await request.text();
+  const signature = headers().get('stripe-signature');
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+  if (!signature) {
+    return new Response('No signature found', { status: 400 });
   }
-
-  const buf = await buffer(req);
-  const sig = req.headers['stripe-signature']!;
 
   try {
     const event = stripe.webhooks.constructEvent(
-      buf,
-      sig,
+      body,
+      signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
 
@@ -48,7 +39,7 @@ export default async function handler(
 
         if (error) {
           console.error('Error recording ROIDS transaction:', error);
-          return res.status(500).json({ error: 'Failed to process ROIDS purchase' });
+          return new Response('Failed to process ROIDS purchase', { status: 500 });
         }
         break;
 
@@ -60,9 +51,9 @@ export default async function handler(
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    res.status(200).json({ received: true });
+    return new Response(JSON.stringify({ received: true }), { status: 200 });
   } catch (error) {
     console.error('Webhook error:', error);
-    res.status(400).json({ message: 'Webhook error' });
+    return new Response('Webhook error', { status: 400 });
   }
 } 
