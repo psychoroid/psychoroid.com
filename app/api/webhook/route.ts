@@ -1,20 +1,32 @@
-import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
+import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
+import { buffer } from 'micro';
 import { supabase } from '@/lib/supabase/supabase';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
 });
 
-export async function POST(request: Request) {
-  const body = await request.text();
-  const headersList = headers();
-  const sig = headersList.get('stripe-signature')!;
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  const buf = await buffer(req);
+  const sig = req.headers['stripe-signature']!;
 
   try {
     const event = stripe.webhooks.constructEvent(
-      body,
+      buf,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
@@ -24,21 +36,19 @@ export async function POST(request: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const { userId, roidsAmount } = session.metadata!;
 
-        // Use RPC function to record transaction
-        const { error } = await supabase.rpc('record_roids_transaction', {
-          p_user_id: userId,
-          p_amount: parseInt(roidsAmount),
-          p_transaction_type: 'purchase',
-          p_stripe_session_id: session.id,
-          p_description: 'ROIDS purchase via Stripe'
-        });
+        const { error } = await supabase
+          .from('roids_transactions')
+          .insert({
+            user_id: userId,
+            amount: parseInt(roidsAmount),
+            transaction_type: 'purchase',
+            stripe_session_id: session.id,
+            description: 'ROIDS purchase via Stripe'
+          });
 
         if (error) {
           console.error('Error recording ROIDS transaction:', error);
-          return NextResponse.json(
-            { error: 'Failed to process ROIDS purchase' },
-            { status: 500 }
-          );
+          return res.status(500).json({ error: 'Failed to process ROIDS purchase' });
         }
         break;
 
@@ -50,18 +60,9 @@ export async function POST(request: Request) {
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    return NextResponse.json({ received: true });
+    res.status(200).json({ received: true });
   } catch (error) {
     console.error('Webhook error:', error);
-    return NextResponse.json(
-      { message: 'Webhook error' },
-      { status: 400 }
-    );
+    res.status(400).json({ message: 'Webhook error' });
   }
-}
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}; 
+} 

@@ -61,7 +61,7 @@ export function PricingCard({ name, roids, price }: PricingCardProps) {
                     disabled={loading}
                     className="w-full bg-purple-600 hover:bg-purple-700"
                 >
-                    {loading ? 'Processing...' : 'Purchase Now'}
+                    {loading ? 'Processing...' : 'Purchase'}
                 </Button>
             </div>
         </Card>

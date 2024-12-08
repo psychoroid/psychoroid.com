@@ -39,8 +39,8 @@ export async function POST(request: Request) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `${selectedPackage.roids} ROIDS Bundles`,
-              description: `Purchase ${selectedPackage.roids} ROIDS for psychoroid.com`,
+              name: `${selectedPackage.roids} ROIDS`,
+              description: `Get ${selectedPackage.roids} ROIDS to use on psychoroid.com`,
             },
             unit_amount: selectedPackage.price,
           },

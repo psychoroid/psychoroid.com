@@ -6,24 +6,26 @@ import { PricingCard } from '@/components/pricing/PricingCard';
 import { RoidsBalance } from '@/components/pricing/RoidsBalance';
 import { Button } from '@/components/ui/button';
 import { LogIn } from 'lucide-react';
+import { Navbar } from '@/components/design/Navbar';
 
 export default function PricingPage() {
     const { user } = useUser();
 
     const pricingPlans = [
-        { name: 'Basic Package', roids: 100, price: 9.99 },
-        { name: 'Premium Package', roids: 500, price: 39.99 },
-        { name: 'Pro Package', roids: 1200, price: 79.99 },
+        { name: 'Basic Package', roids: 600, price: 9.99 },
+        { name: 'Premium Package', roids: 2000, price: 29.99 },
+        { name: 'Pro Package', roids: 5000, price: 59.99 },
     ];
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+            <Navbar />
             <div className="container mx-auto px-4 py-16">
                 <h1 className="text-5xl font-extrabold text-center mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-                    Packages
+                    Pricing
                 </h1>
                 <p className="text-xl text-center mb-12 text-gray-300">
-                    Purchase ROIDS to generate 3D assets. The more ROIDS you have, the more assets you can create, the more tools you can use!
+                    Purchase ROIDS bundles to generate 3D assets. The more ROIDS you have, the more assets you can create, the more tools you can use.
                 </p>
 
                 {user ? (
