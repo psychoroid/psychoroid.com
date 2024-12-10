@@ -99,7 +99,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
             onChange={handleFullNameChange}
             autoComplete="name"
             className={cn(
-              'h-12 border rounded-md focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
+              'h-12 border rounded-none focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
               {
                 'border-gray-300 dark:border-gray-600': !isValidFullName && fullName === '',
                 'border-red-500 dark:border-red-500': !isValidFullName && fullName !== '',
@@ -115,7 +115,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
             onChange={handleEmailChange}
             autoComplete="username"
             className={cn(
-              'h-12 border rounded-md focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
+              'h-12 border rounded-none focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
               {
                 'border-gray-300 dark:border-gray-600': !isValidEmail && email === '',
                 'border-red-500 dark:border-red-500': !isValidEmail && email !== '',
@@ -130,7 +130,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
             onChange={handlePasswordChange}
             autoComplete="new-password"
             className={cn(
-              'h-12 border rounded-md focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
+              'h-12 border rounded-none focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
               {
                 'border-gray-300 dark:border-gray-600': !isValidPassword && password === '',
                 'border-red-500 dark:border-red-500': !isValidPassword && password !== '',
@@ -139,7 +139,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
             )}
           />
           <Button
-            className="w-full h-12"
+            className="w-full h-12 rounded-none"
             type="submit"
             disabled={isLoading || !isValidEmail || !isValidPassword || !isValidFullName}
           >
@@ -163,7 +163,10 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
         </div>
       </div>
       <div className='flex flex-col gap-4'>
-        <Button className="w-full h-12 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500" onClick={() => handleOAuthSignUp('google')}>
+        <Button
+          className="w-full h-12 rounded-none bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500"
+          onClick={() => handleOAuthSignUp('google')}
+        >
           <div className="flex items-center justify-center">
             <svg
               className="w-5 h-5 mr-2"
@@ -192,7 +195,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
           </div>
         </Button>
         <Button
-          className='w-full h-12 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
+          className='w-full h-12 rounded-none bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
           type='button'
           disabled={isLoading}
           onClick={() => handleOAuthSignUp('github')}

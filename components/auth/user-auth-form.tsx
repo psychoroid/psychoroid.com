@@ -111,7 +111,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             value={email}
             onChange={handleEmailChange}
             className={cn(
-              'h-12 border rounded-md focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
+              'h-12 border rounded-none focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
               {
                 'border-gray-300 dark:border-gray-600': !isValidEmail && email === '',
                 'border-red-500 dark:border-red-500': !isValidEmail && email !== '',
@@ -134,7 +134,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             value={password}
             onChange={handlePasswordChange}
             className={cn(
-              'h-12 border rounded-md focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
+              'h-12 border rounded-none focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white',
               {
                 'border-gray-300 dark:border-gray-600': !isValidPassword && password === '',
                 'border-red-500 dark:border-red-500': !isValidPassword && password !== '',
@@ -150,7 +150,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             </div>
           )}
           <Button
-            className='w-full h-12'
+            className='w-full h-12 rounded-none'
             type='submit'
             disabled={isLoading || !isValidEmail || !isValidPassword}
           >
@@ -174,7 +174,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       </div>
       <div className='flex flex-col gap-4'>
         <Button
-          className="w-full h-12 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500"
+          className="w-full h-12 rounded-none bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500"
           onClick={() => handleOAuthSignIn('google')}
           disabled={isGoogleLoading || isGithubLoading || isMicrosoftLoading}
         >
@@ -211,7 +211,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         </Button>
 
         <Button
-          className='w-full h-12 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
+          className='w-full h-12 rounded-none bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
           type='button'
           disabled={isGoogleLoading || isGithubLoading || isMicrosoftLoading}
           onClick={() => handleOAuthSignIn('github')}

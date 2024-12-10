@@ -8,6 +8,9 @@ export function Footer() {
         <nav className="bg-background/80 backdrop-blur-sm border-t border-border">
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="flex items-center justify-end h-8">
+                    <div className="hidden md:block text-xs text-muted-foreground mr-auto">
+                        Copyright © 2025 — psychoroid.com
+                    </div>
                     <div className="flex items-center space-x-6 py-2 md:py-0">
                         <Link
                             href="https://github.com/psychoroid/psychoroid"

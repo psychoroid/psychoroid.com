@@ -102,9 +102,8 @@ export default function CommunityPage() {
     return (
         <div className="h-svh bg-background flex flex-col overflow-hidden">
             <Navbar />
-            <div className="flex-grow overflow-auto scrollbar-hide">
-                <div className="max-w-3xl mx-auto px-4 py-8 mt-16">
-                    {/* Header Section - Matching Terms page style */}
+            <div className="flex-grow overflow-auto md:h-[calc(100vh-8rem)] md:overflow-hidden scrollbar-hide">
+                <div className="max-w-3xl mx-auto px-4 py-8 mt-[4.5rem] md:mt-16 md:h-full">
                     <div className="grid grid-cols-12 gap-8">
                         {/* Left side - Title */}
                         <div className="col-span-4">
@@ -125,14 +124,14 @@ export default function CommunityPage() {
                                     placeholder="Search models, creators, or tags..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-9 h-9 text-xs"
+                                    className="w-full pl-9 h-9 text-xs rounded-none"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Content Section */}
-                    <div className="mt-8">
+                    <div className="mt-6 md:mt-8">
                         <CommunityGrid
                             products={products}
                             onProductSelect={handleProductSelect}
@@ -145,10 +144,10 @@ export default function CommunityPage() {
                 </div>
             </div>
 
-            {/* Modal for 3D Preview */}
+            {/* Modal for 3D Preview - Mobile friendly */}
             {selectedProduct && (
                 <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-                    <div className="fixed inset-4 bg-background border rounded-lg shadow-lg p-6">
+                    <div className="fixed inset-2 md:inset-4 bg-background border rounded-lg shadow-lg p-4 md:p-6">
                         <div className="h-full flex flex-col">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-sm font-medium text-foreground">{selectedProduct.name}</h2>
@@ -168,7 +167,7 @@ export default function CommunityPage() {
                                     isExpanded={isExpanded}
                                     onClose={() => setIsExpanded(false)}
                                 />
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                <div className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2">
                                     <ProductControls
                                         isRotating={isRotating}
                                         onRotateToggle={() => setIsRotating(!isRotating)}

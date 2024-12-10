@@ -229,8 +229,8 @@ export default function PricingPage() {
     return (
         <div className="h-svh bg-background flex flex-col overflow-hidden">
             <Navbar />
-            <div className="flex-grow overflow-auto scrollbar-hide">
-                <div className="max-w-3xl mx-auto px-4 py-8 mt-16">
+            <div className="flex-grow overflow-auto md:h-[calc(100vh-8rem)] md:overflow-hidden scrollbar-hide">
+                <div className="max-w-3xl mx-auto px-4 py-8 mt-[4.5rem] md:mt-16 md:h-full">
                     <div className="grid grid-cols-12 gap-8">
                         {/* Left side - Title */}
                         <div className="col-span-4">

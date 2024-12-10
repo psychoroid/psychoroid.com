@@ -69,15 +69,15 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en" suppressHydrationWarning>
-            <body className={inter.className}>
-                <ThemeProviderWrapper>
+        <html lang="en" suppressHydrationWarning className="dark">
+            <body className={`${inter.className} dark:bg-background dark:text-foreground`}>
+                <ThemeProviderWrapper defaultTheme="dark" forcedTheme="dark">
                     <UserProvider>
                         {children}
                     </UserProvider>
                 </ThemeProviderWrapper>
                 <Analytics />
-                <Toaster />
+                <Toaster theme="dark" />
             </body>
         </html>
     )

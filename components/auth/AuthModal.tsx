@@ -1,13 +1,7 @@
 'use client';
 
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/ui/dialog"
-import { UserAuthForm } from "./user-auth-form"
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { UserAuthForm } from "@/components/auth/user-auth-form";
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -17,17 +11,19 @@ interface AuthModalProps {
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader className="px-4">
-                    <DialogTitle className="text-2xl font-semibold tracking-tight text-left">
-                        Welcome back
-                    </DialogTitle>
-                    <DialogDescription className="text-left">
-                        Please sign in to use the 3D Toolkit
-                    </DialogDescription>
-                </DialogHeader>
-                <UserAuthForm className="px-4" />
+            <DialogContent className="p-0 rounded-none border-0 sm:max-w-[425px] [&>button]:hidden">
+                <div className="px-8 py-6">
+                    <div className="flex flex-col space-y-2 text-left mb-6">
+                        <h1 className="text-2xl font-semibold tracking-tight">
+                            Welcome back
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            Sign in to continue to Psychoroid
+                        </p>
+                    </div>
+                    <UserAuthForm />
+                </div>
             </DialogContent>
         </Dialog>
-    )
+    );
 } 

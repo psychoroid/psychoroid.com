@@ -12,7 +12,7 @@ export default function SignIn() {
                 <Grid />
                 <Link
                     href="/"
-                    className="relative z-20 w-1/6 flex items-center text-cyan-100 hover:text-cyan-200 transition-colors bg-black/50 px-4 py-2 rounded-md border border-cyan-500/30"
+                    className="relative z-20 w-1/6 flex items-center text-cyan-100 hover:text-cyan-200 transition-colors bg-black/50 px-4 py-2 rounded-none border border-cyan-500/30"
                 >
                     <ArrowLeft className="w-5 h-5 mr-2" />
                     <span className="text-lg font-medium">Home</span>

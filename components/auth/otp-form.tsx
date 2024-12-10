@@ -79,7 +79,7 @@ export function OtpForm({ className, email, errorMessage, setErrorMessage, ...pr
                         <PinInputField
                           key={i}
                           component={Input}
-                          className='w-12 h-12 text-center'
+                          className='w-12 h-12 text-center rounded-none'
                         />
                       ))}
                     </PinInput>
@@ -88,7 +88,7 @@ export function OtpForm({ className, email, errorMessage, setErrorMessage, ...pr
                 </FormItem>
               )}
             />
-            <Button type="submit" className='w-full' disabled={isLoading}>
+            <Button type="submit" className='w-full rounded-none' disabled={isLoading}>
               {isLoading ? 'Verifying...' : 'Verify Email'}
             </Button>
             {errorMessage && (

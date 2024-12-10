@@ -133,19 +133,22 @@ export function Navbar() {
                         </div>
                     </div>
 
-                    <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} py-4 border-t border-border`}>
-                        <div className="flex flex-col space-y-4">
+                    <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} py-6 border-t border-border`}>
+                        <div className="flex flex-col space-y-5">
                             {session && (
                                 <>
-                                    <div className="flex items-center text-xs font-medium">
-                                        <Coins className="h-3 w-3 mr-1 text-[#D73D57]" />
-                                        <span className="text-[#D73D57]">
-                                            {roidsBalance ?? '—'}
-                                        </span>
+                                    <div>
+                                        <div className="flex items-center text-sm font-medium">
+                                            <Coins className="h-4 w-4 mr-2 text-[#D73D57]" />
+                                            <span className="text-[#D73D57]">
+                                                {roidsBalance ?? '—'}
+                                            </span>
+                                        </div>
+                                        <div className="h-px w-full bg-border mt-5"></div>
                                     </div>
                                     <Link
                                         href="/dashboard"
-                                        className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                        className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
                                     >
                                         Dashboard
                                     </Link>
@@ -153,33 +156,36 @@ export function Navbar() {
                             )}
                             <Link
                                 href="/"
-                                className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors text-xs font-medium"
+                                className="text-sm font-medium text-blue-500 dark:text-blue-400 hover:text-[#D73D57] dark:hover:text-[#D73D57] transition-colors"
                             >
                                 3D Engine
                             </Link>
                             <Link
                                 href="/community"
-                                className="text-emerald-500 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors text-xs font-medium"
+                                className="text-sm font-medium text-emerald-500 dark:text-emerald-400 hover:text-[#D73D57] dark:hover:text-[#D73D57] transition-colors"
                             >
                                 Community
                             </Link>
                             <Link
                                 href="/pricing"
-                                className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
                             >
                                 Pricing
                             </Link>
                             {session ? (
-                                <button
-                                    onClick={handleSignOut}
-                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium text-left"
-                                >
-                                    Sign out
-                                </button>
+                                <>
+                                    <div className="h-px w-full bg-border"></div>
+                                    <button
+                                        onClick={handleSignOut}
+                                        className="text-sm font-medium text-left text-muted-foreground hover:text-[#D73D57] transition-colors"
+                                    >
+                                        Sign out
+                                    </button>
+                                </>
                             ) : (
                                 <Link
                                     href="/auth/sign-in"
-                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                    className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
                                 >
                                     Sign In
                                 </Link>

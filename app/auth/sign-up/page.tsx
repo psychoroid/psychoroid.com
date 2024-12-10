@@ -81,7 +81,7 @@ export default function SignUp() {
     return (
         <div className='container grid h-svh flex-col items-center justify-center bg-primary-foreground lg:max-w-none lg:px-0'>
             <div className='mx-auto flex w-full flex-col justify-center space-y-2 sm:w-[500px] lg:p-8'>
-                <Card className='p-6'>
+                <Card className='p-6 rounded-none'>
                     <div className='mb-2 flex flex-col space-y-2 text-left'>
                         <h1 className='text-2xl font-semibold tracking-tight'>
                             Create an account

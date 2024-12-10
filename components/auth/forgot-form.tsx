@@ -72,7 +72,7 @@ export function ForgotForm({ className, onSuccess, ...props }: ForgotFormProps) 
                     <Input
                       placeholder='Email address**'
                       {...field}
-                      className='h-12 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white dark:border-gray-600'
+                      className='h-12 border border-gray-300 rounded-none focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white dark:border-gray-600'
                     />
                   </FormControl>
                   <FormMessage />
@@ -81,7 +81,7 @@ export function ForgotForm({ className, onSuccess, ...props }: ForgotFormProps) 
             />
             <Button
               type="submit"
-              className='w-full h-12 mt-2 bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
+              className='w-full h-12 mt-2 rounded-none bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
               disabled={isLoading}
             >
               {isLoading ? 'Sending...' : 'Send Reset Link'}
