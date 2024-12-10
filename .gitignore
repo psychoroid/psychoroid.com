@@ -12,17 +12,12 @@
 /.next/
 /out/
 
-# Backend
-/backend/
-/sf3d-backend/
-/lib/supabase/
+# API Keys & Business Logic
 /lib/stripe/
-/lib/ai/
-/lib/ml/
+/lib/supabase/middleware.ts
+/lib/huggingface/
 /app/api/webhook/
 /app/api/create-checkout-session/
-/app/api/ai/
-/app/api/ml/
 
 # Database
 /supabase/
@@ -42,6 +37,8 @@
 .env.test.local
 .env.production.local
 **/secrets.*
+*.pem
+*.key
 
 # Vercel
 .vercel
@@ -52,7 +49,8 @@ yarn-debug.log*
 yarn-error.log*
 *.log
 
-# IDE
+# IDE & System
+.DS_Store
 .idea
 .vscode
 *.swp
