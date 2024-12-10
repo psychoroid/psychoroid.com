@@ -2,20 +2,27 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/supabase';
 
-export default function AuthCallback() {
+export default function AuthCallbackPage() {
     const router = useRouter();
 
     useEffect(() => {
-        // Get the current URL
-        const currentUrl = window.location.href;
+        const handleAuthCallback = async () => {
+            const { error } = await supabase.auth.getSession();
+            if (error) {
+                console.error('Error during auth callback:', error);
+                router.push('/auth/sign-in');
+                return;
+            }
 
-        // Extract the callback URL from the current URL
-        const callbackUrl = currentUrl.replace('/auth/callback', '');
+            // Redirect to home page after successful auth
+            router.push('/');
+            router.refresh();
+        };
 
-        // Redirect to the callback URL
-        router.push(callbackUrl);
+        handleAuthCallback();
     }, [router]);
 
-    return null;
+    return null; // or a loading spinner
 } 

@@ -86,11 +86,18 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: 'email',
+          queryParams: {
+            ...(provider === 'google' ? {
+              access_type: 'offline',
+              prompt: 'consent'
+            } : {})
+          },
         },
       })
+
       if (error) throw error
       if (!data.url) throw new Error('No URL returned from Supabase')
+
       window.location.href = data.url
     } catch (error) {
       console.error(`Error signing in with ${provider}:`, error)
@@ -180,7 +187,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         >
           <div className="flex items-center justify-center">
             {isGoogleLoading ? (
-              <Spinner size={20} color="#4285F4" />
+              <Spinner size={20} color="#E5E7EB" />
             ) : (
               <svg
                 className="w-5 h-5 mr-2"
@@ -218,7 +225,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         >
           <div className="flex items-center justify-center">
             {isGithubLoading ? (
-              <Spinner size={20} color="#24292e" />
+              <Spinner size={20} color="#E5E7EB" />
             ) : (
               <IconBrandGithub className='h-6 w-6 mr-2' />
             )}

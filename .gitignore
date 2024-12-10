@@ -13,11 +13,12 @@
 /out/
 
 # API Keys & Business Logic
-/lib/stripe/
 /lib/supabase/middleware.ts
-/lib/huggingface/
 /app/api/webhook/
 /app/api/create-checkout-session/
+
+# AI Prompts
+/lib/huggingface/prompts/
 
 # Database
 /supabase/
@@ -65,7 +66,6 @@ next-env.d.ts
 FIRSTPRINCIPLES.md
 SECURITY.md
 LICENSE
-vercel.json
 
 # ML Models & Training Data
 /models/
