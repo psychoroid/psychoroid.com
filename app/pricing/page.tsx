@@ -229,7 +229,7 @@ export default function PricingPage() {
     return (
         <div className="h-svh bg-background flex flex-col overflow-hidden">
             <Navbar />
-            <div className="flex-grow overflow-hidden">
+            <div className="flex-grow overflow-auto scrollbar-hide">
                 <div className="max-w-3xl mx-auto px-4 py-8 mt-16">
                     <div className="grid grid-cols-12 gap-8">
                         {/* Left side - Title */}
@@ -244,17 +244,25 @@ export default function PricingPage() {
 
                         {/* Right side - Content */}
                         <div className="col-span-8 text-foreground">
-                            <p className="text-xs text-muted-foreground mt-4 mb-2">
-                                From individual creators to professional studios - all plans include access to our AI-powered 3D engine with varying levels of features and priority.
-                            </p>
+                            <div className="mt-4">
+                                <p className="text-xs text-muted-foreground mb-2">
+                                    From individual creators to professional studios - all plans include access to our AI-powered 3D engine with varying levels of features and priority.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
                     {/* Cards Section */}
-                    <div className="mt-8 -mx-4">
-                        <div className="grid grid-cols-3">
+                    <div className="mt-8 md:mt-6 -mx-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0 px-4 md:px-0">
                             {pricingPlans.map((plan, index) => (
-                                <div key={index} className="border-r border-t border-b border-border first:border-l">
+                                <div
+                                    key={index}
+                                    className={`
+                                        border border-border
+                                        md:border-r md:border-t md:border-b md:first:border-l
+                                    `}
+                                >
                                     <PricingCard
                                         {...plan}
                                         onPurchase={() => handlePurchaseClick(plan)}
@@ -265,20 +273,23 @@ export default function PricingPage() {
                             ))}
                         </div>
 
-                        {/* Only show custom credits box for authenticated users */}
+                        {/* Custom credits box - Separated on mobile, connected on desktop */}
                         {user && (
-                            <div className="grid grid-cols-3">
-                                <div className="col-span-3 border-r border-b border-l border-border transition-colors hover:bg-accent/50">
-                                    <div className="py-4 px-6 flex items-center justify-between">
-                                        <div className="flex items-center gap-8">
-                                            <div>
-                                                <h3 className="text-sm font-medium text-foreground mb-0.5">
+                            <div className="mt-4 md:mt-0 px-4 md:px-0">
+                                <div className={`
+                                    border border-border
+                                    md:border-t-0 md:border-r md:border-b md:border-l
+                                `}>
+                                    <div className="p-4 md:py-3 md:px-6 hover:bg-accent/50 transition-colors">
+                                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                            <div className="space-y-2 md:space-y-1">
+                                                <h3 className="text-sm font-medium text-foreground">
                                                     On-demand credits
                                                 </h3>
                                                 <p className="text-xs text-muted-foreground">1 roid = $0.01</p>
                                             </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="relative">
+                                            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                                                <div className="relative w-full md:w-auto">
                                                     <Input
                                                         type="number"
                                                         min="100"
@@ -294,7 +305,7 @@ export default function PricingPage() {
                                                                 setCustomCredits(100);
                                                             }
                                                         }}
-                                                        className="w-32 text-sm pr-12 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                        className="w-full md:w-32 text-xs font-medium pr-12 h-8 rounded-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                         placeholder="Min. 100"
                                                     />
                                                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -304,26 +315,24 @@ export default function PricingPage() {
                                                 <span className="text-xs text-muted-foreground whitespace-nowrap">
                                                     = ${calculatePrice(customCredits || 0)}
                                                 </span>
+                                                <Button
+                                                    onClick={handleCustomPurchase}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    disabled={!isUserSubscribed || loadingPlan === 'custom' || !customCredits || customCredits < 100}
+                                                    className="w-full md:w-auto px-6 h-8 transition-all hover:bg-primary hover:text-primary-foreground rounded-none text-xs font-medium"
+                                                >
+                                                    {loadingPlan === 'custom' ? (
+                                                        <span className="flex items-center justify-center">
+                                                            Processing...
+                                                        </span>
+                                                    ) : !isUserSubscribed ? (
+                                                        'Subscribe first'
+                                                    ) : (
+                                                        'Purchase'
+                                                    )}
+                                                </Button>
                                             </div>
-                                        </div>
-                                        <div className="flex-1 flex justify-end">
-                                            <Button
-                                                onClick={handleCustomPurchase}
-                                                variant="outline"
-                                                size="sm"
-                                                disabled={!isUserSubscribed || loadingPlan === 'custom' || !customCredits || customCredits < 100}
-                                                className="px-6 transition-all hover:bg-primary hover:text-primary-foreground"
-                                            >
-                                                {loadingPlan === 'custom' ? (
-                                                    <span className="flex items-center justify-center">
-                                                        Processing...
-                                                    </span>
-                                                ) : !isUserSubscribed ? (
-                                                    'Subscribe first'
-                                                ) : (
-                                                    'Purchase'
-                                                )}
-                                            </Button>
                                         </div>
                                     </div>
                                 </div>

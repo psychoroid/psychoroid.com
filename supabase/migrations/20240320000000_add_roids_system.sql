@@ -165,36 +165,83 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
+DECLARE
+    v_product_id UUID;
 BEGIN
-    INSERT INTO user_roids (
-        user_id,
-        balance,
-        subscription_type
-    ) VALUES (
-        NEW.id,
-        200,  -- Initial free ROIDS
-        'free'
-    );
+    -- First, ensure we can insert into user_roids
+    BEGIN
+        INSERT INTO user_roids (
+            user_id,
+            balance,
+            subscription_type,
+            is_subscribed,
+            subscription_status
+        ) VALUES (
+            NEW.id,
+            200,  -- Initial free ROIDS
+            'free'::subscription_type_enum,  -- Explicitly cast to enum
+            false,
+            'unpaid'::subscription_status_enum  -- Explicitly cast to enum
+        );
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Error creating user_roids: %', SQLERRM;
+        RETURN NEW;
+    END;
 
-    -- Record the initial ROIDS transaction
-    PERFORM record_roids_transaction(
-        NEW.id,
-        200,
-        'purchase',
-        NULL,
-        NULL,
-        'Initial signup bonus'
-    );
+    -- Then, try to create the initial product
+    BEGIN
+        INSERT INTO products (
+            user_id,
+            name,
+            description,
+            visibility,
+            likes_count,
+            downloads_count,
+            tags,
+            is_featured
+        ) VALUES (
+            NEW.id,
+            'My First Model',
+            'Created on signup',
+            'private'::visibility_type_enum,  -- Explicitly cast to enum
+            0,
+            0,
+            ARRAY[]::text[],
+            false
+        ) RETURNING id INTO v_product_id;
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Error creating initial product: %', SQLERRM;
+    END;
+
+    -- Finally, record the transaction
+    BEGIN
+        PERFORM record_roids_transaction(
+            NEW.id,
+            200,
+            'purchase'::transaction_type_enum,  -- Explicitly cast to enum
+            NULL,
+            v_product_id,
+            'Initial signup bonus'
+        );
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Error recording transaction: %', SQLERRM;
+    END;
 
     RETURN NEW;
 END;
 $$;
 
--- Create trigger to automatically give ROIDS on user creation
+-- Drop and recreate the trigger
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION initialize_user_roids();
+
+-- Ensure proper permissions
+GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres, service_role;
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO postgres, service_role;
 
 -- Grant necessary permissions
 GRANT EXECUTE ON FUNCTION initialize_user_roids() TO service_role;

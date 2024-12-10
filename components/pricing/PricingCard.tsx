@@ -21,14 +21,14 @@ export function PricingCard({
     const isThisPlanLoading = loadingPlan === name;
 
     return (
-        <div className="flex flex-col h-full p-6 hover:bg-accent transition-colors">
+        <div className="flex flex-col h-full p-4 md:p-6 hover:bg-accent transition-colors">
             <div className="mb-6">
                 <h3 className="text-sm font-medium text-foreground mb-2">{name}</h3>
                 <div className="mb-4">
                     {price === 0 ? (
                         <>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-semibold text-foreground">
+                                <span className="text-xl md:text-2xl font-semibold text-foreground">
                                     Free
                                 </span>
                             </div>
@@ -37,7 +37,7 @@ export function PricingCard({
                     ) : (
                         <>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-semibold text-foreground">
+                                <span className="text-xl md:text-2xl font-semibold text-foreground">
                                     ${discountedPrice || price}
                                 </span>
                                 <span className="text-xs text-muted-foreground">/ month</span>
@@ -55,8 +55,8 @@ export function PricingCard({
                 <ul className="space-y-3 mb-6">
                     {features.map((feature, index) => (
                         <li key={index} className="flex items-start gap-2 text-xs">
-                            <span className="text-foreground">•</span>
-                            <span>{feature}</span>
+                            <span className="text-foreground mt-0.5">•</span>
+                            <span className="flex-1">{feature}</span>
                         </li>
                     ))}
                 </ul>
@@ -68,7 +68,7 @@ export function PricingCard({
                     variant="outline"
                     size="default"
                     disabled={isThisPlanLoading}
-                    className="w-full hover:bg-foreground hover:text-background transition-colors"
+                    className="w-full hover:bg-foreground hover:text-background transition-colors rounded-none text-xs font-medium"
                 >
                     {isThisPlanLoading ? (
                         <span className="flex items-center justify-center">

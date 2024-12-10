@@ -12,7 +12,7 @@ BEGIN
     SELECT p.id, p.image_path, p.model_path, p.created_at
     FROM products p
     WHERE p.user_id = p_user_id
-    AND p.is_visible = true
+    AND p.visibility != 'private'
     ORDER BY p.created_at DESC;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp; 

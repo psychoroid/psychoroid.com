@@ -164,7 +164,6 @@ export default function Home() {
 
                                 {/* Right Panel - 3D Viewer */}
                                 <div className="rounded-lg p-6 shadow-sm col-span-7 border dark:border-gray-300 border-gray-200 bg-transparent">
-                                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">3D Preview</h2>
                                     <div className="relative h-96 flex gap-4">
                                         <div className="flex-grow">
                                             <ProductViewer

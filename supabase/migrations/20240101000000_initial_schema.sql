@@ -3,10 +3,11 @@
 CREATE TYPE subscription_type_enum AS ENUM ('free', 'pro', 'intense');
 CREATE TYPE subscription_status_enum AS ENUM ('active', 'canceled', 'past_due', 'unpaid');
 CREATE TYPE transaction_type_enum AS ENUM ('purchase', 'usage', 'refund', 'subscription');
+CREATE TYPE visibility_type_enum AS ENUM ('public', 'private', 'unlisted');
 
 --------------- TABLES ---------------
 
--- Create products table
+-- Create products table with enhanced community features
 create table products (
     id uuid primary key default uuid_generate_v4(),
     user_id uuid references auth.users(id),
@@ -14,9 +15,30 @@ create table products (
     description text,
     image_path text,
     model_path text,
-    is_visible boolean default true,
+    visibility visibility_type_enum default 'public',
+    likes_count integer default 0,
+    downloads_count integer default 0,
+    tags text[],
+    is_featured boolean default false,
     created_at timestamptz default now(),
     updated_at timestamptz default now()
+);
+
+-- Create product_likes table for tracking likes
+create table product_likes (
+    id uuid primary key default uuid_generate_v4(),
+    product_id uuid references products(id) on delete cascade,
+    user_id uuid references auth.users(id),
+    created_at timestamptz default now(),
+    unique(product_id, user_id)
+);
+
+-- Create product_downloads table for tracking downloads
+create table product_downloads (
+    id uuid primary key default uuid_generate_v4(),
+    product_id uuid references products(id) on delete cascade,
+    user_id uuid references auth.users(id),
+    created_at timestamptz default now()
 );
 
 -- Create user_roids table to track ROIDS balance and subscriptions
@@ -79,25 +101,53 @@ create trigger handle_roids_transactions_updated_at
 
 -- Enable RLS
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_downloads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_roids ENABLE ROW LEVEL SECURITY;
 ALTER TABLE roids_transactions ENABLE ROW LEVEL SECURITY;
 
 -- Products policies
-CREATE POLICY "Users can view their own products"
-    ON products FOR SELECT
+CREATE POLICY "Public products are viewable by everyone" 
+    ON products FOR SELECT 
+    USING (visibility = 'public');
+
+CREATE POLICY "Users can view their own products" 
+    ON products FOR SELECT 
     USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert their own products"
-    ON products FOR INSERT
+CREATE POLICY "Users can insert their own products" 
+    ON products FOR INSERT 
     WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own products"
-    ON products FOR UPDATE
+CREATE POLICY "Users can update their own products" 
+    ON products FOR UPDATE 
     USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete their own products"
-    ON products FOR DELETE
+CREATE POLICY "Users can delete their own products" 
+    ON products FOR DELETE 
     USING (auth.uid() = user_id);
+
+-- Product likes policies
+CREATE POLICY "Anyone can view likes"
+    ON product_likes FOR SELECT
+    USING (true);
+
+CREATE POLICY "Authenticated users can like products"
+    ON product_likes FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can unlike (delete) their own likes"
+    ON product_likes FOR DELETE
+    USING (auth.uid() = user_id);
+
+-- Product downloads policies
+CREATE POLICY "Anyone can view download counts"
+    ON product_downloads FOR SELECT
+    USING (true);
+
+CREATE POLICY "Authenticated users can record downloads"
+    ON product_downloads FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
 
 -- User_roids policies
 CREATE POLICY "Users can view their own ROIDS"
@@ -119,3 +169,36 @@ CREATE POLICY "System can manage transactions"
     TO service_role
     USING (true)
     WITH CHECK (true);
+
+-- Product likes policies
+CREATE POLICY "Users can view their own likes"
+    ON product_likes FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view likes on their products"
+    ON product_likes FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM products p
+            WHERE p.id = product_likes.product_id
+            AND p.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can like public products"
+    ON product_likes FOR INSERT
+    WITH CHECK (
+        auth.uid() = user_id
+        AND EXISTS (
+            SELECT 1 FROM products p
+            WHERE p.id = product_id
+            AND p.visibility = 'public'
+        )
+    );
+
+CREATE POLICY "Users can unlike their own likes"
+    ON product_likes FOR DELETE
+    USING (auth.uid() = user_id);
+
+-- Enable RLS on product_likes if not already enabled
+ALTER TABLE product_likes ENABLE ROW LEVEL SECURITY;

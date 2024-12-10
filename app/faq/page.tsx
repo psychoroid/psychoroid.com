@@ -7,7 +7,7 @@ export default function FAQPage() {
     return (
         <div className="h-svh bg-background flex flex-col overflow-hidden">
             <Navbar />
-            <div className="flex-grow overflow-hidden">
+            <div className="flex-grow overflow-auto scrollbar-hide">
                 <div className="max-w-3xl mx-auto px-4 py-8 mt-16">
                     <div className="grid grid-cols-12 gap-8">
                         {/* Left side - Title */}

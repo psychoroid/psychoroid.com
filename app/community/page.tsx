@@ -7,50 +7,91 @@ import { Input } from "@/components/ui/input";
 import { supabase } from '@/lib/supabase/supabase';
 import { ProductViewer } from '@/components/3D/ProductViewer';
 import { ProductControls } from '@/components/3D/ProductControls';
-
-type CommunityProduct = {
-    id: string;
-    name: string;
-    description: string;
-    image_path: string;
-    model_path: string;
-    created_at: string;
-    user_id: string;
-};
+import { CommunityGrid } from '@/components/community/CommunityGrid';
+import { Search } from 'lucide-react';
+import { useUser } from '@/lib/contexts/UserContext';
+import type { CommunityProduct, CommunityGridProps, ProductLike } from '@/types/community';
 
 export default function CommunityPage() {
+    const { user } = useUser();
     const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState<CommunityProduct[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<CommunityProduct | null>(null);
     const [isRotating, setIsRotating] = useState(true);
     const [zoom, setZoom] = useState(1);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         fetchCommunityProducts();
-    }, [searchQuery]);
+        if (user?.id) {
+            fetchUserLikes();
+        }
+    }, [searchQuery, user?.id]);
 
     const fetchCommunityProducts = async () => {
         try {
-            let query = supabase
-                .from('products')
-                .select('*')
-                .eq('is_visible', true)
-                .order('created_at', { ascending: false });
-
-            if (searchQuery) {
-                query = query.ilike('name', `%${searchQuery}%`);
-            }
-
-            const { data, error } = await query;
+            const { data, error } = await supabase
+                .rpc('get_trending_products', { p_limit: 50, p_offset: 0 });
 
             if (error) throw error;
             setProducts(data as CommunityProduct[]);
-            if (!selectedProduct && data && data.length > 0) {
-                setSelectedProduct(data[0] as CommunityProduct);
-            }
         } catch (error) {
-            console.error('Error fetching community products:', error);
+            console.error('Error fetching products:', error);
+        }
+    };
+
+    const fetchUserLikes = async () => {
+        if (!user?.id) return;
+        try {
+            const { data, error } = await supabase
+                .rpc('get_user_product_likes', {
+                    p_user_id: user.id
+                });
+
+            if (error) throw error;
+            setUserLikes(new Set(data.map((like: ProductLike) => like.product_id)));
+        } catch (error) {
+            console.error('Error fetching user likes:', error);
+        }
+    };
+
+    const handleLike = async (productId: string) => {
+        if (!user) return;
+        try {
+            const { data, error } = await supabase
+                .rpc('toggle_product_like', { p_product_id: productId });
+
+            if (error) throw error;
+
+            // Update local state
+            const newLikes = new Set(userLikes);
+            if (data) {
+                newLikes.add(productId);
+            } else {
+                newLikes.delete(productId);
+            }
+            setUserLikes(newLikes);
+
+            // Refresh products to update counts
+            fetchCommunityProducts();
+        } catch (error) {
+            console.error('Error toggling like:', error);
+        }
+    };
+
+    const handleDownload = async (productId: string) => {
+        if (!user) return;
+        try {
+            const { error } = await supabase
+                .rpc('record_product_download', { p_product_id: productId });
+
+            if (error) throw error;
+
+            // Refresh products to update counts
+            fetchCommunityProducts();
+        } catch (error) {
+            console.error('Error recording download:', error);
         }
     };
 
@@ -58,99 +99,89 @@ export default function CommunityPage() {
         setSelectedProduct(product);
     };
 
-    const handleReset = () => {
-        setIsRotating(true);
-        setZoom(1);
-    };
-
-    const handleZoomIn = () => {
-        setZoom(prevZoom => prevZoom + 0.1);
-    };
-
-    const handleZoomOut = () => {
-        setZoom(prevZoom => Math.max(prevZoom - 0.1, 0.1));
-    };
-
-    const handleExpand = () => {
-        setIsExpanded(true);
-    };
-
-    const handleClose = () => {
-        setIsExpanded(false);
-    };
-
     return (
-        <div className="min-h-screen bg-background flex flex-col">
+        <div className="h-svh bg-background flex flex-col overflow-hidden">
             <Navbar />
-
-            <main className="flex-grow p-8 pt-24">
-                <div className="max-w-7xl mx-auto">
-                    {/* Search Section */}
-                    <div className="mb-8">
-                        <h1 className="text-2xl font-bold text-foreground mb-4">Community Creations</h1>
-                        <Input
-                            type="text"
-                            placeholder="Search community models..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="max-w-md"
-                        />
-                    </div>
-
-                    {/* Content Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Product List */}
-                        <div className="lg:col-span-1 space-y-4">
-                            {products.map((product) => (
-                                <div
-                                    key={product.id}
-                                    onClick={() => handleProductSelect(product)}
-                                    className={`p-4 rounded-lg border cursor-pointer transition-colors ${selectedProduct?.id === product.id
-                                            ? 'border-primary bg-accent'
-                                            : 'border-border hover:border-primary'
-                                        }`}
-                                >
-                                    <img
-                                        src={product.image_path}
-                                        alt={product.name}
-                                        className="w-full h-48 object-cover rounded-md mb-2"
-                                    />
-                                    <h3 className="font-medium text-foreground">{product.name}</h3>
-                                    <p className="text-sm text-muted-foreground">{product.description}</p>
-                                </div>
-                            ))}
+            <div className="flex-grow overflow-auto scrollbar-hide">
+                <div className="max-w-3xl mx-auto px-4 py-8 mt-16">
+                    {/* Header Section - Matching Terms page style */}
+                    <div className="grid grid-cols-12 gap-8">
+                        {/* Left side - Title */}
+                        <div className="col-span-4">
+                            <div className="flex flex-col space-y-1">
+                                <h1 className="text-xl font-semibold text-foreground">Community Models</h1>
+                                <p className="text-xs text-muted-foreground">
+                                    Discover public assets created in realtime by the community
+                                </p>
+                            </div>
                         </div>
 
-                        {/* 3D Viewer */}
-                        {selectedProduct && (
-                            <div className="lg:col-span-2 rounded-lg p-6 border border-border">
-                                <h2 className="text-xl font-semibold text-foreground mb-4">3D Preview</h2>
-                                <div className="relative h-[600px] flex gap-4">
-                                    <div className="flex-grow">
-                                        <ProductViewer
-                                            imagePath={selectedProduct.image_path}
-                                            modelUrl={selectedProduct.model_path}
-                                            isRotating={isRotating}
-                                            zoom={zoom}
-                                            isExpanded={isExpanded}
-                                            onClose={handleClose}
-                                        />
-                                    </div>
-                                    <div className="flex flex-col justify-center space-y-2">
-                                        <ProductControls
-                                            isRotating={isRotating}
-                                            onRotateToggle={() => setIsRotating(!isRotating)}
-                                            onZoomIn={handleZoomIn}
-                                            onZoomOut={handleZoomOut}
-                                            onExpand={handleExpand}
-                                        />
-                                    </div>
-                                </div>
+                        {/* Right side - Search */}
+                        <div className="col-span-8">
+                            <div className="relative mt-4">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search models, creators, or tags..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-9 h-9 text-xs"
+                                />
                             </div>
-                        )}
+                        </div>
+                    </div>
+
+                    {/* Content Section */}
+                    <div className="mt-8">
+                        <CommunityGrid
+                            products={products}
+                            onProductSelect={handleProductSelect}
+                            selectedProduct={selectedProduct}
+                            onLike={handleLike}
+                            onDownload={handleDownload}
+                            userLikes={userLikes}
+                        />
                     </div>
                 </div>
-            </main>
+            </div>
+
+            {/* Modal for 3D Preview */}
+            {selectedProduct && (
+                <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+                    <div className="fixed inset-4 bg-background border rounded-lg shadow-lg p-6">
+                        <div className="h-full flex flex-col">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-sm font-medium text-foreground">{selectedProduct.name}</h2>
+                                <button
+                                    onClick={() => setSelectedProduct(null)}
+                                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                            <div className="flex-grow relative">
+                                <ProductViewer
+                                    imagePath={selectedProduct.image_path}
+                                    modelUrl={selectedProduct.model_path}
+                                    isRotating={isRotating}
+                                    zoom={zoom}
+                                    isExpanded={isExpanded}
+                                    onClose={() => setIsExpanded(false)}
+                                />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <ProductControls
+                                        isRotating={isRotating}
+                                        onRotateToggle={() => setIsRotating(!isRotating)}
+                                        onZoomIn={() => setZoom(z => z + 0.1)}
+                                        onZoomOut={() => setZoom(z => Math.max(z - 0.1, 0.1))}
+                                        onExpand={() => setIsExpanded(true)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div>
