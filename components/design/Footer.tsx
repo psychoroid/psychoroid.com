@@ -23,7 +23,7 @@ export function Footer() {
                         </Link>
                         <div className="h-4 w-px bg-border"></div>
                         <Link
-                            href="https://twitter.com/PrinceMuichkine"
+                            href="https://x.com/bm_diop"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-muted-foreground hover:text-foreground transition-colors"

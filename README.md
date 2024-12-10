@@ -1,19 +1,10 @@
-# —psychoroid.com
+# psychoroid.com
 
-React-native 3D digital asset creation and distribution platform.
+An open-source 3D asset creation and distribution platform powered by AI.
 
-## Features
+## Overview
 
-### 3D Conversion Engine
-- 🖼️ 2D to 3D automated conversion
-- 🎯 Multiple export formats:
-  - GLTF/GLB for web and games
-  - STL/OBJ for 3D printing
-  - USDZ for AR Quick Look
-  - FBX for animation workflows
-- 🔄 Real-time 3D preview and editing
-- 📏 Scale and measurement tools
-- 🎨 Texture and material editing
+[Psychoroid Studios] psychoroid.com is a web-based platform that democratizes 3D content creation. The core UI and basic functionality are open source, while advanced features like AI processing and enterprise capabilities are available through our hosted platform.
 
 ### Game Development Resources
 - 🎮 Ready-to-use game assets
@@ -32,19 +23,22 @@ React-native 3D digital asset creation and distribution platform.
 - 🎯 Format-specific optimizations
 - 📚 API & Documentation
 
-## Hosted version
+## Premium Features (Hosted Version)
 
-[Live Platform](https://psychoroid.com)
+Visit [psychoroid.com](https://psychoroid.com) for access to:
+- 🤖 AI-powered 2D to 3D conversion
+- 🎮 Game-ready asset optimization
+- 🏭 Manufacturing & 3D printing tools
+- 🛍️ E-commerce integration
+- 📊 Advanced analytics
+- 🔐 Enterprise security
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js
+
+### Installation
 - npm or yarn
-
-### It is an open source project; 80% of the application is free to use i.e you can host your own version of the application and tools
-
-- Clone the repo.
-- Star the project!
-- Enjoy
+- Git

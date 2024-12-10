@@ -1,14 +1,45 @@
+'use client'
+
+import { useUser } from '@/lib/contexts/UserContext'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { Navbar } from '@/components/design/Navbar'
+import { Footer } from '@/components/design/Footer'
+import { DashboardNav } from '@/components/dashboard/DashboardNav'
+import HeadLoader from '@/components/design/loader'
+
 export default function DashboardLayout({
   children,
-  nav,
 }: {
   children: React.ReactNode;
-  nav: React.ReactNode;
 }) {
+  const { session, isLoading } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoading && !session) {
+      router.push('/auth/sign-in')
+    }
+  }, [session, isLoading, router])
+
+  if (isLoading) {
+    return <HeadLoader />
+  }
+
+  if (!session) {
+    return null
+  }
+
   return (
-    <>
-      {nav}
-      {children}
-    </>
-  );
+    <div className="h-svh bg-background flex flex-col overflow-hidden">
+      <Navbar />
+      <main className="flex-grow overflow-auto scrollbar-hide">
+        <div className="max-w-3xl mx-auto px-4 py-8 mt-16">
+          <DashboardNav />
+          {children}
+        </div>
+      </main>
+      <Footer />
+    </div>
+  )
 }

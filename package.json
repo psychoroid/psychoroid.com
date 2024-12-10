@@ -20,6 +20,7 @@
     "@react-three/drei": "^9.0.0",
     "@react-three/fiber": "^8.0.0",
     "@stripe/stripe-js": "^5.2.0",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.46.2",
     "@tabler/icons-react": "^3.23.0",
     "@vercel/analytics": "^1.4.1",

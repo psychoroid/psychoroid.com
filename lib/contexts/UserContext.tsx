@@ -4,50 +4,62 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/supabase';
 
-interface UserContextType {
+export type UserContextType = {
     user: User | null;
     session: Session | null;
-    loading: boolean;
-}
+    isLoading: boolean;
+};
 
 const UserContext = createContext<UserContextType>({
     user: null,
     session: null,
-    loading: true,
+    isLoading: true,
 });
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
+    const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const getSession = async () => {
-            const { data } = await supabase.auth.getSession();
-            setSession(data.session);
-            setLoading(false);
-        };
+        async function getUser() {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
 
-        getSession();
+                setSession(session);
+                setUser(session?.user ?? null);
+            } catch (error) {
+                console.error('Error loading user:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        getUser();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            setLoading(false);
+            setUser(session?.user ?? null);
+            setIsLoading(false);
         });
 
-        return () => {
-            subscription.unsubscribe();
-        };
+        return () => subscription.unsubscribe();
     }, []);
 
-    return (
-        <UserContext.Provider value={{
-            user: session?.user ?? null,
-            session,
-            loading
-        }}>
-            {children}
-        </UserContext.Provider>
-    );
+    const value = {
+        user,
+        session,
+        isLoading
+    };
+
+    return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
-export const useUser = () => useContext(UserContext); 
+export const useUser = () => {
+    const context = useContext(UserContext);
+    if (context === undefined) {
+        throw new Error('useUser must be used within a UserProvider');
+    }
+    return context;
+}; 
