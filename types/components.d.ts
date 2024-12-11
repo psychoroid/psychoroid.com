@@ -32,12 +32,16 @@ export interface ModelState {
 }
 
 export interface ProductProps {
-  imageUrl?: string | null;
+  imageUrl?: string;
   modelUrl?: string | null;
   isRotating?: boolean;
   zoom?: number;
   modelState?: ModelState;
   onModelStateChange?: (state: ModelState) => void;
+  onLoad?: () => void;
+  onError?: (error: any) => void;
+  onProgress?: (progress: number) => void;
+  scale?: [number, number, number];
 }
 
 export interface ProductControlsProps {

@@ -1,18 +1,21 @@
--- Drop all storage objects first
+-- Drop all storage objects except default assets
 DO $$
 BEGIN
     -- Handle empty buckets case
     IF EXISTS (SELECT 1 FROM storage.buckets) THEN
         EXECUTE (
-            SELECT string_agg('DELETE FROM storage.objects WHERE bucket_id = ''' || id || ''';', ' ')
+            SELECT string_agg(
+                'DELETE FROM storage.objects WHERE bucket_id = ''' || id || ''' AND bucket_id != ''default-assets'';',
+                ' '
+            )
             FROM storage.buckets
             WHERE id IS NOT NULL
         );
     END IF;
 END $$;
 
--- Drop all buckets
-DELETE FROM storage.buckets;
+-- Drop all buckets except default-assets
+DELETE FROM storage.buckets WHERE id != 'default-assets';
 
 -- Drop all triggers
 DO $$

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useUser } from '@/lib/contexts/UserContext'
 import { supabase } from '@/lib/supabase/supabase'
 import { formatDistanceToNow } from 'date-fns'
@@ -25,13 +25,7 @@ export function RecentActivity() {
     const [currentPage, setCurrentPage] = useState(1)
     const [totalCount, setTotalCount] = useState(0)
 
-    useEffect(() => {
-        if (user?.id) {
-            fetchActivities()
-        }
-    }, [user?.id, currentPage])
-
-    const fetchActivities = async () => {
+    const fetchActivities = useCallback(async () => {
         // Get total count first
         const { count } = await supabase
             .from('user_activity')
@@ -43,13 +37,11 @@ export function RecentActivity() {
         // Then get paginated data
         const { data, error } = await supabase
             .from('user_activity')
-            .select(`
-                *,
+            .select(`*,
                 products (
                     name,
                     image_path
-                )
-            `)
+                )`)
             .eq('user_id', user!.id)
             .order('created_at', { ascending: false })
             .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
@@ -57,7 +49,11 @@ export function RecentActivity() {
         if (!error && data) {
             setActivities(data)
         }
-    }
+    }, [user, currentPage])
+
+    useEffect(() => {
+        fetchActivities()
+    }, [fetchActivities])
 
     const getActivityMessage = (activity: Activity) => {
         const messages = {

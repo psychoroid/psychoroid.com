@@ -5,7 +5,7 @@ import { ProductControls } from '@/components/3D/ProductControls'
 import { ImageUpload } from '@/components/3D/ImageUpload'
 import { Navbar } from '@/components/design/Navbar'
 import { ImagePreview } from '@/components/3D/ImagePreview'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/supabase'
 import { useUser } from '@/lib/contexts/UserContext'
 import { UserUpload } from '@/types/product'
@@ -29,10 +29,6 @@ export default function Home() {
     });
 
     useEffect(() => {
-        localStorage.setItem('processingImages', JSON.stringify(processingImages));
-    }, [processingImages]);
-
-    useEffect(() => {
         const cachedImages = localStorage.getItem('cachedImages')
         const cachedSelectedImage = localStorage.getItem('cachedSelectedImage')
 
@@ -45,46 +41,87 @@ export default function Home() {
     }, [])
 
     useEffect(() => {
+        localStorage.setItem('processingImages', JSON.stringify(processingImages))
+    }, [processingImages])
+
+    useEffect(() => {
+        let isMounted = true
+
         async function fetchUserUploads() {
             if (!user) return
 
-            const { data: uploads, error } = await supabase
-                .rpc('get_user_uploads', {
-                    p_user_id: user.id
-                }) as { data: UserUpload[] | null, error: any }
+            try {
+                const { data: uploads, error } = await supabase
+                    .rpc('get_user_uploads', {
+                        p_user_id: user.id
+                    }) as { data: UserUpload[] | null, error: any }
 
-            if (error) {
-                console.error('Error fetching uploads:', error)
-                return
-            }
-
-            if (uploads) {
-                const imagePaths = uploads.map(upload => upload.image_path)
-                setUploadedImages(imagePaths)
-                localStorage.setItem('cachedImages', JSON.stringify(imagePaths))
-
-                if (!selectedImage && imagePaths.length > 0) {
-                    setSelectedImage(imagePaths[0])
-                    localStorage.setItem('cachedSelectedImage', imagePaths[0])
+                if (!isMounted || error) {
+                    if (error) console.error('Error fetching uploads:', error)
+                    return
                 }
+
+                if (uploads?.length) {
+                    const imagePaths = uploads.map(upload => upload.image_path)
+                    setUploadedImages(prev => {
+                        localStorage.setItem('cachedImages', JSON.stringify(imagePaths))
+                        return imagePaths
+                    })
+                }
+            } catch (error) {
+                console.error('Error:', error)
             }
         }
 
         fetchUserUploads()
+
+        return () => {
+            isMounted = false
+        }
     }, [user])
 
+    useEffect(() => {
+        if (uploadedImages.length > 0) {
+            if (!selectedImage) {
+                const firstImage = uploadedImages[0];
+                setSelectedImage(firstImage);
+                localStorage.setItem('cachedSelectedImage', firstImage);
+            }
+        } else {
+            setSelectedImage(null);
+            localStorage.removeItem('cachedSelectedImage');
+        }
+    }, [uploadedImages, selectedImage]);
+
     const handleImageUpload = (imagePath: string) => {
-        setUploadedImages(prev => [...prev, imagePath])
+        setUploadedImages(prev => {
+            const newImages = [...prev, imagePath]
+            localStorage.setItem('cachedImages', JSON.stringify(newImages))
+            return newImages
+        })
+
         if (!selectedImage) {
             setSelectedImage(imagePath)
+            localStorage.setItem('cachedSelectedImage', imagePath)
         }
     }
 
     const handleImageRemove = (imagePath: string) => {
-        setUploadedImages(prev => prev.filter(img => img !== imagePath))
         if (selectedImage === imagePath) {
-            setSelectedImage(uploadedImages[0] || null)
+            const newSelectedImage = uploadedImages.filter(img => img !== imagePath)[0] || null
+            setSelectedImage(newSelectedImage)
+            if (newSelectedImage) {
+                localStorage.setItem('cachedSelectedImage', newSelectedImage)
+            } else {
+                localStorage.removeItem('cachedSelectedImage')
+            }
         }
+
+        setUploadedImages(prev => {
+            const newImages = prev.filter(img => img !== imagePath)
+            localStorage.setItem('cachedImages', JSON.stringify(newImages))
+            return newImages
+        })
     }
 
     const handleReset = () => {
@@ -109,29 +146,27 @@ export default function Home() {
     };
 
     const handleImageClick = (imagePath: string, modelUrl: string) => {
-        console.log('Updating model URL to:', modelUrl);
-        setSelectedImage(imagePath);
-        setModelUrl(modelUrl);
-    };
+        setSelectedImage(imagePath)
+        setModelUrl(modelUrl)
+        localStorage.setItem('cachedSelectedImage', imagePath)
+    }
 
-    const handleProgressUpdate = (imagePath: string, progress: number) => {
+    const handleProgressUpdate = useCallback((imagePath: string, progress: number) => {
         setProcessingImages(prev => {
-            const newState = {
-                ...prev,
-                [imagePath]: progress
-            };
+            const newState = { ...prev, [imagePath]: progress }
+
             if (progress === 100) {
                 setTimeout(() => {
                     setProcessingImages(current => {
-                        const { [imagePath]: removed, ...rest } = current;
-                        localStorage.setItem('processingImages', JSON.stringify(rest));
-                        return rest;
-                    });
-                }, 1000);
+                        const { [imagePath]: removed, ...rest } = current
+                        return rest
+                    })
+                }, 1000)
             }
-            return newState;
-        });
-    };
+
+            return newState
+        })
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-background flex flex-col justify-between">

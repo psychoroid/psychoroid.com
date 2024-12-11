@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase/supabase';
 import { ImagePreviewProps } from '@/types/components';
@@ -112,36 +112,36 @@ export function ImagePreview({
         if (hasChanges) {
             setLocalProcessingImages(prev => ({ ...prev, ...processingImages }));
         }
-    }, [processingImages]);
+    }, [processingImages, localProcessingImages]);
 
-    // Cleanup stale items every minute
-    useEffect(() => {
-        const cleanup = () => {
-            const now = Date.now();
-            const staleTimeout = 5 * 60 * 1000; // 5 minutes
+    // Move the cleanup function outside useEffect to avoid the dependency
+    const cleanup = useCallback(() => {
+        const now = Date.now();
+        const staleTimeout = 5 * 60 * 1000;
 
-            setLocalProcessingImages(prev => {
-                const updated = { ...prev };
-                let hasChanges = false;
+        setLocalProcessingImages(prev => {
+            const updated = { ...prev };
+            let hasChanges = false;
 
-                Object.entries(updated).forEach(([path, progress]) => {
-                    const timestamp = parseInt(path.split('/')[1].split('_')[0]);
-                    if (progress >= 100 || now - timestamp > staleTimeout) {
-                        delete updated[path];
-                        localStorage.removeItem(`progress_${path}`);
-                        hasChanges = true;
-                    }
-                });
-
-                return hasChanges ? updated : prev;
+            Object.entries(updated).forEach(([path, progress]) => {
+                const timestamp = parseInt(path.split('/')[1].split('_')[0]);
+                if (progress >= 100 || now - timestamp > staleTimeout) {
+                    delete updated[path];
+                    localStorage.removeItem(`progress_${path}`);
+                    hasChanges = true;
+                }
             });
-        };
 
+            return hasChanges ? updated : prev;
+        });
+    }, []);
+
+    useEffect(() => {
         const interval = setInterval(cleanup, 60000);
-        cleanup(); // Run once immediately
+        cleanup();
 
         return () => clearInterval(interval);
-    }, []);
+    }, [cleanup]);
 
     if (isExpanded) return null;
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -34,11 +34,7 @@ export default function ApiSettings() {
     const actionButtonRef = useRef<HTMLButtonElement>(null)
     const [showSuccessModal, setShowSuccessModal] = useState(false)
 
-    useEffect(() => {
-        fetchApiKeys()
-    }, [])
-
-    const fetchApiKeys = async () => {
+    const fetchApiKeys = useCallback(async () => {
         if (!user?.id) return
 
         const { data, error } = await supabase.rpc('list_api_keys', {
@@ -53,7 +49,11 @@ export default function ApiSettings() {
         }
 
         setApiKeys(data)
-    }
+    }, [user?.id])
+
+    useEffect(() => {
+        fetchApiKeys()
+    }, [fetchApiKeys])
 
     const handleGenerateKey = async () => {
         if (!user) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useRef, useState, useEffect } from 'react';
+import React, { Suspense, useRef, useState, useEffect, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { Product } from './Product';
@@ -89,7 +89,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         }
     }, [isAutoRotating]);
 
-    const handleControlsChange = () => {
+    const handleControlsChange = useCallback(() => {
         if (controlsRef.current) {
             const controls = controlsRef.current;
             const position = controls.object.position;
@@ -101,7 +101,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                 zoom: controls.object.zoom
             });
         }
-    };
+    }, []);
 
     // Convert array to Vector3 for Three.js
     const cameraPositionVector = new Vector3(...cameraPosition);
@@ -174,12 +174,12 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         setModelState(newState);
     };
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         if (controlsRef.current) {
             handleControlsChange();
         }
         onClose?.();
-    };
+    }, [handleControlsChange, onClose]);
 
     // Add a safe handler for expand/close
     const handleExpand = () => {
@@ -187,17 +187,20 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
     };
 
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isExpanded) {
+        const handleEscapeKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
                 handleClose();
             }
         };
 
-        window.addEventListener('keydown', handleKeyDown);
+        if (isExpanded) {
+            document.addEventListener('keydown', handleEscapeKey);
+        }
+
         return () => {
-            window.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keydown', handleEscapeKey);
         };
-    }, [isExpanded]);
+    }, [isExpanded, handleClose]);
 
     return (
         <>

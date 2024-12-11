@@ -109,3 +109,15 @@ create policy "Users Can Delete Their Own Support Images"
         bucket_id = 'support-request-images'
         and auth.uid() = owner
     );
+
+-- Add converted-models bucket
+insert into storage.buckets (id, name, public)
+select 'converted-models', 'converted-models', true
+where not exists (
+    select 1 from storage.buckets where id = 'converted-models'
+);
+
+-- Set up storage policy for converted models bucket
+create policy "Public Access to Converted Models"
+    on storage.objects for select
+    using ( bucket_id = 'converted-models' );

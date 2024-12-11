@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es2022",
         "lib": [
             "dom",
             "dom.iterable",
@@ -27,13 +27,18 @@
                 "./*"
             ]
         },
-        "baseUrl": "."
+        "baseUrl": ".",
+        "typeRoots": [
+            "./node_modules/@types",
+            "./types"
+        ]
     },
     "include": [
         "next-env.d.ts",
         "**/*.ts",
         "**/*.tsx",
-        ".next/types/**/*.ts"
+        ".next/types/**/*.ts",
+        "types/**/*.d.ts"
     ],
     "exclude": [
         "node_modules"

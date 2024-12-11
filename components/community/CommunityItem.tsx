@@ -1,11 +1,15 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Heart, Download, Eye } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { CommunityProduct } from '@/types/community';
 import { supabase } from '@/lib/supabase/supabase';
+import { ModelPreview } from '@/components/3D/ModelPreview';
+import Image from 'next/image';
+import { saveAs } from 'file-saver';
+import { DownloadModal } from './DownloadModal';
 
 // Helper function to format numbers
 const formatCount = (count: number): string => {
@@ -32,6 +36,7 @@ export function CommunityItem({
 }: CommunityItemProps) {
     const itemRef = useRef<HTMLDivElement>(null);
     const lastViewRef = useRef<Date | null>(null);
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -97,97 +102,121 @@ export function CommunityItem({
     };
 
     return (
-        <div ref={itemRef} className="group relative bg-card overflow-hidden border border-border hover:border-primary transition-all rounded-none">
-            {/* Image Container */}
-            <div
-                className="aspect-[4/3] cursor-pointer overflow-hidden"
-                onClick={handleSelect}
-            >
-                <img
-                    src={product.image_path}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-            </div>
-
-            {/* Content */}
-            <div className="p-4">
-                {/* Title - Made clickable */}
-                <h3
-                    className="font-medium text-foreground line-clamp-1 cursor-pointer hover:text-primary transition-colors"
+        <>
+            <div ref={itemRef} className="group relative bg-card overflow-hidden border border-border hover:border-primary transition-all rounded-none">
+                {/* Image Container */}
+                <div
+                    className="aspect-[4/3] cursor-pointer overflow-hidden bg-transparent"
                     onClick={handleSelect}
                 >
-                    {product.name}
-                </h3>
-                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                    {product.description}
-                </p>
-
-                {/* Tags */}
-                {product.tags && product.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                        {product.tags.slice(0, 3).map((tag, index) => (
-                            <Badge
-                                key={index}
-                                variant="outline"
-                                className={`text-xs rounded-none ${tag === 'starter'
-                                    ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                                    : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
-                                    } hover:bg-accent/50`}
-                            >
-                                {tag}
-                            </Badge>
-                        ))}
-                        {product.tags.length > 3 && (
-                            <Badge
-                                variant="outline"
-                                className="text-xs rounded-none bg-primary/10 text-primary border-primary/20"
-                            >
-                                +{product.tags.length - 3}
-                            </Badge>
-                        )}
-                    </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex items-center justify-between mt-4 border-t pt-4 border-border">
-                    <div className="flex items-center justify-between w-full px-0.5">
-                        {/* Likes */}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className={`flex items-center gap-1.5 rounded-none ${isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
-                            onClick={() => onLike(product.id)}
-                        >
-                            <Heart
-                                className={`h-4 w-4 ${isLiked ? 'fill-red-500' : ''}`}
+                    {product.model_path ? (
+                        <div className="w-full h-full bg-transparent">
+                            <ModelPreview
+                                modelUrl={product.model_path}
+                                imageUrl={product.image_path}
+                                bucket={product.tags?.includes('template') ? 'default-assets' : 'product-models'}
                             />
-                            <span className="text-xs">{formatCount(product.likes_count)}</span>
-                        </Button>
+                        </div>
+                    ) : (
+                        <Image
+                            src={product.image_path}
+                            alt={product.name}
+                            width={500}
+                            height={300}
+                            className="w-full h-auto object-cover"
+                        />
+                    )}
+                </div>
 
-                        {/* Views */}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex items-center gap-1.5 rounded-none text-muted-foreground"
-                        >
-                            <Eye className="h-4 w-4" />
-                            <span className="text-xs">{formatCount(product.views_count || 0)}</span>
-                        </Button>
+                {/* Content */}
+                <div className="p-4">
+                    {/* Title - Made clickable */}
+                    <h3
+                        className="font-medium text-foreground line-clamp-1 cursor-pointer hover:text-primary transition-colors"
+                        onClick={handleSelect}
+                    >
+                        {product.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                        {product.description}
+                    </p>
 
-                        {/* Downloads */}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex items-center gap-1.5 rounded-none"
-                            onClick={() => onDownload(product.id)}
-                        >
-                            <Download className="h-4 w-4" />
-                            <span className="text-xs">{formatCount(product.downloads_count)}</span>
-                        </Button>
+                    {/* Tags */}
+                    {product.tags && product.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                            {product.tags.slice(0, 3).map((tag, index) => (
+                                <Badge
+                                    key={index}
+                                    variant="outline"
+                                    className={`text-xs rounded-none ${tag === 'starter'
+                                        ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                        : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
+                                        } hover:bg-accent/50`}
+                                >
+                                    {tag}
+                                </Badge>
+                            ))}
+                            {product.tags.length > 3 && (
+                                <Badge
+                                    variant="outline"
+                                    className="text-xs rounded-none bg-primary/10 text-primary border-primary/20"
+                                >
+                                    +{product.tags.length - 3}
+                                </Badge>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between mt-4 border-t pt-4 border-border">
+                        <div className="flex items-center justify-between w-full px-0.5">
+                            {/* Likes */}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className={`flex items-center gap-1.5 rounded-none ${isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
+                                onClick={() => onLike(product.id)}
+                            >
+                                <Heart
+                                    className={`h-4 w-4 ${isLiked ? 'fill-red-500' : ''}`}
+                                />
+                                <span className="text-xs">{formatCount(product.likes_count)}</span>
+                            </Button>
+
+                            {/* Views */}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1.5 rounded-none text-muted-foreground"
+                            >
+                                <Eye className="h-4 w-4" />
+                                <span className="text-xs">{formatCount(product.views_count || 0)}</span>
+                            </Button>
+
+                            {/* Downloads */}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1.5 rounded-none"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowDownloadModal(true);
+                                }}
+                            >
+                                <Download className="h-4 w-4" />
+                                <span className="text-xs">{formatCount(product.downloads_count)}</span>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <DownloadModal
+                isOpen={showDownloadModal}
+                onClose={() => setShowDownloadModal(false)}
+                product={product}
+                onDownload={onDownload}
+            />
+        </>
     );
 } 

@@ -1,9 +1,10 @@
 'use client'
 
 import { useUser } from '@/lib/contexts/UserContext'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { UserAssetsList } from '@/components/dashboard/UserAssetsList'
 import { supabase } from '@/lib/supabase/supabase'
+import { toast } from 'sonner'
 
 const ITEMS_PER_PAGE = 10
 
@@ -14,41 +15,52 @@ export default function AssetsPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const [totalCount, setTotalCount] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
-    useEffect(() => {
-        if (user?.id) {
-            fetchUserAssets()
-        }
-    }, [user?.id, searchQuery, currentPage])
+    const fetchUserAssets = useCallback(async () => {
+        if (!user?.id) return;
 
-    const fetchUserAssets = async () => {
         setIsLoading(true)
+        setError(null)
+
         try {
             const { data, error } = await supabase.rpc('get_user_assets', {
-                p_user_id: user?.id,
+                p_user_id: user.id,
                 p_search: searchQuery,
                 p_limit: ITEMS_PER_PAGE,
                 p_offset: (currentPage - 1) * ITEMS_PER_PAGE
             })
 
             if (error) throw error
+
+            // Log the first asset to check the model_path format
+            if (data?.[0]) {
+                console.log('First asset model path:', data[0].model_path);
+            }
+
             setAssets(data || [])
 
             // Get total count
             const { count, error: countError } = await supabase
                 .from('products')
                 .select('id', { count: 'exact', head: true })
-                .eq('user_id', user?.id)
+                .eq('user_id', user.id)
                 .ilike('name', `%${searchQuery}%`)
 
             if (countError) throw countError
             setTotalCount(count || 0)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching assets:', error)
+            setError(error.message)
+            toast.error('Failed to load assets')
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [user?.id, searchQuery, currentPage]);
+
+    useEffect(() => {
+        fetchUserAssets()
+    }, [fetchUserAssets]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page)
@@ -65,14 +77,18 @@ export default function AssetsPage() {
                 </p>
             </div>
 
-            <UserAssetsList
-                assets={assets}
-                onSearch={setSearchQuery}
-                onPageChange={handlePageChange}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                isLoading={isLoading}
-            />
+            {error ? (
+                <div className="text-sm text-red-500">{error}</div>
+            ) : (
+                <UserAssetsList
+                    assets={assets}
+                    onSearch={setSearchQuery}
+                    onPageChange={handlePageChange}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    isLoading={isLoading}
+                />
+            )}
         </div>
     )
 } 

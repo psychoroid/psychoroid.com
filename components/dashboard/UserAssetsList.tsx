@@ -9,6 +9,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { toast } from "sonner"
 import { supabase } from '@/lib/supabase/supabase'
 import Loader from '@/components/design/loader';
+import { ModelPreview } from '@/components/3D/ModelPreview';
+import Image from 'next/image';
 
 interface UserAsset {
     id: string;
@@ -133,15 +135,29 @@ export function UserAssetsList({
                         {localAssets.map((asset, index) => (
                             <div
                                 key={asset.id}
-                                className="flex flex-col sm:flex-row gap-4 p-3 border border-border rounded-none hover:bg-accent/50 transition-colors min-h-[160px] sm:min-h-0 sm:h-[7.25rem]"
+                                className="flex flex-col sm:flex-row gap-4 p-3 border border-border rounded-none hover:bg-accent/50 transition-colors min-h-[160px] sm:min-h-0 sm:h-[120px] group"
                             >
                                 {/* Image */}
-                                <div className="w-full h-32 sm:w-24 sm:h-18 flex-shrink-0">
-                                    <img
-                                        src={asset.image_path}
-                                        alt={asset.name}
-                                        className="w-full h-full object-cover rounded-none"
-                                    />
+                                <div className="w-full h-32 sm:w-24 sm:h-24 flex-shrink-0 group-hover:bg-accent/50 transition-colors overflow-hidden">
+                                    {asset.model_path ? (
+                                        <div className="w-full h-full relative">
+                                            <div className="absolute inset-0">
+                                                <ModelPreview
+                                                    modelUrl={asset.model_path}
+                                                    imageUrl={asset.image_path}
+                                                    small
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Image
+                                            src={asset.image_path}
+                                            alt={asset.name}
+                                            width={64}
+                                            height={64}
+                                            className="w-16 h-16 object-cover rounded-lg"
+                                        />
+                                    )}
                                 </div>
 
                                 {/* Content */}

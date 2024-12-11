@@ -161,12 +161,10 @@ SET search_path = public, pg_temp
 AS $$
 DECLARE
     v_product_id UUID;
-    v_default_model_url TEXT;
-    v_default_image_url TEXT;
+    v_model_path TEXT;
 BEGIN
-    -- Get default model URL
-    v_default_model_url := get_default_model_url();
-    v_default_image_url := 'https://res.cloudinary.com/dzrdlevfn/image/upload/v1733908883/woman-head_gcggvf.jpg';
+    -- Set up storage path - reference the default-assets bucket
+    v_model_path := 'default-assets/default-model.glb';  -- Full path including bucket
 
     -- First, ensure we can insert into user_roids
     BEGIN
@@ -188,7 +186,7 @@ BEGIN
         RETURN NEW;
     END;
 
-    -- Then, create the initial product with the default model (as a template)
+    -- Create the initial product referencing the default model
     BEGIN
         INSERT INTO products (
             user_id,
@@ -198,9 +196,8 @@ BEGIN
             likes_count,
             downloads_count,
             tags,
-            is_featured,  -- Set to false to hide from previews
-            model_path,
-            image_path
+            is_featured,
+            model_path
         ) VALUES (
             NEW.id,
             'My first asset',
@@ -209,26 +206,11 @@ BEGIN
             0,
             0,
             ARRAY['template']::text[],
-            false,  -- This ensures it won't show up in previews
-            v_default_model_url,
-            v_default_image_url
+            false,
+            v_model_path
         ) RETURNING id INTO v_product_id;
     EXCEPTION WHEN OTHERS THEN
         RAISE NOTICE 'Error creating initial product: %', SQLERRM;
-    END;
-
-    -- Finally, record the transaction
-    BEGIN
-        PERFORM record_roids_transaction(
-            NEW.id,
-            200,
-            'purchase'::transaction_type_enum,
-            NULL,
-            v_product_id,
-            'Initial signup bonus'
-        );
-    EXCEPTION WHEN OTHERS THEN
-        RAISE NOTICE 'Error recording transaction: %', SQLERRM;
     END;
 
     RETURN NEW;
@@ -303,13 +285,3 @@ $$;
 
 -- Grant permission
 GRANT EXECUTE ON FUNCTION toggle_model_visibility(UUID, visibility_type_enum) TO authenticated;
-
--- Function to get initial model URL for new users
-CREATE OR REPLACE FUNCTION get_default_model_url()
-RETURNS TEXT
-LANGUAGE sql
-IMMUTABLE
-AS $$
-    -- Use the direct Cloudinary URL format
-    SELECT 'https://res.cloudinary.com/dzrdlevfn/raw/upload/v1733908883/woman-head_gcggvf.glb';
-$$;

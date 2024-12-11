@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Navbar } from '@/components/design/Navbar';
 import { Footer } from '@/components/design/Footer';
 import { Input } from "@/components/ui/input";
@@ -22,26 +22,7 @@ export default function CommunityPage() {
     const [isExpanded, setIsExpanded] = useState(false);
     const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
 
-    useEffect(() => {
-        fetchCommunityProducts();
-        if (user?.id) {
-            fetchUserLikes();
-        }
-    }, [searchQuery, user?.id]);
-
-    const fetchCommunityProducts = async () => {
-        try {
-            const { data, error } = await supabase
-                .rpc('get_trending_products', { p_limit: 50, p_offset: 0 });
-
-            if (error) throw error;
-            setProducts(data as CommunityProduct[]);
-        } catch (error) {
-            console.error('Error fetching products:', error);
-        }
-    };
-
-    const fetchUserLikes = async () => {
+    const fetchUserLikes = useCallback(async () => {
         if (!user?.id) return;
         try {
             const { data, error } = await supabase
@@ -53,6 +34,25 @@ export default function CommunityPage() {
             setUserLikes(new Set(data.map((like: ProductLike) => like.product_id)));
         } catch (error) {
             console.error('Error fetching user likes:', error);
+        }
+    }, [user?.id]);
+
+    useEffect(() => {
+        fetchCommunityProducts();
+        if (user?.id) {
+            fetchUserLikes();
+        }
+    }, [searchQuery, user?.id, fetchUserLikes]);
+
+    const fetchCommunityProducts = async () => {
+        try {
+            const { data, error } = await supabase
+                .rpc('get_trending_products', { p_limit: 50, p_offset: 0 });
+
+            if (error) throw error;
+            setProducts(data as CommunityProduct[]);
+        } catch (error) {
+            console.error('Error fetching products:', error);
         }
     };
 

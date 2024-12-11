@@ -8,7 +8,7 @@ import { Coins, Clock } from 'lucide-react'
 import { Box } from 'lucide-react'
 
 import { getUserRoidsBalance } from '@/lib/roids/roids'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/supabase'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { QuickActions } from '@/components/dashboard/QuickActions'
@@ -21,23 +21,19 @@ export default function DashboardPage() {
 
     const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'User'
 
-    useEffect(() => {
-        if (user?.id) {
-            fetchDashboardData()
-        }
-    }, [user?.id])
+    const fetchDashboardData = useCallback(async () => {
+        if (!user?.id) return;
 
-    const fetchDashboardData = async () => {
         try {
             // Fetch ROIDS balance
-            const balance = await getUserRoidsBalance(user!.id)
+            const balance = await getUserRoidsBalance(user.id)
             setRoidsBalance(balance)
 
             // Fetch assets count
             const { count: assets } = await supabase
                 .from('products')
                 .select('*', { count: 'exact', head: true })
-                .eq('user_id', user!.id)
+                .eq('user_id', user.id)
 
             setAssetsCount(assets || 0)
 
@@ -45,7 +41,7 @@ export default function DashboardPage() {
             const { data: activities } = await supabase
                 .from('user_activity')
                 .select('*')
-                .eq('user_id', user!.id)
+                .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
                 .limit(1)
 
@@ -55,7 +51,11 @@ export default function DashboardPage() {
         } catch (error) {
             console.error('Error fetching dashboard data:', error)
         }
-    }
+    }, [user?.id])
+
+    useEffect(() => {
+        fetchDashboardData()
+    }, [fetchDashboardData])
 
     return (
         <div

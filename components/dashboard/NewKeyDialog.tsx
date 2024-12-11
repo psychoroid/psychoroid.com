@@ -32,7 +32,7 @@ export function NewKeyDialog({ isOpen, onClose, newKey, keyName, onKeyNameChange
                         <DialogHeader>
                             <DialogTitle>New API Key Generated</DialogTitle>
                             <DialogDescription>
-                                Make sure to copy your API key now. You won't be able to see it again!
+                                Make sure to copy your API key now. You won&apos;t be able to see it again!
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">

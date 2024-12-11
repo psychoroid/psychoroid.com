@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/supabase'
 import toast from 'react-hot-toast'
 import { AuthModal } from '@/components/auth/AuthModal'
@@ -25,71 +25,56 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
   const [currentProgress, setCurrentProgress] = useState(0)
 
   useEffect(() => {
-    const fetchUserUploads = async () => {
-      if (user) {
-        const { data: userUploads, error: userUploadsError } = await supabase
-          .rpc('get_user_uploads', { p_user_id: user.id });
+    if (!selectedImage) return;
 
-        if (userUploadsError) {
-          console.error('Error fetching user uploads:', userUploadsError);
-        } else {
-          setImagePaths(userUploads.map((upload: { image_path: string; model_path: string }) => upload.image_path));
-          if (userUploads.length > 0) {
-            setSelectedImage(userUploads[0].image_path);
-            setModelUrl(userUploads[0].model_path);
-          }
-        }
-      }
-    };
+    let isMounted = true;
 
-    fetchUserUploads();
-  }, [user]);
-
-  const memoizedSelectedImage = useMemo(() => selectedImage, [selectedImage]);
-  useEffect(() => {
     const fetchProductDetails = async () => {
-      if (memoizedSelectedImage) {
-        try {
-          const { data: productDetails, error: productDetailsError } = await supabase
-            .rpc('get_product_details', {
-              p_image_path: memoizedSelectedImage
-            })
-            .single<ProductDetails>();
+      try {
+        const { data: productDetails, error: productDetailsError } = await supabase
+          .rpc('get_product_details', {
+            p_image_path: selectedImage
+          })
+          .single<ProductDetails>();
 
-          if (productDetailsError) {
-            console.error('Error fetching product details:', productDetailsError);
-          } else if (productDetails) {
-            setModelUrl(productDetails.model_path);
-            onModelUrlChange(productDetails.model_path);
-          }
-        } catch (error) {
-          console.error('Error in fetchProductDetails:', error);
+        if (!isMounted) return;
+
+        if (productDetailsError) {
+          console.error('Error fetching product details:', productDetailsError);
+          return;
         }
+
+        if (productDetails?.model_path) {
+          onModelUrlChange(productDetails.model_path);
+        }
+      } catch (error) {
+        console.error('Error in fetchProductDetails:', error);
       }
     };
 
     fetchProductDetails();
-  }, [memoizedSelectedImage, onModelUrlChange]);
 
-  const onImageClick = (imagePath: string) => {
-    setSelectedImage(imagePath)
-  }
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedImage, onModelUrlChange]);
 
-  const onImageRemove = (imagePath: string) => {
-    setImagePaths((prevImagePaths) => prevImagePaths.filter((path) => path !== imagePath))
+  const onImageClick = useCallback((imagePath: string) => {
+    setSelectedImage(imagePath);
+  }, []);
+
+  const onImageRemove = useCallback((imagePath: string) => {
+    setImagePaths(prev => prev.filter(path => path !== imagePath));
+
     if (selectedImage === imagePath) {
-      setSelectedImage(null)
-      setModelUrl(null)
+      setSelectedImage(null);
+      onModelUrlChange(null);
     }
-    if (imagePaths.length === 1 && imagePaths[0] === imagePath) {
-      setSelectedImage(null)
-      setModelUrl(null)
-    }
-  }
+  }, [selectedImage, onModelUrlChange]);
 
-  const onPageChange = (page: number) => {
-    setCurrentPage(page)
-  }
+  const onPageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
 
   useEffect(() => {
     const loadSavedProgress = () => {
@@ -110,7 +95,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
     };
 
     loadSavedProgress();
-  }, []);
+  }, [onProgressUpdate]);
 
   const generate3DModel = useCallback(async (imagePath: string, onProgress: (progress: number) => void): Promise<string> => {
     try {

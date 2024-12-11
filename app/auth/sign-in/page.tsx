@@ -26,9 +26,12 @@ export default function SignIn() {
                 <div className='relative z-20 mt-auto'>
                     <blockquote className='space-y-2'>
                         <p className='text-lg text-cyan-100'>
-                            &ldquo;We&apos;re just getting started.&rdquo;
+                            Industry-leading 3D solutions for artists and enterprises.
                         </p>
-                        <footer className='text-sm text-cyan-200'>Founder</footer>
+                        <div className="my-2 w-[calc(100%-12rem)] border-t border-cyan-500/30"></div>
+                        <footer className='text-sm text-cyan-200'>
+                            <span className="block">psychoroid.com</span>
+                        </footer>
                     </blockquote>
                 </div>
             </div>
