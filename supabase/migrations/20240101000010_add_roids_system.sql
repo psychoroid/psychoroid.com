@@ -1,11 +1,5 @@
 --------------- ROIDS SYSTEM ---------------
 
--- Create RLS policies
-create policy "System can insert transactions"
-    on roids_transactions for insert
-    to service_role
-    with check (true); 
-
 -- RPC Functions for ROIDS System
 
 -- Function to get user's ROIDS balance
@@ -167,7 +161,11 @@ SET search_path = public, pg_temp
 AS $$
 DECLARE
     v_product_id UUID;
+    v_default_model_url TEXT;
 BEGIN
+    -- Get default model URL
+    v_default_model_url := get_default_model_url();
+    
     -- First, ensure we can insert into user_roids
     BEGIN
         INSERT INTO user_roids (
@@ -178,17 +176,17 @@ BEGIN
             subscription_status
         ) VALUES (
             NEW.id,
-            200,  -- Initial free ROIDS
-            'free'::subscription_type_enum,  -- Explicitly cast to enum
+            200,
+            'free'::subscription_type_enum,
             false,
-            'unpaid'::subscription_status_enum  -- Explicitly cast to enum
+            'unpaid'::subscription_status_enum
         );
     EXCEPTION WHEN OTHERS THEN
         RAISE NOTICE 'Error creating user_roids: %', SQLERRM;
         RETURN NEW;
     END;
 
-    -- Then, try to create the initial product
+    -- Then, create the initial product with the default model
     BEGIN
         INSERT INTO products (
             user_id,
@@ -198,16 +196,20 @@ BEGIN
             likes_count,
             downloads_count,
             tags,
-            is_featured
+            is_featured,
+            model_path,
+            image_path
         ) VALUES (
             NEW.id,
-            'My First Model',
+            'My first asset',
             'Created on signup',
-            'private'::visibility_type_enum,  -- Explicitly cast to enum
+            'private'::visibility_type_enum,
             0,
             0,
-            ARRAY[]::text[],
-            false
+            ARRAY['starter']::text[],
+            false,
+            v_default_model_url,
+            'https://res.cloudinary.com/your-cloud-name/image/upload/v1/default/starter-model-thumbnail.jpg'
         ) RETURNING id INTO v_product_id;
     EXCEPTION WHEN OTHERS THEN
         RAISE NOTICE 'Error creating initial product: %', SQLERRM;
@@ -249,4 +251,64 @@ GRANT EXECUTE ON FUNCTION get_user_roids_balance(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION check_roids_balance(UUID, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION record_roids_transaction(UUID, INTEGER, TEXT, TEXT, UUID, TEXT) TO service_role;
 GRANT EXECUTE ON FUNCTION get_user_roids_transactions(UUID, INTEGER, INTEGER) TO authenticated;
-GRANT EXECUTE ON FUNCTION use_roids_for_asset(UUID, INTEGER, UUID) TO authenticated; 
+GRANT EXECUTE ON FUNCTION use_roids_for_asset(UUID, INTEGER, UUID) TO authenticated;
+
+-- Function to toggle model visibility
+CREATE OR REPLACE FUNCTION toggle_model_visibility(
+    p_user_id UUID,
+    p_product_id UUID,
+    p_visibility visibility_type_enum
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_owner_id UUID;
+BEGIN
+    -- Check if user owns the product
+    SELECT user_id INTO v_owner_id
+    FROM products
+    WHERE id = p_product_id;
+    
+    IF v_owner_id != p_user_id THEN
+        RETURN FALSE;
+    END IF;
+    
+    -- Update visibility
+    UPDATE products
+    SET 
+        visibility = p_visibility,
+        updated_at = NOW()
+    WHERE id = p_product_id;
+    
+    -- Record activity
+    INSERT INTO user_activity (
+        user_id,
+        activity_type,
+        product_id,
+        details
+    ) VALUES (
+        p_user_id,
+        'visibility_changed',
+        p_product_id,
+        jsonb_build_object('new_visibility', p_visibility)
+    );
+    
+    RETURN TRUE;
+END;
+$$;
+
+-- Grant permission
+GRANT EXECUTE ON FUNCTION toggle_model_visibility(UUID, UUID, visibility_type_enum) TO authenticated;
+
+-- Function to get initial model URL for new users
+CREATE OR REPLACE FUNCTION get_default_model_url()
+RETURNS TEXT
+LANGUAGE sql
+IMMUTABLE
+AS $$
+    -- Use the direct Cloudinary URL format
+    SELECT 'https://res.cloudinary.com/dzrdlevfn/raw/upload/v1733908883/woman-head_gcggvf.glb';
+$$;

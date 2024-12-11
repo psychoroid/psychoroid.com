@@ -4,49 +4,82 @@ import { useUser } from '@/lib/contexts/UserContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/supabase'
 import { toast } from 'sonner'
 
 export default function AccountSettings() {
     const { user } = useUser()
     const [isLoading, setIsLoading] = useState(false)
+    const isOAuthUser = Boolean(user?.app_metadata?.provider && ['github', 'google'].includes(user.app_metadata.provider))
 
-    // Split full name into first and last name
-    const fullName = user?.user_metadata?.full_name || ''
-    const [firstName, lastName] = fullName.split(' ')
-
+    // Initialize form data
     const [formData, setFormData] = useState({
-        firstName: firstName || '',
-        lastName: lastName || '',
-        email: user?.email || '',
-        company: user?.user_metadata?.company || ''
+        firstName: '',
+        lastName: '',
+        email: '',
+        company: ''
     })
 
-    const handleUpdateProfile = async () => {
-        setIsLoading(true)
-        try {
-            // Use the RPC function to update profile
-            const { error: rpcError } = await supabase.rpc('update_user_profile', {
-                p_first_name: formData.firstName,
-                p_last_name: formData.lastName,
-                p_company: formData.company
+    const [currentEmail] = useState(user?.email || '')
+
+    // Update form data when user data is available
+    useEffect(() => {
+        if (user) {
+            let firstName = user.user_metadata?.first_name
+            let lastName = user.user_metadata?.last_name
+
+            if (!firstName && !lastName && user.user_metadata?.full_name) {
+                [firstName, lastName] = user.user_metadata.full_name.split(' ')
+            }
+
+            setFormData({
+                firstName: firstName || '',
+                lastName: lastName || '',
+                email: user.email || '',
+                company: user.user_metadata?.company || ''
             })
+        }
+    }, [user])
 
-            if (rpcError) throw rpcError
+    const handleUpdateProfile = async () => {
+        try {
+            setIsLoading(true)
 
-            // Update email separately using auth.updateUser
-            if (formData.email !== user?.email) {
+            // If email has changed and user is not OAuth
+            if (formData.email !== currentEmail && !isOAuthUser) {
                 const { error: emailError } = await supabase.auth.updateUser({
                     email: formData.email
                 })
+
                 if (emailError) throw emailError
+
+                toast.success('Verification email sent', {
+                    description: 'Please check your new email inbox to confirm the change'
+                })
             }
 
-            toast.success('Profile updated successfully')
-        } catch (error) {
+            // Update user metadata
+            const { error: updateError } = await supabase.auth.updateUser({
+                data: {
+                    first_name: formData.firstName,
+                    last_name: formData.lastName,
+                    full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+                    company: formData.company
+                }
+            })
+
+            if (updateError) throw updateError
+
+            if (!isOAuthUser || formData.email === currentEmail) {
+                toast.success('Profile updated successfully')
+            }
+
+        } catch (error: any) {
             console.error('Error updating profile:', error)
-            toast.error('Failed to update profile')
+            toast.error('Failed to update profile', {
+                description: error.message
+            })
         } finally {
             setIsLoading(false)
         }
@@ -91,9 +124,12 @@ export default function AccountSettings() {
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             className="max-w-md rounded-none"
+                            disabled={isOAuthUser}
                         />
                         <p className="text-xs text-muted-foreground">
-                            This will be used for notifications and login.
+                            {isOAuthUser
+                                ? `Email managed by ${user?.app_metadata?.provider === 'github' ? 'Github' : 'Google'}. Cannot be changed.`
+                                : 'This will be used for notifications and login.'}
                         </p>
                     </div>
 
@@ -113,9 +149,9 @@ export default function AccountSettings() {
                     <Button
                         onClick={handleUpdateProfile}
                         disabled={isLoading}
-                        className="rounded-none"
+                        className="rounded-none bg-blue-500 hover:bg-blue-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
                     >
-                        {isLoading ? 'Updating...' : 'Update Profile'}
+                        {isLoading ? 'Updating...' : 'Update'}
                     </Button>
                 </div>
             </Card>

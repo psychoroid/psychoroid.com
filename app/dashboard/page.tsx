@@ -91,28 +91,28 @@ export default function DashboardPage() {
                         value={assetsCount}
                         description="3D models created"
                         icon={Box}
-                        iconClassName="text-indigo-500 dark:text-indigo-400"
+                        iconClassName="text-cyan-500 dark:text-cyan-400"
                     />
                     <DashboardCard
                         title="Activity"
                         value={lastActivity ? formatTimeAgo(lastActivity) : '—'}
                         description="Latest interaction"
                         icon={Clock}
-                        iconClassName="text-orange-500 dark:text-orange-400"
+                        iconClassName="text-fuchsia-500 dark:text-fuchsia-400"
                     />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 md:h-[370px] min-h-[800px] md:min-h-0">
                 <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col h-[400px] md:h-auto">
-                    <h3 className="text-sm font-medium mb-4">Recent Activity</h3>
+                    <h3 className="text-sm font-medium mb-4">Recent activity</h3>
                     <div className="flex-1 min-h-0 overflow-auto">
                         <RecentActivity />
                     </div>
                 </Card>
 
                 <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col h-[400px] md:h-auto">
-                    <h3 className="text-sm font-medium mb-4">Quick Actions</h3>
+                    <h3 className="text-sm font-medium mb-4">Quick actions</h3>
                     <div className="flex-1 min-h-0 overflow-auto">
                         <QuickActions />
                     </div>
@@ -126,9 +126,11 @@ export default function DashboardPage() {
 function formatTimeAgo(date: string) {
     const now = new Date()
     const activityDate = new Date(date)
-    const diffInHours = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60))
+    const diffInMinutes = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60))
+    const diffInHours = Math.floor(diffInMinutes / 60)
 
-    if (diffInHours < 1) return 'Just now'
+    if (diffInMinutes < 5) return 'Just now'
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`
     if (diffInHours === 1) return '1 hour ago'
     if (diffInHours < 24) return `${diffInHours} hours ago`
     return `${Math.floor(diffInHours / 24)} days ago`

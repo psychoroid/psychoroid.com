@@ -7,14 +7,17 @@ CREATE TYPE visibility_type_enum AS ENUM ('public', 'private', 'unlisted');
 CREATE TYPE support_status_enum AS ENUM ('open', 'in_progress', 'resolved', 'closed');
 CREATE TYPE feedback_sentiment_enum AS ENUM ('very_positive', 'positive', 'negative', 'very_negative');
 CREATE TYPE activity_type_enum AS ENUM (
-    'model_created',
-    'model_updated',
-    'model_deleted',
-    'credits_purchased',
-    'credits_used',
-    'model_liked',
-    'model_downloaded',
-    'visibility_changed'
+    'login',
+    'logout',
+    'signup',
+    'password_reset',
+    'email_change',
+    'profile_update',
+    'subscription_created',
+    'subscription_updated',
+    'subscription_cancelled',
+    'api_key_generated',
+    'api_key_revoked'
 );
 CREATE TYPE api_key_status_enum AS ENUM ('active', 'revoked');
 
@@ -65,6 +68,7 @@ CREATE TABLE user_roids (
     subscription_status subscription_status_enum,
     subscription_period_start timestamptz,
     subscription_period_end timestamptz,
+    organization text,
     created_at timestamptz default now(),
     updated_at timestamptz default now(),
     constraint positive_balance check (balance >= 0)
@@ -149,6 +153,15 @@ CREATE TABLE api_keys (
     expires_at timestamptz,
     created_at timestamptz default now(),
     updated_at timestamptz default now()
+);
+
+-- Create user activities table
+CREATE TABLE IF NOT EXISTS user_activities (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    activity_type activity_type_enum NOT NULL,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
 --------------- RLS ---------------

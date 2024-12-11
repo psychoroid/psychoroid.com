@@ -25,14 +25,14 @@ export function QuickActions() {
             description: 'Explore public assets',
             icon: Users,
             onClick: () => router.push('/community'),
-            color: 'text-emerald-500 dark:text-emerald-400'
+            color: 'text-purple-500 dark:text-purple-400'
         },
         {
             label: 'Developers',
             description: 'Learn how to leverage our API',
             icon: BookOpen,
-            onClick: () => window.open('https://docs.psychoroid.com', '_blank'),
-            color: 'text-violet-500 dark:text-violet-400'
+            onClick: () => window.open('https://developers.psychoroid.com', '_blank'),
+            color: 'text-teal-500 dark:text-teal-400'
         },
         {
             label: 'Support',
@@ -49,7 +49,7 @@ export function QuickActions() {
                 <Button
                     key={action.label}
                     variant="outline"
-                    className="flex items-center justify-start gap-3 w-full h-16 px-6 group hover:bg-accent"
+                    className="flex items-center justify-start gap-3 w-full h-16 px-6 group hover:bg-accent rounded-none"
                     onClick={action.onClick}
                 >
                     <action.icon

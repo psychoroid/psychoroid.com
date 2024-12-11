@@ -14,8 +14,6 @@
 
 # API Keys & Business Logic
 /lib/supabase/middleware.ts
-/app/api/webhook/
-/app/api/create-checkout-session/
 
 # AI Prompts
 /lib/huggingface/prompts/

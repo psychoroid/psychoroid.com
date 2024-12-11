@@ -51,4 +51,7 @@ BEGIN
     LIMIT p_limit
     OFFSET p_offset;
 END;
-$$; 
+$$;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION get_user_assets(UUID, TEXT, INTEGER, INTEGER) TO authenticated; 

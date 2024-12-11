@@ -1,6 +1,5 @@
 'use client'
 
-import { useUser } from '@/lib/contexts/UserContext'
 import { Card } from '@/components/ui/card'
 import SupportForm from '@/components/dashboard/SupportForm'
 
@@ -15,7 +14,7 @@ export default function SupportPage() {
             </div>
 
             <Card className="border border-border rounded-none bg-card">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                     <SupportForm />
                 </div>
             </Card>

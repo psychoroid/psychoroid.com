@@ -9,6 +9,9 @@ CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Enable pgcrypto extension
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- Function to update modified column
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

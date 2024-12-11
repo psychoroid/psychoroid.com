@@ -32,9 +32,9 @@ export default function AssetsPage() {
             })
 
             if (error) throw error
-            setAssets(data)
+            setAssets(data || [])
 
-            // Get total count for pagination
+            // Get total count
             const { count, error: countError } = await supabase
                 .from('products')
                 .select('id', { count: 'exact', head: true })
@@ -59,9 +59,9 @@ export default function AssetsPage() {
     return (
         <div>
             <div className="flex flex-col space-y-1 mb-8">
-                <h1 className="text-xl font-semibold text-foreground">Assets</h1>
+                <h1 className="text-xl font-semibold text-foreground">Your assets</h1>
                 <p className="text-xs text-muted-foreground">
-                    Manage your 3D models and images
+                    Manage your 3D generated assets
                 </p>
             </div>
 

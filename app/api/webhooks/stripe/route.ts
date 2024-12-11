@@ -5,6 +5,25 @@ import { cookies } from 'next/headers';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+// Define our expected metadata shape
+type MetadataFields = {
+    userId: string;
+    type: 'subscription' | 'roids_purchase';
+    subscription_type?: string;
+    roids_amount?: string;
+};
+
+// Type guard function to validate metadata
+function hasValidMetadata(metadata: Stripe.Metadata | null): metadata is Stripe.Metadata & MetadataFields {
+    if (!metadata) return false;
+    
+    return (
+        typeof metadata.userId === 'string' &&
+        typeof metadata.type === 'string' &&
+        (metadata.type === 'subscription' || metadata.type === 'roids_purchase')
+    );
+}
+
 export async function POST(req: Request) {
     const body = await req.text();
     const signature = headers().get('stripe-signature')!;
@@ -18,6 +37,29 @@ export async function POST(req: Request) {
         );
 
         switch (event.type) {
+            case 'checkout.session.completed': {
+                const session = event.data.object as Stripe.Checkout.Session;
+                
+                if (!hasValidMetadata(session.metadata)) {
+                    throw new Error('Invalid or missing metadata in session');
+                }
+
+                const metadata = session.metadata;
+
+                if (metadata.type === 'subscription') {
+                    await supabase.rpc('add_subscription_credits', {
+                        p_user_id: metadata.userId,
+                        p_subscription_type: metadata.subscription_type
+                    });
+                } else if (metadata.type === 'roids_purchase' && metadata.roids_amount) {
+                    await supabase.rpc('add_roids', {
+                        p_user_id: metadata.userId,
+                        p_amount: parseInt(metadata.roids_amount)
+                    });
+                }
+                break;
+            }
+
             case 'customer.subscription.deleted': {
                 const subscription = event.data.object as Stripe.Subscription;
                 
@@ -65,6 +107,14 @@ export async function POST(req: Request) {
                 });
                 break;
             }
+
+            case 'charge.refunded': {
+                // Handle refunds if implemented
+                break;
+            }
+
+            default:
+                console.log(`Unhandled event type: ${event.type}`);
         }
 
         return new Response(JSON.stringify({ received: true }));

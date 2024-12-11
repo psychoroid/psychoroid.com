@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/supabase';
-import { Session } from '@supabase/supabase-js';
 import { useTheme } from 'next-themes';
 import { Dock } from '@/components/ui/dock';
 import Image from 'next/image';
@@ -49,7 +48,7 @@ export function Navbar() {
     return (
         <Dock>
             <nav className="bg-background">
-                <div className="max-w-3xl mx-auto px-4">
+                <div className="max-w-3xl mx-auto pl-2 pr-4">
                     <div className="flex items-center justify-between h-12">
                         <div className="flex items-center space-x-4">
                             <div className="flex items-center">
@@ -59,7 +58,7 @@ export function Navbar() {
                                         alt="Logo"
                                         width={60}
                                         height={60}
-                                        className="mr-1"
+                                        className="mr-1 -ml-1"
                                     />
                                 </button>
                                 <Link
@@ -71,7 +70,7 @@ export function Navbar() {
                             </div>
 
                             {session && (
-                                <div className="hidden md:flex items-center space-x-4">
+                                <div className="hidden md:flex items-center">
                                     <div className="flex items-center text-xs font-medium">
                                         <Coins className="h-3 w-3 mr-1 text-[#D73D57]" />
                                         <span className="text-[#D73D57]">
@@ -80,10 +79,11 @@ export function Navbar() {
                                     </div>
                                     <Link
                                         href="/dashboard"
-                                        className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                        className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium ml-3"
                                     >
                                         Dashboard
                                     </Link>
+                                    <div className="h-4 w-px bg-border ml-6"></div>
                                 </div>
                             )}
                         </div>
@@ -98,7 +98,7 @@ export function Navbar() {
                         <div className="hidden md:flex items-center space-x-6">
                             <Link
                                 href="/"
-                                className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors text-xs font-medium"
+                                className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-600 transition-colors text-xs font-medium"
                             >
                                 3D Engine
                             </Link>
@@ -107,6 +107,14 @@ export function Navbar() {
                                 className="text-emerald-500 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors text-xs font-medium"
                             >
                                 Community
+                            </Link>
+                            <Link
+                                href="https://developers.psychoroid.com"
+                                className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Resources
                             </Link>
                             <Link
                                 href="/pricing"
@@ -152,6 +160,7 @@ export function Navbar() {
                                     >
                                         Dashboard
                                     </Link>
+                                    <div className="h-px w-full bg-border"></div>
                                 </>
                             )}
                             <Link
@@ -165,6 +174,14 @@ export function Navbar() {
                                 className="text-sm font-medium text-emerald-500 dark:text-emerald-400 hover:text-[#D73D57] dark:hover:text-[#D73D57] transition-colors"
                             >
                                 Community
+                            </Link>
+                            <Link
+                                href="https://developers.psychoroid.com"
+                                className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Resources
                             </Link>
                             <Link
                                 href="/pricing"

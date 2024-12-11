@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useUser } from '@/lib/contexts/UserContext'
 import { supabase } from '@/lib/supabase/supabase'
+import { toast } from 'react-hot-toast'
 
 type Sentiment = 'very_positive' | 'positive' | 'negative' | 'very_negative' | 'null'
 
@@ -39,20 +40,22 @@ export default function FeedbackForm() {
     const handleSubmit = async () => {
         if (!user?.id) return
 
-        const { error } = await supabase.rpc('create_feedback', {
-            p_merchant_id: user.id,
-            p_sentiment: sentiment,
-            p_message: feedback,
-        })
+        try {
+            const { error } = await supabase.rpc('create_feedback', {
+                p_sentiment: sentiment,
+                p_message: feedback
+            })
 
-        if (error) {
+            if (error) throw error
+
+            toast.success('Feedback submitted successfully')
+            setFeedback('')
+            setSentiment('null')
+            setIsOpen(false)
+        } catch (error) {
             console.error('Error submitting feedback:', error)
-            return
+            toast.error('Failed to submit feedback')
         }
-
-        setFeedback('')
-        setSentiment('null')
-        setIsOpen(false)
     }
 
     return (

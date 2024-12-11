@@ -19,10 +19,9 @@ export function Footer() {
                             href="https://github.com/psychoroid/psychoroid"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 text-xs font-medium"
+                            className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <Github className="h-3 w-3" />
-                            <span className="hidden md:inline">This application is open source</span>
                         </Link>
                         <div className="h-4 w-px bg-border"></div>
                         <Link

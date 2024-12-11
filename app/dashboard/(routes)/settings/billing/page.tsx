@@ -35,24 +35,18 @@ export default function BillingSettings() {
                 })
                 setIsSubscribed(isActive)
 
-                // Get detailed subscription info
-                const { data: userData } = await supabase
-                    .from('user_roids')
-                    .select(`
-                        subscription_type,
-                        subscription_status,
-                        subscription_period_end
-                    `)
-                    .eq('user_id', user.id)
-                    .single()
+                // Get detailed subscription info using the new RPC
+                const { data: subDetails, error } = await supabase.rpc('get_user_subscription_details', {
+                    p_user_id: user.id
+                })
 
-                if (userData) {
+                if (!error && subDetails) {
                     setSubscriptionDetails({
-                        type: userData.subscription_type,
-                        status: userData.subscription_status,
-                        periodEnd: userData.subscription_period_end,
-                        nextBilling: userData.subscription_period_end
-                            ? new Date(userData.subscription_period_end).getTime()
+                        type: subDetails.subscription_type,
+                        status: subDetails.subscription_status,
+                        periodEnd: subDetails.subscription_period_end,
+                        nextBilling: subDetails.subscription_period_end
+                            ? new Date(subDetails.subscription_period_end).getTime()
                             : null
                     })
                 }
@@ -139,7 +133,7 @@ export default function BillingSettings() {
                                 <Button
                                     onClick={isSubscribed ? handleManageSubscription : handleSubscribe}
                                     disabled={isLoading}
-                                    className="rounded-none"
+                                    className="rounded-none bg-blue-500 hover:bg-blue-600 text-white h-7 px-2.5 sm:h-10 sm:px-6 w-[80px] sm:w-auto text-[11px] sm:text-sm"
                                 >
                                     {isLoading
                                         ? 'Processing...'

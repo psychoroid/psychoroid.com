@@ -45,31 +45,37 @@ export default function SettingsLayout({
 
     return (
         <div className="space-y-8">
-            <div className="grid grid-cols-12 gap-8">
-                <div className="col-span-4">
+            <div className="grid grid-cols-12 gap-4 sm:gap-8">
+                <div className="col-span-2 sm:col-span-4">
                     <nav className="space-y-2">
                         {settingsNavItems.map((item) => {
                             const Icon = item.icon
+                            const isActive = pathname === item.href
                             return (
                                 <Link
                                     key={item.href}
                                     href={item.href}
                                     className={cn(
-                                        "flex items-start space-x-4 px-4 py-3 text-sm transition-colors border-l-2",
-                                        pathname === item.href
-                                            ? "border-foreground text-foreground bg-accent"
-                                            : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                                        "flex items-center transition-colors relative border-l-2",
+                                        // Mobile styles
+                                        "h-12 justify-center px-2",
+                                        // Desktop styles
+                                        "sm:h-[76px] sm:justify-start sm:px-4 sm:py-3 sm:space-x-4",
+                                        isActive
+                                            ? "text-foreground bg-accent border-foreground"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50 border-transparent"
                                     )}
                                 >
                                     <Icon
                                         className={cn(
-                                            "h-6 w-6 shrink-0 mt-0.5",
-                                            pathname === item.href
+                                            "h-5 w-5 shrink-0",
+                                            "sm:h-6 sm:w-6 sm:mt-0.5",
+                                            isActive
                                                 ? "text-foreground"
                                                 : item.color
                                         )}
                                     />
-                                    <div>
+                                    <div className="hidden sm:block">
                                         <div className="font-medium">{item.title}</div>
                                         <div className="text-xs text-muted-foreground">
                                             {item.description}
@@ -81,7 +87,7 @@ export default function SettingsLayout({
                     </nav>
                 </div>
 
-                <div className="col-span-8">
+                <div className="col-span-10 sm:col-span-8">
                     {children}
                 </div>
             </div>

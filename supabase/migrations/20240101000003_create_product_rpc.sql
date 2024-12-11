@@ -14,3 +14,5 @@ BEGIN
   RETURNING *;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp; 
+
+GRANT EXECUTE ON FUNCTION create_product(TEXT, TEXT, TEXT, TEXT, UUID) TO authenticated; 

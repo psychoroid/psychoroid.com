@@ -106,15 +106,12 @@ export default function SupportForm() {
                 imagePath = filePath
             }
 
-            const { error } = await supabase
-                .from('support_requests')
-                .insert({
-                    user_id: user.id,
-                    category,
-                    message,
-                    image_url: imageUrl,
-                    image_path: imagePath
-                })
+            const { data, error } = await supabase.rpc('create_support_request', {
+                p_category: category,
+                p_message: message,
+                p_image_url: imageUrl,
+                p_image_path: imagePath
+            })
 
             if (error) throw error
 
@@ -227,11 +224,11 @@ export default function SupportForm() {
             )}
 
             <Button
-                onClick={handleSubmit}
-                disabled={isLoading || !category || !message.trim()}
-                className="w-full rounded-none"
+                type="submit"
+                disabled={isLoading}
+                className="rounded-none bg-blue-500 hover:bg-blue-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
             >
-                {isLoading ? 'Submitting...' : 'Submit Ticket'}
+                {isLoading ? 'Submitting...' : 'Submit a support ticket'}
             </Button>
         </div>
     )

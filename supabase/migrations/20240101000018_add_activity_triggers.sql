@@ -74,4 +74,26 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_subscription_change
     AFTER UPDATE ON user_roids
     FOR EACH ROW
-    EXECUTE FUNCTION record_subscription_activity(); 
+    EXECUTE FUNCTION record_subscription_activity();
+
+-- Create trigger function for API key activities
+CREATE OR REPLACE FUNCTION log_api_key_activity()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO user_activities (user_id, activity_type)
+        VALUES (NEW.user_id, 'api_key_generated');
+    ELSIF TG_OP = 'UPDATE' AND NEW.status = 'revoked' AND OLD.status = 'active' THEN
+        INSERT INTO user_activities (user_id, activity_type)
+        VALUES (NEW.user_id, 'api_key_revoked');
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create trigger for API key activities
+DROP TRIGGER IF EXISTS api_key_activity_trigger ON api_keys;
+CREATE TRIGGER api_key_activity_trigger
+    AFTER INSERT OR UPDATE ON api_keys
+    FOR EACH ROW
+    EXECUTE FUNCTION log_api_key_activity(); 

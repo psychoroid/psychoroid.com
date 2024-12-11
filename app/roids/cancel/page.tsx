@@ -3,12 +3,18 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
+import { useUser } from '@/lib/contexts/UserContext';
 
 export default function CancelPage() {
     const router = useRouter();
+    const { user } = useUser();
 
     const handleContactSupport = () => {
-        window.location.href = 'mailto:dev@psychoroid.com?subject=Payment Support Request';
+        const subject = user
+            ? `[Support inquiry] - User ${user.id}`
+            : '[Support inquiry] - Payment cancelled';
+
+        window.location.href = `mailto:dev@psychoroid.com?subject=${encodeURIComponent(subject)}`;
     };
 
     return (

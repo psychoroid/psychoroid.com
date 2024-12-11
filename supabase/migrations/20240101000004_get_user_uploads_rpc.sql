@@ -16,3 +16,5 @@ BEGIN
     ORDER BY p.created_at DESC;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp; 
+
+GRANT EXECUTE ON FUNCTION get_user_uploads(UUID) TO authenticated; 

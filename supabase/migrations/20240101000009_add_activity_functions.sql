@@ -20,7 +20,5 @@ BEGIN
 END;
 $$;
 
--- Activity policies
-CREATE POLICY "Users can view their own activity"
-    ON user_activity FOR SELECT
-    USING (auth.uid() = user_id); 
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION record_user_activity(uuid, activity_type_enum, jsonb, uuid) TO authenticated;

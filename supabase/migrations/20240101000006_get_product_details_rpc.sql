@@ -19,3 +19,5 @@ BEGIN
     WHERE p.image_path = p_image_path;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp; 
+
+GRANT EXECUTE ON FUNCTION get_product_details(TEXT) TO authenticated; 

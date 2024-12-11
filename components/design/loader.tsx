@@ -1,30 +1,28 @@
 'use client'
 
-import { useTheme } from 'next-themes'
-
-export default function Spinner() {
+export default function Loader() {
     return (
         <div className="flex min-h-screen items-center justify-center bg-background">
             <svg
-                width="40"
-                height="40"
-                viewBox="0 0 40 40"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
                 className="animate-spin"
             >
-                {[...Array(12)].map((_, i) => (
+                {[...Array(8)].map((_, i) => (
                     <line
                         key={i}
-                        x1="20"
-                        y1="4"
-                        x2="20"
-                        y2="12"
+                        x1="12"
+                        y1="3"
+                        x2="12"
+                        y2="7"
                         className="stroke-foreground"
                         style={{
-                            opacity: Math.max(0.1, 1 - (i * 0.08))
+                            opacity: Math.max(0.2, 1 - (i * 0.1))
                         }}
-                        strokeWidth="3"
+                        strokeWidth="2"
                         strokeLinecap="round"
-                        transform={`rotate(${i * 30} 20 20)`}
+                        transform={`rotate(${i * 45} 12 12)`}
                     />
                 ))}
             </svg>

@@ -6,18 +6,7 @@ import { supabase } from '@/lib/supabase/supabase'
 import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import {
-    Plus,
-    Heart,
-    Download,
-    Coins,
-    Eye,
-    PencilLine,
-    History,
-    Key,
-    CreditCard,
-    UserCircle
-} from 'lucide-react'
+import { ActivityIcon } from '@/components/dashboard/ActivityIcon'
 
 interface Activity {
     id: string
@@ -27,7 +16,7 @@ interface Activity {
     product_id?: string
 }
 
-const ITEMS_PER_PAGE = 3
+const ITEMS_PER_PAGE = 10
 const MAX_PAGES = 20
 
 export function RecentActivity() {
@@ -70,24 +59,6 @@ export function RecentActivity() {
         }
     }
 
-    const getActivityIcon = (type: string) => {
-        const icons = {
-            model_created: Plus,
-            model_liked: Heart,
-            model_downloaded: Download,
-            credits_purchased: Coins,
-            credits_used: Coins,
-            model_updated: PencilLine,
-            visibility_changed: Eye,
-            api_key_generated: Key,
-            api_key_revoked: Key,
-            subscription_updated: CreditCard,
-            profile_updated: UserCircle
-        }
-        const IconComponent = icons[type as keyof typeof icons] || History
-        return IconComponent
-    }
-
     const getActivityMessage = (activity: Activity) => {
         const messages = {
             model_created: 'Created new model',
@@ -110,7 +81,10 @@ export function RecentActivity() {
     if (activities.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-center">
-                <History className="h-8 w-8 text-muted-foreground mb-4" />
+                <ActivityIcon
+                    type="empty_state"
+                    className="h-8 w-8 text-muted-foreground mb-4"
+                />
                 <h3 className="text-sm font-medium text-foreground mb-1">No recent activity</h3>
                 <p className="text-xs text-muted-foreground">
                     Your activity will appear here
@@ -122,26 +96,29 @@ export function RecentActivity() {
     return (
         <div className="flex flex-col h-full">
             <div className="flex-1 space-y-2">
-                {activities.map((activity) => {
-                    const Icon = getActivityIcon(activity.activity_type)
-                    return (
-                        <Button
-                            key={activity.id}
-                            variant="outline"
-                            className="flex items-center justify-start gap-3 w-full h-12 px-4 group hover:bg-accent"
-                        >
-                            <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-                            <div className="flex flex-col items-start">
-                                <span className="text-xs font-medium">
-                                    {getActivityMessage(activity)}
-                                </span>
-                                <span className="text-[10px] text-muted-foreground">
-                                    {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
-                                </span>
-                            </div>
-                        </Button>
-                    )
-                })}
+                {activities.map((activity) => (
+                    <Button
+                        key={activity.id}
+                        variant="outline"
+                        className="flex items-center justify-start gap-3 w-full h-[49px] px-4 group hover:bg-accent rounded-none"
+                    >
+                        <ActivityIcon
+                            type={activity.activity_type}
+                            className="group-hover:brightness-110 transition-all"
+                        />
+                        <div className="flex flex-col items-start">
+                            <span className="text-xs font-medium">
+                                {getActivityMessage(activity)}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                                {formatDistanceToNow(new Date(activity.created_at), {
+                                    addSuffix: true,
+                                    includeSeconds: true
+                                }).replace('about ', '')}
+                            </span>
+                        </div>
+                    </Button>
+                ))}
             </div>
 
             {totalPages > 1 && (

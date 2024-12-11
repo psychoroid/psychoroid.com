@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/actions/utils'
+import { Card } from '@/components/ui/card'
 
 interface DashboardCardProps {
     title: string
@@ -7,7 +8,6 @@ interface DashboardCardProps {
     description: string
     icon: LucideIcon
     iconClassName?: string
-    className?: string
 }
 
 export function DashboardCard({
@@ -15,19 +15,24 @@ export function DashboardCard({
     value,
     description,
     icon: Icon,
-    iconClassName,
-    className
+    iconClassName
 }: DashboardCardProps) {
     return (
-        <div className={cn("p-6 border border-border rounded-none", className)}>
+        <Card className="p-6 rounded-none border-border">
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-sm font-medium">{title}</p>
-                    <p className="text-2xl font-bold">{value}</p>
-                    <p className="text-xs text-muted-foreground">{description}</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                        {title}
+                    </p>
+                    <h2 className="text-xl font-medium mt-1">
+                        {value}
+                    </h2>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {description}
+                    </p>
                 </div>
-                <Icon className={cn("h-8 w-8", iconClassName)} />
+                <Icon className={cn("h-5 w-5", iconClassName)} />
             </div>
-        </div>
+        </Card>
     )
 } 

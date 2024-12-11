@@ -31,16 +31,22 @@ export function PricingCard({
                                 <span className="text-xl md:text-2xl font-semibold text-foreground">
                                     Free
                                 </span>
+                                <span className="text-muted-foreground text-xs -translate-y-[1px]">•</span>
+                                <span className="text-xs text-muted-foreground">
+                                    No credit card needed
+                                </span>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-4 mb-4">No credit card needed</p>
                         </>
                     ) : (
                         <>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-xl md:text-2xl font-semibold text-foreground">
-                                    ${discountedPrice || price}
-                                </span>
-                                <span className="text-xs text-muted-foreground">/ month</span>
+                            <div className="flex items-start">
+                                <span className="text-xs font-medium align-top mt-1.5 mr-0.5">$</span>
+                                <span className="text-2xl font-bold">{price}</span>
+                                {period && (
+                                    <span className="text-xs text-muted-foreground ml-1 mt-2">
+                                        / {period}
+                                    </span>
+                                )}
                             </div>
                             {yearlyPrice && (
                                 <p className="text-xs text-muted-foreground mt-4 mb-4">${yearlyPrice}/ year</p>
@@ -56,7 +62,15 @@ export function PricingCard({
                     {features.map((feature, index) => (
                         <li key={index} className="flex items-start gap-2 text-xs">
                             <span className="text-foreground mt-0.5">•</span>
-                            <span className="flex-1">{feature}</span>
+                            <span className="flex-1">
+                                {feature.startsWith('**') && feature.endsWith('**') ? (
+                                    <span className="font-semibold">
+                                        {feature.slice(2, -2)}
+                                    </span>
+                                ) : (
+                                    feature
+                                )}
+                            </span>
                         </li>
                     ))}
                 </ul>

@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from "sonner"
+import { supabase } from '@/lib/supabase/supabase'
+import Loader from '@/components/design/loader';
 
 interface UserAsset {
     id: string;
@@ -29,6 +32,27 @@ interface UserAssetsListProps {
     totalPages: number;
     isLoading?: boolean;
 }
+
+const handleVisibilityToggle = async (asset: UserAsset, onSearch: (query: string) => void, searchQuery: string) => {
+    try {
+        const newVisibility = asset.visibility === 'public' ? 'private' : 'public'
+        const { data, error } = await supabase.rpc('toggle_model_visibility', {
+            p_product_id: asset.id,
+            p_visibility: newVisibility
+        })
+
+        if (error) throw error
+
+        toast.success(`Model is now ${newVisibility}`)
+        // Refresh assets list
+        onSearch(searchQuery)
+    } catch (error) {
+        console.error('Error toggling visibility:', error)
+        toast.error('Failed to update visibility')
+    }
+}
+
+const ITEMS_PER_PAGE = 10
 
 export function UserAssetsList({
     assets,
@@ -55,16 +79,17 @@ export function UserAssetsList({
                     placeholder="Search assets..."
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
-                    className="w-full pl-9 h-9 text-xs rounded-none"
+                    className="w-full pl-9 h-8 text-xs rounded-none border-border"
                 />
             </div>
 
             {/* Assets List */}
-            <div className="space-y-4">
+            <div
+                className="space-y-4 h-[calc(100vh-16rem)] overflow-y-auto scrollbar-hide"
+            >
                 {isLoading ? (
                     <div className="text-center py-12">
-                        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-                        <p className="text-sm text-muted-foreground mt-4">Loading assets...</p>
+                        <Loader />
                     </div>
                 ) : assets.length === 0 ? (
                     <div className="text-center py-12 border border-dashed border-border rounded-lg">
@@ -81,27 +106,33 @@ export function UserAssetsList({
                         {assets.map((asset) => (
                             <div
                                 key={asset.id}
-                                className="flex gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                                className="flex flex-col sm:flex-row gap-4 p-3 border border-border rounded-none hover:bg-accent/50 transition-colors min-h-[160px] sm:min-h-0 sm:h-24"
                             >
                                 {/* Image */}
-                                <div className="w-32 h-32 flex-shrink-0">
+                                <div className="w-full h-32 sm:w-24 sm:h-18 flex-shrink-0">
                                     <img
                                         src={asset.image_path}
                                         alt={asset.name}
-                                        className="w-full h-full object-cover rounded-md"
+                                        className="w-full h-full object-cover rounded-none"
                                     />
                                 </div>
 
                                 {/* Content */}
-                                <div className="flex-grow space-y-2">
+                                <div className="flex-grow space-y-2 sm:space-y-1">
                                     <div className="flex items-start justify-between">
-                                        <h3 className="font-medium text-foreground">{asset.name}</h3>
-                                        <Badge variant={asset.visibility === 'public' ? 'default' : 'secondary'}>
+                                        <h3 className="font-medium text-foreground text-sm truncate pr-2">
+                                            {asset.name}
+                                        </h3>
+                                        <Badge
+                                            variant={asset.visibility === 'public' ? 'default' : 'secondary'}
+                                            className="cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+                                            onClick={() => handleVisibilityToggle(asset, onSearch, searchQuery)}
+                                        >
                                             {asset.visibility}
                                         </Badge>
                                     </div>
 
-                                    <p className="text-sm text-muted-foreground line-clamp-2">
+                                    <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1">
                                         {asset.description}
                                     </p>
 
@@ -115,10 +146,15 @@ export function UserAssetsList({
                                     </div>
 
                                     {/* Stats */}
-                                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                         <span>{asset.likes_count} likes</span>
                                         <span>{asset.downloads_count} downloads</span>
-                                        <span>Created {formatDistanceToNow(new Date(asset.created_at))} ago</span>
+                                        <span className="truncate">
+                                            Created {formatDistanceToNow(new Date(asset.created_at), {
+                                                addSuffix: true,
+                                                includeSeconds: true
+                                            }).replace('about ', '')}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -126,21 +162,23 @@ export function UserAssetsList({
 
                         {/* Pagination */}
                         {totalPages > 1 && (
-                            <div className="flex justify-center items-center gap-4 mt-8">
+                            <div className="flex justify-center items-center gap-2 pt-4 mt-auto sticky bottom-0 bg-background">
                                 <Button
-                                    variant="outline"
+                                    variant="ghost"
                                     size="icon"
+                                    className="h-6 w-6 rounded-none"
                                     onClick={() => onPageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
                                 >
                                     <ChevronLeft className="h-4 w-4" />
                                 </Button>
-                                <span className="text-sm text-muted-foreground">
-                                    Page {currentPage} of {totalPages}
+                                <span className="text-xs text-muted-foreground">
+                                    {currentPage} / {totalPages}
                                 </span>
                                 <Button
-                                    variant="outline"
+                                    variant="ghost"
                                     size="icon"
+                                    className="h-6 w-6 rounded-none"
                                     onClick={() => onPageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
                                 >
