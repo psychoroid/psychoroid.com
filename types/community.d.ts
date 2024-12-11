@@ -6,6 +6,7 @@ export interface CommunityProduct {
     model_path: string;
     likes_count: number;
     downloads_count: number;
+    views_count: number;
     created_at: string;
     updated_at: string;
     user_id: string;

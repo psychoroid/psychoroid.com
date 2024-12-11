@@ -83,10 +83,23 @@ export default function CommunityPage() {
     const handleDownload = async (productId: string) => {
         if (!user) return;
         try {
+            // Record the download
             const { error } = await supabase
                 .rpc('record_product_download', { p_product_id: productId });
 
             if (error) throw error;
+
+            // Get the download URL
+            const { data: product } = await supabase
+                .from('products')
+                .select('model_path')
+                .eq('id', productId)
+                .single();
+
+            if (product?.model_path) {
+                // Trigger download
+                window.open(product.model_path, '_blank');
+            }
 
             // Refresh products to update counts
             fetchCommunityProducts();
@@ -100,51 +113,51 @@ export default function CommunityPage() {
     };
 
     return (
-        <div className="h-svh bg-background flex flex-col overflow-hidden">
+        <div className="min-h-screen bg-background flex flex-col">
             <Navbar />
-            <div className="flex-grow overflow-auto md:h-[calc(100vh-8rem)] md:overflow-hidden scrollbar-hide">
-                <div className="max-w-3xl mx-auto px-4 py-8 mt-[4.5rem] md:mt-16 md:h-full">
-                    <div className="grid grid-cols-12 gap-8">
-                        {/* Left side - Title */}
-                        <div className="col-span-4">
-                            <div className="flex flex-col space-y-1">
-                                <h1 className="text-xl font-semibold text-foreground">Discover models</h1>
-                                <p className="text-xs text-muted-foreground">
-                                    Discover public assets created in real time by our community
-                                </p>
-                            </div>
-                        </div>
 
-                        {/* Right side - Search */}
-                        <div className="col-span-8">
-                            <div className="relative mt-4">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    type="text"
-                                    placeholder="Search models, creators, or tags..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-9 h-9 text-xs rounded-none"
-                                />
-                            </div>
+            {/* Header Section */}
+            <div className="max-w-3xl mx-auto px-4 py-8 mt-[4.5rem] md:mt-16">
+                <div className="grid grid-cols-12 gap-8">
+                    {/* Left side - Title */}
+                    <div className="col-span-4">
+                        <div className="flex flex-col space-y-1">
+                            <h1 className="text-xl font-semibold text-foreground">Discover models</h1>
+                            <p className="text-xs text-muted-foreground">
+                                Explore public assets created by our community
+                            </p>
                         </div>
                     </div>
 
-                    {/* Content Section */}
-                    <div className="mt-6 md:mt-8">
-                        <CommunityGrid
-                            products={products}
-                            onProductSelect={handleProductSelect}
-                            selectedProduct={selectedProduct}
-                            onLike={handleLike}
-                            onDownload={handleDownload}
-                            userLikes={userLikes}
-                        />
+                    {/* Right side - Search */}
+                    <div className="col-span-8">
+                        <div className="relative mt-4">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Search models, creators, or tags..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 h-9 text-xs rounded-none"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Modal for 3D Preview - Mobile friendly */}
+            {/* Grid Section - Keep the full width for the grid */}
+            <div className="flex-grow pb-8">
+                <CommunityGrid
+                    products={products}
+                    onProductSelect={handleProductSelect}
+                    selectedProduct={selectedProduct}
+                    onLike={handleLike}
+                    onDownload={handleDownload}
+                    userLikes={userLikes}
+                />
+            </div>
+
+            {/* Preview Modal remains the same */}
             {selectedProduct && (
                 <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
                     <div className="fixed inset-2 md:inset-4 bg-background border rounded-lg shadow-lg p-4 md:p-6">

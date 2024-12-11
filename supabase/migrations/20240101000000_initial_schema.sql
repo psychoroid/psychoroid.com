@@ -17,7 +17,8 @@ CREATE TYPE activity_type_enum AS ENUM (
     'subscription_updated',
     'subscription_cancelled',
     'api_key_generated',
-    'api_key_revoked'
+    'api_key_revoked',
+    'visibility_changed'
 );
 CREATE TYPE api_key_status_enum AS ENUM ('active', 'revoked');
 

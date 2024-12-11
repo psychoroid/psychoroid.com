@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from "sonner"
 import { supabase } from '@/lib/supabase/supabase'
+import Loader from '@/components/design/loader';
 
 interface UserAsset {
     id: string;
@@ -18,6 +19,7 @@ interface UserAsset {
     visibility: 'public' | 'private' | 'unlisted';
     likes_count: number;
     downloads_count: number;
+    views_count: number;
     tags: string[];
     created_at: string;
     updated_at: string;
@@ -32,33 +34,7 @@ interface UserAssetsListProps {
     isLoading?: boolean;
 }
 
-const handleVisibilityToggle = async (asset: UserAsset, onSearch: (query: string) => void, searchQuery: string) => {
-    try {
-        const newVisibility = asset.visibility === 'public' ? 'private' : 'public'
-
-        const { data, error } = await supabase.rpc('toggle_model_visibility', {
-            p_product_id: asset.id,
-            p_visibility: newVisibility
-        })
-
-        if (error) {
-            console.error('Toggle error:', error)
-            throw error
-        }
-
-        if (data === false) {
-            throw new Error('Not authorized to update this model')
-        }
-
-        toast.success(`Model is now ${newVisibility}`)
-        onSearch(searchQuery)
-    } catch (error: any) {
-        console.error('Error toggling visibility:', error)
-        toast.error(error.message || 'Failed to update visibility')
-    }
-}
-
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 15
 
 export function UserAssetsList({
     assets,
@@ -69,10 +45,55 @@ export function UserAssetsList({
     isLoading = false
 }: UserAssetsListProps) {
     const [searchQuery, setSearchQuery] = useState('');
+    const [localAssets, setLocalAssets] = useState<UserAsset[]>(assets);
+
+    // Update local assets when props change
+    useEffect(() => {
+        setLocalAssets(assets);
+    }, [assets]);
 
     const handleSearch = (query: string) => {
         setSearchQuery(query);
         onSearch(query);
+    };
+
+    const handleVisibilityToggle = async (asset: UserAsset, index: number) => {
+        try {
+            const newVisibility = asset.visibility === 'public' ? 'private' : 'public';
+
+            // Create new array with updated visibility
+            const updatedAssets = [...localAssets];
+            updatedAssets[index] = {
+                ...asset,
+                visibility: newVisibility as 'public' | 'private' | 'unlisted'
+            };
+
+            // Update local state immediately
+            setLocalAssets(updatedAssets);
+
+            const { data, error } = await supabase.rpc('toggle_model_visibility', {
+                p_product_id: asset.id,
+                p_visibility: newVisibility
+            });
+
+            if (error) {
+                // Revert on error
+                setLocalAssets(localAssets);
+                console.error('Toggle error:', error);
+                throw error;
+            }
+
+            if (data === false) {
+                // Revert on unauthorized
+                setLocalAssets(localAssets);
+                throw new Error('Not authorized to update this model');
+            }
+
+            toast.success(`Model is now ${newVisibility}`);
+        } catch (error: any) {
+            console.error('Error toggling visibility:', error);
+            toast.error(error.message || 'Failed to update visibility');
+        }
     };
 
     return (
@@ -95,8 +116,7 @@ export function UserAssetsList({
             >
                 {isLoading ? (
                     <div className="text-center py-12">
-                        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-                        <p className="text-sm text-muted-foreground mt-4">Loading assets...</p>
+                        <Loader />
                     </div>
                 ) : assets.length === 0 ? (
                     <div className="text-center py-12 border border-dashed border-border rounded-lg">
@@ -110,7 +130,7 @@ export function UserAssetsList({
                     </div>
                 ) : (
                     <>
-                        {assets.map((asset) => (
+                        {localAssets.map((asset, index) => (
                             <div
                                 key={asset.id}
                                 className="flex flex-col sm:flex-row gap-4 p-3 border border-border rounded-none hover:bg-accent/50 transition-colors min-h-[160px] sm:min-h-0 sm:h-[7.25rem]"
@@ -132,10 +152,13 @@ export function UserAssetsList({
                                         </h3>
                                         <Badge
                                             variant={asset.visibility === 'public' ? 'default' : 'secondary'}
-                                            className="cursor-pointer hover:opacity-80 transition-opacity shrink-0"
-                                            onClick={() => handleVisibilityToggle(asset, onSearch, searchQuery)}
+                                            className={`cursor-pointer hover:opacity-80 transition-opacity shrink-0 rounded-none ${asset.visibility === 'public'
+                                                ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
+                                                : 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20'
+                                                }`}
+                                            onClick={() => handleVisibilityToggle(asset, index)}
                                         >
-                                            {asset.visibility}
+                                            {asset.visibility.charAt(0).toUpperCase() + asset.visibility.slice(1)}
                                         </Badge>
                                     </div>
 
@@ -145,21 +168,54 @@ export function UserAssetsList({
 
                                     {/* Tags */}
                                     <div className="flex flex-wrap gap-1">
-                                        {asset.tags?.map((tag, index) => (
+                                        {asset.tags?.slice(0, 4).map((tag, index) => (
                                             <Badge
                                                 key={index}
                                                 variant="outline"
-                                                className="text-xs rounded-none"
+                                                className={`text-xs rounded-none ${tag === 'starter'
+                                                    ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                                    : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
+                                                    } hover:bg-accent/50`}
                                             >
                                                 {tag}
                                             </Badge>
                                         ))}
+                                        {asset.tags && asset.tags.length > 4 && (
+                                            <div className="relative group">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-xs rounded-none bg-primary/10 text-primary border-primary/20 hover:bg-accent/50"
+                                                >
+                                                    +{asset.tags.length - 4}
+                                                </Badge>
+                                                {/* Hover popup */}
+                                                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-10">
+                                                    <div className="bg-popover border border-border shadow-lg rounded-none p-2 min-w-[120px]">
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {asset.tags.slice(4).map((tag, index) => (
+                                                                <Badge
+                                                                    key={index}
+                                                                    variant="outline"
+                                                                    className={`text-xs rounded-none ${tag === 'starter'
+                                                                        ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                                                        : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
+                                                                        } hover:bg-accent/50`}
+                                                                >
+                                                                    {tag}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Stats */}
                                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                         <span>{asset.likes_count} likes</span>
                                         <span>{asset.downloads_count} downloads</span>
+                                        <span>{asset.views_count || 0} views</span>
                                         <span className="truncate">
                                             Created {formatDistanceToNow(new Date(asset.created_at), {
                                                 addSuffix: true,
