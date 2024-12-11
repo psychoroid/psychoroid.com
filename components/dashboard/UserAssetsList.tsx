@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from "sonner"
 import { supabase } from '@/lib/supabase/supabase'
-import Loader from '@/components/design/loader';
 
 interface UserAsset {
     id: string;
@@ -36,19 +35,26 @@ interface UserAssetsListProps {
 const handleVisibilityToggle = async (asset: UserAsset, onSearch: (query: string) => void, searchQuery: string) => {
     try {
         const newVisibility = asset.visibility === 'public' ? 'private' : 'public'
+
         const { data, error } = await supabase.rpc('toggle_model_visibility', {
             p_product_id: asset.id,
             p_visibility: newVisibility
         })
 
-        if (error) throw error
+        if (error) {
+            console.error('Toggle error:', error)
+            throw error
+        }
+
+        if (data === false) {
+            throw new Error('Not authorized to update this model')
+        }
 
         toast.success(`Model is now ${newVisibility}`)
-        // Refresh assets list
         onSearch(searchQuery)
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error toggling visibility:', error)
-        toast.error('Failed to update visibility')
+        toast.error(error.message || 'Failed to update visibility')
     }
 }
 
@@ -89,7 +95,8 @@ export function UserAssetsList({
             >
                 {isLoading ? (
                     <div className="text-center py-12">
-                        <Loader />
+                        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+                        <p className="text-sm text-muted-foreground mt-4">Loading assets...</p>
                     </div>
                 ) : assets.length === 0 ? (
                     <div className="text-center py-12 border border-dashed border-border rounded-lg">
@@ -106,7 +113,7 @@ export function UserAssetsList({
                         {assets.map((asset) => (
                             <div
                                 key={asset.id}
-                                className="flex flex-col sm:flex-row gap-4 p-3 border border-border rounded-none hover:bg-accent/50 transition-colors min-h-[160px] sm:min-h-0 sm:h-24"
+                                className="flex flex-col sm:flex-row gap-4 p-3 border border-border rounded-none hover:bg-accent/50 transition-colors min-h-[160px] sm:min-h-0 sm:h-[7.25rem]"
                             >
                                 {/* Image */}
                                 <div className="w-full h-32 sm:w-24 sm:h-18 flex-shrink-0">
@@ -139,7 +146,11 @@ export function UserAssetsList({
                                     {/* Tags */}
                                     <div className="flex flex-wrap gap-1">
                                         {asset.tags?.map((tag, index) => (
-                                            <Badge key={index} variant="outline" className="text-xs">
+                                            <Badge
+                                                key={index}
+                                                variant="outline"
+                                                className="text-xs rounded-none"
+                                            >
                                                 {tag}
                                             </Badge>
                                         ))}

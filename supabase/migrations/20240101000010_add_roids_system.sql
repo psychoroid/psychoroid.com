@@ -255,7 +255,6 @@ GRANT EXECUTE ON FUNCTION use_roids_for_asset(UUID, INTEGER, UUID) TO authentica
 
 -- Function to toggle model visibility
 CREATE OR REPLACE FUNCTION toggle_model_visibility(
-    p_user_id UUID,
     p_product_id UUID,
     p_visibility visibility_type_enum
 )
@@ -272,7 +271,7 @@ BEGIN
     FROM products
     WHERE id = p_product_id;
     
-    IF v_owner_id != p_user_id THEN
+    IF v_owner_id != auth.uid() THEN
         RETURN FALSE;
     END IF;
     
@@ -290,7 +289,7 @@ BEGIN
         product_id,
         details
     ) VALUES (
-        p_user_id,
+        auth.uid(),
         'visibility_changed',
         p_product_id,
         jsonb_build_object('new_visibility', p_visibility)
@@ -301,7 +300,7 @@ END;
 $$;
 
 -- Grant permission
-GRANT EXECUTE ON FUNCTION toggle_model_visibility(UUID, UUID, visibility_type_enum) TO authenticated;
+GRANT EXECUTE ON FUNCTION toggle_model_visibility(UUID, visibility_type_enum) TO authenticated;
 
 -- Function to get initial model URL for new users
 CREATE OR REPLACE FUNCTION get_default_model_url()
