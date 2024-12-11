@@ -21,6 +21,7 @@ CREATE TYPE activity_type_enum AS ENUM (
     'visibility_changed'
 );
 CREATE TYPE api_key_status_enum AS ENUM ('active', 'revoked');
+CREATE TYPE view_type_enum AS ENUM ('click', 'scroll', 'page_load');
 
 --------------- TABLES ---------------
 
@@ -38,7 +39,8 @@ CREATE TABLE products (
     tags text[],
     is_featured boolean default false,
     created_at timestamptz default now(),
-    updated_at timestamptz default now()
+    updated_at timestamptz default now(),
+    views_count integer default 0
 );
 
 -- Product Likes table
@@ -165,14 +167,12 @@ CREATE TABLE IF NOT EXISTS user_activities (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
---------------- RLS ---------------
--- Enable RLS on all tables
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_likes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_downloads ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_roids ENABLE ROW LEVEL SECURITY;
-ALTER TABLE roids_transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE support_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_activity ENABLE ROW LEVEL SECURITY;
-ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
+-- Product Views table
+CREATE TABLE product_views (
+    id uuid primary key default uuid_generate_v4(),
+    product_id uuid references products(id) on delete cascade,
+    user_id uuid references auth.users(id),
+    view_type view_type_enum NOT NULL,
+    created_at timestamptz default now()
+);
+

@@ -1,3 +1,15 @@
+-- Enable RLS on all tables
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_downloads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_roids ENABLE ROW LEVEL SECURITY;
+ALTER TABLE roids_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE support_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_activity ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_views ENABLE ROW LEVEL SECURITY;
+
 -- Drop any existing policies
 DROP POLICY IF EXISTS "Public products are viewable by everyone" ON products;
 DROP POLICY IF EXISTS "Users can view their own products" ON products;
@@ -21,6 +33,13 @@ DROP POLICY IF EXISTS "Service role can manage activity" ON user_activity;
 DROP POLICY IF EXISTS "Users can view their own support requests" ON support_requests;
 DROP POLICY IF EXISTS "Users can create support requests" ON support_requests;
 DROP POLICY IF EXISTS "Users can update their own support requests" ON support_requests;
+
+DROP POLICY IF EXISTS "Users can view their own API keys" ON api_keys;
+DROP POLICY IF EXISTS "Users can create their own API keys" ON api_keys;
+DROP POLICY IF EXISTS "Users can update their own API keys" ON api_keys;
+
+DROP POLICY IF EXISTS "Users can record their own views" ON product_views;
+DROP POLICY IF EXISTS "Users can view their own view history" ON product_views;
 
 -- Products Policies
 CREATE POLICY "Public products are viewable by everyone" 
@@ -178,20 +197,19 @@ GRANT SELECT ON user_activity TO authenticated;
 GRANT INSERT ON user_activity TO authenticated;
 
 -- API Keys Policies
-DROP POLICY IF EXISTS "Users can view their own API keys" ON api_keys;
-DROP POLICY IF EXISTS "Users can create their own API keys" ON api_keys;
-DROP POLICY IF EXISTS "Users can update their own API keys" ON api_keys;
-
 CREATE POLICY "Users can view their own API keys"
     ON api_keys FOR SELECT
+    TO authenticated
     USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can create their own API keys"
     ON api_keys FOR INSERT
+    TO authenticated
     WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update their own API keys"
     ON api_keys FOR UPDATE
+    TO authenticated
     USING (auth.uid() = user_id);
 
 -- Activity Policies
@@ -223,8 +241,19 @@ CREATE POLICY "Service role can manage ROIDS"
     USING (true)
     WITH CHECK (true);
 
+-- Product Views Policies
+CREATE POLICY "Users can record their own views"
+    ON product_views FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view their own view history"
+    ON product_views FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+
 -- Grant necessary table permissions
 GRANT ALL ON products TO authenticated;
 GRANT ALL ON feedback TO authenticated;
 GRANT ALL ON support_requests TO authenticated;
-GRANT SELECT, UPDATE ON user_roids TO authenticated; 
+GRANT SELECT, UPDATE ON user_roids TO authenticated;

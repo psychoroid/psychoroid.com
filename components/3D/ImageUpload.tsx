@@ -49,17 +49,21 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
   useEffect(() => {
     const fetchProductDetails = async () => {
       if (memoizedSelectedImage) {
-        const { data: productDetails, error: productDetailsError } = await supabase
-          .rpc('get_product_details', {
-            p_image_path: memoizedSelectedImage
-          })
-          .single<ProductDetails>();
+        try {
+          const { data: productDetails, error: productDetailsError } = await supabase
+            .rpc('get_product_details', {
+              p_image_path: memoizedSelectedImage
+            })
+            .single<ProductDetails>();
 
-        if (productDetailsError) {
-          console.error('Error fetching product details:', productDetailsError);
-        } else if (productDetails) {
-          setModelUrl(productDetails.model_path);
-          onModelUrlChange(productDetails.model_path);
+          if (productDetailsError) {
+            console.error('Error fetching product details:', productDetailsError);
+          } else if (productDetails) {
+            setModelUrl(productDetails.model_path);
+            onModelUrlChange(productDetails.model_path);
+          }
+        } catch (error) {
+          console.error('Error in fetchProductDetails:', error);
         }
       }
     };

@@ -162,10 +162,12 @@ AS $$
 DECLARE
     v_product_id UUID;
     v_default_model_url TEXT;
+    v_default_image_url TEXT;
 BEGIN
     -- Get default model URL
     v_default_model_url := get_default_model_url();
-    
+    v_default_image_url := 'https://res.cloudinary.com/dzrdlevfn/image/upload/v1733908883/woman-head_gcggvf.jpg';
+
     -- First, ensure we can insert into user_roids
     BEGIN
         INSERT INTO user_roids (
@@ -186,7 +188,7 @@ BEGIN
         RETURN NEW;
     END;
 
-    -- Then, create the initial product with the default model
+    -- Then, create the initial product with the default model (as a template)
     BEGIN
         INSERT INTO products (
             user_id,
@@ -196,7 +198,7 @@ BEGIN
             likes_count,
             downloads_count,
             tags,
-            is_featured,
+            is_featured,  -- Set to false to hide from previews
             model_path,
             image_path
         ) VALUES (
@@ -206,10 +208,10 @@ BEGIN
             'private'::visibility_type_enum,
             0,
             0,
-            ARRAY['starter']::text[],
-            false,
+            ARRAY['template']::text[],
+            false,  -- This ensures it won't show up in previews
             v_default_model_url,
-            'https://res.cloudinary.com/your-cloud-name/image/upload/v1/default/starter-model-thumbnail.jpg'
+            v_default_image_url
         ) RETURNING id INTO v_product_id;
     EXCEPTION WHEN OTHERS THEN
         RAISE NOTICE 'Error creating initial product: %', SQLERRM;
@@ -220,7 +222,7 @@ BEGIN
         PERFORM record_roids_transaction(
             NEW.id,
             200,
-            'purchase'::transaction_type_enum,  -- Explicitly cast to enum
+            'purchase'::transaction_type_enum,
             NULL,
             v_product_id,
             'Initial signup bonus'

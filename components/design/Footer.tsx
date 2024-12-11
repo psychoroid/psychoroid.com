@@ -16,7 +16,7 @@ export function Footer() {
                     </div>
                     <div className="flex items-center space-x-6 py-2 md:py-0 ml-auto">
                         <Link
-                            href="https://github.com/psychoroid/psychoroid"
+                            href="https://github.com/psychoroid"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-muted-foreground hover:text-foreground transition-colors"

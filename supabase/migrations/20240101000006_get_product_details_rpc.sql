@@ -9,12 +9,21 @@ RETURNS TABLE (
     user_id UUID,
     created_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ,
-    is_visible BOOLEAN
+    visibility visibility_type_enum
 )
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT p.id, p.name, p.description, p.image_path, p.model_path, p.user_id, p.created_at, p.updated_at, p.is_visible
+    SELECT 
+        p.id,
+        p.name,
+        p.description,
+        p.image_path,
+        p.model_path,
+        p.user_id,
+        p.created_at,
+        p.updated_at,
+        p.visibility
     FROM products p
     WHERE p.image_path = p_image_path;
 END;

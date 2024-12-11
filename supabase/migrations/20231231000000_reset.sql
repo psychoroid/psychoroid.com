@@ -1,45 +1,42 @@
 -- Drop all storage objects first
 DO $$
 BEGIN
-    EXECUTE (
-        SELECT string_agg('DELETE FROM storage.objects WHERE bucket_id = ''' || id || ''';', ' ')
-        FROM storage.buckets
-    );
+    -- Handle empty buckets case
+    IF EXISTS (SELECT 1 FROM storage.buckets) THEN
+        EXECUTE (
+            SELECT string_agg('DELETE FROM storage.objects WHERE bucket_id = ''' || id || ''';', ' ')
+            FROM storage.buckets
+            WHERE id IS NOT NULL
+        );
+    END IF;
 END $$;
 
 -- Drop all buckets
 DELETE FROM storage.buckets;
 
--- Drop all policies from storage
+-- Drop all triggers
 DO $$
 DECLARE
-    r RECORD;
+    trigger_rec RECORD;
 BEGIN
-    FOR r IN (
-        SELECT policyname 
-        FROM pg_policies 
-        WHERE schemaname = 'storage'
+    FOR trigger_rec IN (
+        SELECT 
+            tgname as trigger_name,
+            relname as table_name
+        FROM pg_trigger t
+        JOIN pg_class c ON t.tgrelid = c.oid
+        JOIN pg_namespace n ON c.relnamespace = n.oid
+        WHERE n.nspname = 'public'
     ) LOOP
-        EXECUTE 'DROP POLICY IF EXISTS "' || r.policyname || '" ON storage.objects';
-    END LOOP;
-END $$;
-
--- Drop all policies from public schema
-DO $$
-DECLARE
-    r RECORD;
-BEGIN
-    FOR r IN (
-        SELECT policyname, tablename 
-        FROM pg_policies 
-        WHERE schemaname = 'public'
-    ) LOOP
-        EXECUTE 'DROP POLICY IF EXISTS "' || r.policyname || '" ON public.' || r.tablename;
+        EXECUTE format('DROP TRIGGER IF EXISTS %I ON %I CASCADE;',
+            trigger_rec.trigger_name,
+            trigger_rec.table_name
+        );
     END LOOP;
 END $$;
 
 -- Drop schema
-DROP SCHEMA public CASCADE;
+DROP SCHEMA IF EXISTS public CASCADE;
 
 -- Recreate the public schema
 CREATE SCHEMA public;

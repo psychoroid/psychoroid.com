@@ -10,7 +10,7 @@ import { ProductControls } from '@/components/3D/ProductControls';
 import { CommunityGrid } from '@/components/community/CommunityGrid';
 import { Search } from 'lucide-react';
 import { useUser } from '@/lib/contexts/UserContext';
-import type { CommunityProduct, CommunityGridProps, ProductLike } from '@/types/community';
+import type { CommunityProduct, ProductLike } from '@/types/community';
 
 export default function CommunityPage() {
     const { user } = useUser();

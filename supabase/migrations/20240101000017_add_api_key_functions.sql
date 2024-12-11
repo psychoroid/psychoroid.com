@@ -1,25 +1,4 @@
--- Create the api_key_status_enum type if it doesn't exist
-DO $$ BEGIN
-    CREATE TYPE api_key_status_enum AS ENUM ('active', 'revoked');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-
--- Create the api_keys table if it doesn't exist
-CREATE TABLE IF NOT EXISTS api_keys (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    key_hash TEXT NOT NULL,
-    prefix TEXT NOT NULL,
-    status api_key_status_enum DEFAULT 'active',
-    last_used_at TIMESTAMPTZ,
-    expires_at TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Function to generate a new API key
+-- Create function to generate a new API key
 CREATE OR REPLACE FUNCTION generate_api_key(
     p_user_id UUID,
     p_name TEXT,
@@ -134,27 +113,3 @@ $$;
 GRANT EXECUTE ON FUNCTION generate_api_key(UUID, TEXT, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION revoke_api_key(UUID, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION list_api_keys(UUID) TO authenticated;
-
--- Enable RLS on api_keys table
-ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
-
--- Drop existing policies if they exist
-DROP POLICY IF EXISTS "Users can view their own API keys" ON api_keys;
-DROP POLICY IF EXISTS "Users can create their own API keys" ON api_keys;
-DROP POLICY IF EXISTS "Users can update their own API keys" ON api_keys;
-
--- Create RLS policies
-CREATE POLICY "Users can view their own API keys"
-    ON api_keys FOR SELECT
-    TO authenticated
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create their own API keys"
-    ON api_keys FOR INSERT
-    TO authenticated
-    WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own API keys"
-    ON api_keys FOR UPDATE
-    TO authenticated
-    USING (auth.uid() = user_id);

@@ -12,6 +12,14 @@ create policy "Public Access to Product Images"
     on storage.objects for select
     using ( bucket_id = 'product-images' );
 
+-- Add policy for external URLs in products table
+create policy "Allow External URLs"
+    on products for select
+    using (
+        model_path LIKE 'https://res.cloudinary.com/%'
+        OR image_path LIKE 'https://res.cloudinary.com/%'
+    );
+
 create policy "Authenticated Users Can Upload Product Images"
     on storage.objects for insert
     with check (

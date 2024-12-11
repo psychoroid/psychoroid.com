@@ -4,6 +4,7 @@ export interface CommunityProduct {
     description: string;
     image_path: string;
     model_path: string;
+    visibility: 'public' | 'private' | 'unlisted';
     likes_count: number;
     downloads_count: number;
     views_count: number;
@@ -11,7 +12,6 @@ export interface CommunityProduct {
     updated_at: string;
     user_id: string;
     tags: string[];
-    visibility?: string;
     is_featured?: boolean;
 }
 
@@ -26,4 +26,13 @@ export interface CommunityGridProps {
 
 export interface ProductLike {
     product_id: string;
+}
+
+export interface CommunityItemProps {
+    product: CommunityProduct;
+    onSelect: (product: CommunityProduct) => void;
+    isSelected: boolean;
+    onLike: (productId: string) => void;
+    onDownload: (productId: string) => void;
+    isLiked: boolean;
 } 

@@ -13,6 +13,7 @@ BEGIN
     FROM products p
     WHERE p.user_id = p_user_id
     AND p.visibility != 'private'
+    AND p.is_featured = true  -- Only show non-template items
     ORDER BY p.created_at DESC;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp; 
