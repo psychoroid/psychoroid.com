@@ -21,8 +21,7 @@
 /lib/huggingface/prompts/
 
 # Database
-/supabase/
-*.sql
+
 *.sqlite
 
 # Authentication

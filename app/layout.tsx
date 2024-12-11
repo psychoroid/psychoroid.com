@@ -71,7 +71,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning className="dark">
             <body className={`${inter.className} dark:bg-background dark:text-foreground`}>
-                <ThemeProviderWrapper defaultTheme="dark" forcedTheme="dark">
+                <ThemeProviderWrapper defaultTheme="dark">
                     <UserProvider>
                         {children}
                     </UserProvider>

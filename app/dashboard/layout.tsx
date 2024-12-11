@@ -33,8 +33,8 @@ export default function DashboardLayout({
   return (
     <div className="h-svh bg-background flex flex-col overflow-hidden">
       <Navbar />
-      <main className="flex-grow overflow-auto scrollbar-hide">
-        <div className="max-w-3xl mx-auto px-4 py-8 mt-16">
+      <main className="flex-1 overflow-hidden pt-16">
+        <div className="max-w-3xl mx-auto px-4 py-8 h-full">
           <DashboardNav />
           {children}
         </div>

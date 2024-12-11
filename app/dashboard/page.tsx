@@ -1,60 +1,135 @@
 'use client'
 
 import { useUser } from '@/lib/contexts/UserContext'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+import { DashboardCard } from '@/components/dashboard/DashboardCard'
 import { Card } from '@/components/ui/card'
-import { Coins, Image as ImageIcon, Settings } from 'lucide-react'
-import Link from 'next/link'
+import { Coins, Clock } from 'lucide-react'
+import { Box } from 'lucide-react'
+
+import { getUserRoidsBalance } from '@/lib/roids/roids'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase/supabase'
+import { RecentActivity } from '@/components/dashboard/RecentActivity'
+import { QuickActions } from '@/components/dashboard/QuickActions'
 
 export default function DashboardPage() {
     const { user } = useUser()
+    const [roidsBalance, setRoidsBalance] = useState<number | null>(null)
+    const [assetsCount, setAssetsCount] = useState<number>(0)
+    const [lastActivity, setLastActivity] = useState<string | null>(null)
 
-    const dashboardItems = [
-        {
-            title: 'My Assets',
-            description: 'Manage your 3D models and images',
-            icon: <ImageIcon className="h-5 w-5" />,
-            href: '/dashboard/assets'
-        },
-        {
-            title: 'ROIDS Balance',
-            description: 'View and manage your credits',
-            icon: <Coins className="h-5 w-5" />,
-            href: '/dashboard/roids'
-        },
-        {
-            title: 'Settings',
-            description: 'Account and preferences',
-            icon: <Settings className="h-5 w-5" />,
-            href: '/dashboard/settings'
+    const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'User'
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchDashboardData()
         }
-    ]
+    }, [user?.id])
+
+    const fetchDashboardData = async () => {
+        try {
+            // Fetch ROIDS balance
+            const balance = await getUserRoidsBalance(user!.id)
+            setRoidsBalance(balance)
+
+            // Fetch assets count
+            const { count: assets } = await supabase
+                .from('products')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', user!.id)
+
+            setAssetsCount(assets || 0)
+
+            // Fetch last activity
+            const { data: activities } = await supabase
+                .from('user_activity')
+                .select('*')
+                .eq('user_id', user!.id)
+                .order('created_at', { ascending: false })
+                .limit(1)
+
+            if (activities?.[0]) {
+                setLastActivity(activities[0].created_at)
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error)
+        }
+    }
 
     return (
-        <div>
-            <div className="flex flex-col space-y-1 mb-8">
-                <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
-                <p className="text-xs text-muted-foreground">
-                    Welcome back, {user?.user_metadata?.full_name || 'User'}
-                </p>
+        <div
+            className="h-full flex flex-col md:overflow-hidden overflow-auto"
+            style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                paddingBottom: '4rem',
+            }}
+        >
+            <style jsx global>{`
+                div::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
+
+            <div className="space-y-6 flex-shrink-0">
+                <DashboardHeader
+                    title="Dashboard"
+                    description={`Welcome back ${firstName}!`}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <DashboardCard
+                        title="Credits"
+                        value={roidsBalance ?? '—'}
+                        description="Available ROIDS"
+                        icon={Coins}
+                        iconClassName="text-[#D73D57]"
+                    />
+                    <DashboardCard
+                        title="Assets"
+                        value={assetsCount}
+                        description="3D models created"
+                        icon={Box}
+                        iconClassName="text-indigo-500 dark:text-indigo-400"
+                    />
+                    <DashboardCard
+                        title="Activity"
+                        value={lastActivity ? formatTimeAgo(lastActivity) : '—'}
+                        description="Latest interaction"
+                        icon={Clock}
+                        iconClassName="text-orange-500 dark:text-orange-400"
+                    />
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {dashboardItems.map((item, index) => (
-                    <Link key={index} href={item.href}>
-                        <Card className="p-4 hover:bg-accent transition-colors cursor-pointer">
-                            <div className="flex items-center space-x-3">
-                                <div className="p-2 bg-primary/10 rounded-md">
-                                    {item.icon}
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-medium">{item.title}</h3>
-                                    <p className="text-xs text-muted-foreground">{item.description}</p>
-                                </div>
-                            </div>
-                        </Card>
-                    </Link>
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 md:h-[370px] min-h-[800px] md:min-h-0">
+                <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col h-[400px] md:h-auto">
+                    <h3 className="text-sm font-medium mb-4">Recent Activity</h3>
+                    <div className="flex-1 min-h-0 overflow-auto">
+                        <RecentActivity />
+                    </div>
+                </Card>
+
+                <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col h-[400px] md:h-auto">
+                    <h3 className="text-sm font-medium mb-4">Quick Actions</h3>
+                    <div className="flex-1 min-h-0 overflow-auto">
+                        <QuickActions />
+                    </div>
+                </Card>
             </div>
         </div>
     )
+}
+
+// Helper function to format time
+function formatTimeAgo(date: string) {
+    const now = new Date()
+    const activityDate = new Date(date)
+    const diffInHours = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60))
+
+    if (diffInHours < 1) return 'Just now'
+    if (diffInHours === 1) return '1 hour ago'
+    if (diffInHours < 24) return `${diffInHours} hours ago`
+    return `${Math.floor(diffInHours / 24)} days ago`
 }

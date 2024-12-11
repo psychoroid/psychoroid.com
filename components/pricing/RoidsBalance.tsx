@@ -1,32 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getUserRoidsBalance } from '@/lib/roids/roids';
+import { useUser } from '@/lib/contexts/UserContext'
+import { getUserRoidsBalance } from '@/lib/roids/roids'
+import { useEffect, useState } from 'react'
+import { Coins } from 'lucide-react'
 
-export function RoidsBalance({ userId }: { userId: string }) {
-    const [balance, setBalance] = useState<number | null>(null);
+export function RoidsBalance() {
+    const { user } = useUser()
+    const [balance, setBalance] = useState<number | null>(null)
 
     useEffect(() => {
         async function fetchBalance() {
-            try {
-                const roidsBalance = await getUserRoidsBalance(userId);
-                setBalance(roidsBalance);
-            } catch (error) {
-                console.error('Error fetching ROIDS balance:', error);
+            if (user?.id) {
+                const roidsBalance = await getUserRoidsBalance(user.id)
+                setBalance(roidsBalance)
             }
         }
-
-        if (userId) {
-            fetchBalance();
-        }
-    }, [userId]);
-
-    if (balance === null) return null;
+        fetchBalance()
+    }, [user?.id])
 
     return (
-        <div className="text-center p-4 bg-gray-800 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-300">Your ROIDS Balance</h3>
-            <p className="text-2xl font-bold text-purple-400">{balance} ROIDS</p>
+        <div className="flex items-center text-sm font-medium">
+            <Coins className="h-4 w-4 mr-2 text-[#D73D57]" />
+            <span className="text-[#D73D57]">{balance ?? '—'}</span>
         </div>
-    );
+    )
 } 

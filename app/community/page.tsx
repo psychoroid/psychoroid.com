@@ -108,9 +108,9 @@ export default function CommunityPage() {
                         {/* Left side - Title */}
                         <div className="col-span-4">
                             <div className="flex flex-col space-y-1">
-                                <h1 className="text-xl font-semibold text-foreground">Community Models</h1>
+                                <h1 className="text-xl font-semibold text-foreground">Discover models</h1>
                                 <p className="text-xs text-muted-foreground">
-                                    Discover public assets created in realtime by the community
+                                    Discover public assets created in real time by our community
                                 </p>
                             </div>
                         </div>

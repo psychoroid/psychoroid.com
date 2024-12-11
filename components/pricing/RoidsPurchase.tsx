@@ -1,62 +1,106 @@
-import { useState } from 'react';
-import { getStripe } from '../../lib/stripe/stripe';
+'use client'
 
-const ROIDS_PACKAGES = {
-    basic: { roids: 600, price: 9.99 },
-    premium: { roids: 2000, price: 29.99 },
-    pro: { roids: 5000, price: 59.99 },
-};
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { useUser } from '@/lib/contexts/UserContext'
+import { getStripe } from '@/lib/stripe/stripe'
+import { toast } from 'sonner'
 
-export default function RoidsPurchase({ userId }: { userId: string }) {
-    const [loading, setLoading] = useState(false);
+const CREDIT_PRICE = 0.01 // $0.01 per credit
 
-    const handlePurchase = async (packageName: string) => {
+export default function RoidsPurchase() {
+    const { user } = useUser()
+    const [isLoading, setIsLoading] = useState(false)
+    const [customCredits, setCustomCredits] = useState<number>(1000)
+
+    const calculatePrice = (credits: number) => {
+        return (credits * CREDIT_PRICE).toFixed(2)
+    }
+
+    const handleCustomPurchase = async () => {
+        if (!user) {
+            toast.error('Please sign in to purchase credits')
+            return
+        }
+
         try {
-            setLoading(true);
-
+            setIsLoading(true)
             const response = await fetch('/api/create-checkout-session', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    package: packageName,
-                    userId,
+                    package: 'custom',
+                    userId: user.id,
+                    credits: customCredits,
+                    price: calculatePrice(customCredits)
                 }),
-            });
+            })
 
-            const { sessionId } = await response.json();
-            const stripe = await getStripe();
+            const data = await response.json()
 
-            if (stripe) {
-                const { error } = await stripe.redirectToCheckout({ sessionId });
-                if (error) {
-                    console.error('Stripe checkout error:', error);
-                }
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to create checkout session')
+            }
+
+            const stripe = await getStripe()
+            if (!stripe) {
+                throw new Error('Failed to load Stripe')
+            }
+
+            const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId })
+            if (error) {
+                throw error
             }
         } catch (error) {
-            console.error('Error initiating checkout:', error);
+            console.error('Error initiating checkout:', error)
+            toast.error(error instanceof Error ? error.message : 'Failed to start checkout')
         } finally {
-            setLoading(false);
+            setIsLoading(false)
         }
-    };
+    }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-            {Object.entries(ROIDS_PACKAGES).map(([key, pkgData]) => (
-                <div key={key} className="border rounded-lg p-6 text-center">
-                    <h3 className="text-xl font-bold mb-4">{key.charAt(0).toUpperCase() + key.slice(1)} Package</h3>
-                    <p className="text-3xl font-bold mb-2">{pkgData.roids} ROIDS</p>
-                    <p className="text-xl mb-4">${pkgData.price}</p>
-                    <button
-                        onClick={() => handlePurchase(key)}
-                        disabled={loading}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                    >
-                        {loading ? 'Processing...' : 'Purchase'}
-                    </button>
+        <div className="space-y-4">
+            <div className="flex items-center gap-4">
+                <div className="relative w-full md:w-auto">
+                    <Input
+                        type="number"
+                        min="100"
+                        step="50"
+                        value={customCredits || ''}
+                        onChange={(e) => {
+                            const value = e.target.value ? parseInt(e.target.value) : ''
+                            setCustomCredits(value ? Number(value) : 0)
+                        }}
+                        onBlur={(e) => {
+                            const value = parseInt(e.target.value)
+                            if (value < 100) {
+                                setCustomCredits(100)
+                            }
+                        }}
+                        className="w-full md:w-32 text-xs font-medium pr-12 h-8 rounded-none"
+                        placeholder="Min. 100"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                        roids
+                    </span>
                 </div>
-            ))}
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    = ${calculatePrice(customCredits || 0)}
+                </span>
+                <Button
+                    onClick={handleCustomPurchase}
+                    variant="outline"
+                    size="sm"
+                    disabled={isLoading || !customCredits || customCredits < 100}
+                    className="w-full md:w-auto px-6 h-8 transition-all hover:bg-primary hover:text-primary-foreground rounded-none text-xs font-medium"
+                >
+                    {isLoading ? 'Processing...' : 'Purchase'}
+                </Button>
+            </div>
         </div>
-    );
+    )
 } 
