@@ -7,10 +7,36 @@ const nextConfig = {
             test: /\.(woff|woff2|eot|ttf|otf)$/i,
             type: 'asset/resource',
         });
+        config.module.rules.push({
+            test: /\.(glb|gltf)$/,
+            use: {
+                loader: 'file-loader',
+            },
+        });
+        config.experiments = {
+            ...config.experiments,
+            asyncWebAssembly: true,
+        };
         return config;
     },
     images: {
-        domains: ['peyzpnmmgsxjydvpussg.supabase.co', 'peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images'],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'peyzpnmmgsxjydvpussg.supabase.co',
+                pathname: '/storage/v1/object/public/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'res.cloudinary.com',
+                pathname: '/dzrdlevfn/**',
+            }
+        ],
+        domains: [
+            'peyzpnmmgsxjydvpussg.supabase.co',
+            'res.cloudinary.com'
+            // Add any other domains you're loading images from
+        ],
     },
 }
 

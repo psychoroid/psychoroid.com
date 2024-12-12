@@ -115,86 +115,87 @@ export default function CommunityPage() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Navbar />
-
-            {/* Header Section */}
-            <div className="max-w-3xl mx-auto px-4 py-8 mt-[4.5rem] md:mt-16">
-                <div className="grid grid-cols-12 gap-8">
-                    {/* Left side - Title */}
-                    <div className="col-span-4">
-                        <div className="flex flex-col space-y-1">
-                            <h1 className="text-xl font-semibold text-foreground">Discover models</h1>
-                            <p className="text-xs text-muted-foreground">
-                                Explore public assets created by our community
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Right side - Search */}
-                    <div className="col-span-8">
-                        <div className="relative mt-4">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="text"
-                                placeholder="Search models, creators, or tags..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 h-9 text-xs rounded-none"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Grid Section - Keep the full width for the grid */}
-            <div className="flex-grow pb-8">
-                <CommunityGrid
-                    products={products}
-                    onProductSelect={handleProductSelect}
-                    selectedProduct={selectedProduct}
-                    onLike={handleLike}
-                    onDownload={handleDownload}
-                    userLikes={userLikes}
-                />
-            </div>
-
-            {/* Preview Modal remains the same */}
-            {selectedProduct && (
-                <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-                    <div className="fixed inset-2 md:inset-4 bg-background border rounded-lg shadow-lg p-4 md:p-6">
-                        <div className="h-full flex flex-col">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-sm font-medium text-foreground">{selectedProduct.name}</h2>
-                                <button
-                                    onClick={() => setSelectedProduct(null)}
-                                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                                >
-                                    Close
-                                </button>
+            <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24">
+                <div className="px-0 md:px-4">
+                    <div className="max-w-3xl mx-auto mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">
+                            {/* Left side - Title */}
+                            <div className="md:col-span-4">
+                                <div className="flex flex-col space-y-1 md:pl-4">
+                                    <h1 className="text-xl font-semibold text-foreground">Discover models</h1>
+                                    <p className="text-xs text-muted-foreground">
+                                        Explore public assets created by our community
+                                    </p>
+                                </div>
                             </div>
-                            <div className="flex-grow relative">
-                                <ProductViewer
-                                    imagePath={selectedProduct.image_path}
-                                    modelUrl={selectedProduct.model_path}
-                                    isRotating={isRotating}
-                                    zoom={zoom}
-                                    isExpanded={isExpanded}
-                                    onClose={() => setIsExpanded(false)}
-                                />
-                                <div className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2">
-                                    <ProductControls
-                                        isRotating={isRotating}
-                                        onRotateToggle={() => setIsRotating(!isRotating)}
-                                        onZoomIn={() => setZoom(z => z + 0.1)}
-                                        onZoomOut={() => setZoom(z => Math.max(z - 0.1, 0.1))}
-                                        onExpand={() => setIsExpanded(true)}
+
+                            {/* Right side - Search */}
+                            <div className="md:col-span-8">
+                                <div className="relative md:pr-4 md:pt-2 mt-2">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-[25%] h-[14px] w-[14px] text-muted-foreground pointer-events-none" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Search models, creators, or tags..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-9 h-9 text-xs rounded-none"
                                     />
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
 
+                    {/* Grid Section - Now can extend full width */}
+                    <div className="flex-grow pb-8">
+                        <CommunityGrid
+                            products={products}
+                            onProductSelect={handleProductSelect}
+                            selectedProduct={selectedProduct}
+                            onLike={handleLike}
+                            onDownload={handleDownload}
+                            userLikes={userLikes}
+                        />
+                    </div>
+
+                    {/* Preview Modal remains the same */}
+                    {selectedProduct && (
+                        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+                            <div className="fixed inset-2 md:inset-4 bg-background border rounded-lg shadow-lg p-4 md:p-6">
+                                <div className="h-full flex flex-col">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-sm font-medium text-foreground">{selectedProduct.name}</h2>
+                                        <button
+                                            onClick={() => setSelectedProduct(null)}
+                                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                    <div className="flex-grow relative">
+                                        <ProductViewer
+                                            imagePath={selectedProduct.image_path}
+                                            modelUrl={selectedProduct.model_path}
+                                            isRotating={isRotating}
+                                            zoom={zoom}
+                                            isExpanded={isExpanded}
+                                            onClose={() => setIsExpanded(false)}
+                                        />
+                                        <div className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2">
+                                            <ProductControls
+                                                isRotating={isRotating}
+                                                onRotateToggle={() => setIsRotating(!isRotating)}
+                                                onZoomIn={() => setZoom(z => z + 0.1)}
+                                                onZoomOut={() => setZoom(z => Math.max(z - 0.1, 0.1))}
+                                                onExpand={() => setIsExpanded(true)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </main>
             <Footer />
         </div>
     );

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/supabase';
@@ -9,36 +9,85 @@ import { Dock } from '@/components/ui/dock';
 import Image from 'next/image';
 import { useUser } from '@/lib/contexts/UserContext';
 import { Coins, Menu } from 'lucide-react';
-import { getUserRoidsBalance } from '@/lib/roids/roids';
+import { motion, AnimatePresence } from 'framer-motion';
+import { DockDropdown } from './DockDropdown';
+import { CompanyDropdown } from './dropdowns/CompanyDropdown';
+import { EngineDropdown } from './dropdowns/EngineDropdown';
+import { getLocalStorageItem, setLocalStorageItem } from '@/lib/utils/localStorage';
 
 export function Navbar() {
     const router = useRouter();
-    const { session } = useUser();
+    const { session, roidsBalance, signOut } = useUser();
     const { theme, setTheme } = useTheme();
-    const [roidsBalance, setRoidsBalance] = useState<number | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [isHovering, setIsHovering] = useState(false);
+    const [companyMenuOpen, setCompanyMenuOpen] = useState(false);
+    const [engineMenuOpen, setEngineMenuOpen] = useState(false);
+    const [localRoidsBalance, setLocalRoidsBalance] = useState<number | null>(null);
 
     useEffect(() => {
-        async function fetchRoidsBalance() {
-            if (session?.user?.id) {
-                try {
-                    const balance = await getUserRoidsBalance(session.user.id);
-                    setRoidsBalance(balance);
-                } catch (error) {
-                    console.error('Error fetching ROIDS balance:', error);
-                }
+        function handleClickOutside(event: MouseEvent) {
+            if (isMenuOpen &&
+                menuRef.current &&
+                buttonRef.current &&
+                !menuRef.current.contains(event.target as Node) &&
+                !buttonRef.current.contains(event.target as Node)) {
+                setIsMenuOpen(false);
             }
         }
 
-        fetchRoidsBalance();
-    }, [session?.user?.id]);
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen]);
+
+    useEffect(() => {
+        const fetchUserDashboardData = async () => {
+            if (session?.user?.id) {
+                try {
+                    const { data, error } = await supabase
+                        .rpc('get_user_dashboard_data', {
+                            p_user_id: session.user.id
+                        });
+
+                    if (error) throw error;
+
+                    if (data && data.length > 0) {
+                        const { roids_balance } = data[0];
+                        setLocalRoidsBalance(roids_balance);
+                        // Cache the balance
+                        setLocalStorageItem('user-roids-balance', roids_balance.toString());
+                    }
+                } catch (error) {
+                    console.error('Error fetching dashboard data:', error);
+                    // Try to get from cache if fetch fails
+                    const cachedBalance = getLocalStorageItem('user-roids-balance');
+                    if (cachedBalance) {
+                        setLocalRoidsBalance(parseInt(cachedBalance));
+                    }
+                }
+            }
+        };
+
+        fetchUserDashboardData();
+
+        // Set up interval to refresh data every 5 minutes
+        const interval = setInterval(fetchUserDashboardData, 5 * 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, [session]);
 
     const handleSignOut = async () => {
-        localStorage.removeItem('cachedImages');
-        localStorage.removeItem('cachedSelectedImage');
-        await supabase.auth.signOut();
-        router.push('/');
-        window.location.reload();
+        try {
+            setIsMenuOpen(false);
+            await signOut();
+        } catch (error) {
+            console.error('Error during sign out:', error);
+            window.location.href = '/auth/sign-in';
+        }
     };
 
     const toggleTheme = () => {
@@ -52,7 +101,11 @@ export function Navbar() {
                     <div className="flex items-center justify-between h-12">
                         <div className="flex items-center space-x-4">
                             <div className="flex items-center">
-                                <button onClick={toggleTheme}>
+                                <button
+                                    onClick={toggleTheme}
+                                    tabIndex={-1}
+                                    className="focus:outline-none"
+                                >
                                     <Image
                                         src="/main.png"
                                         alt="Logo"
@@ -61,17 +114,22 @@ export function Navbar() {
                                         className="mr-1 -ml-1"
                                     />
                                 </button>
-                                <Link
-                                    href="/"
-                                    className="text-foreground text-sm font-bold focus:outline-none"
+                                <div
+                                    onMouseEnter={() => setCompanyMenuOpen(true)}
+                                    onMouseLeave={() => setCompanyMenuOpen(false)}
                                 >
-                                    psychoroid.com
-                                </Link>
+                                    <Link
+                                        href="/"
+                                        className="text-foreground text-sm font-bold focus:outline-none"
+                                    >
+                                        psychoroid.com
+                                    </Link>
+                                </div>
                             </div>
 
                             {session && (
                                 <div className="hidden md:flex items-center">
-                                    <div className="flex items-center text-xs font-medium">
+                                    <div className="flex items-center text-xs font-medium translate-y-[2px]">
                                         <Coins className="h-3 w-3 mr-1 text-[#D73D57]" />
                                         <span className="text-[#D73D57]">
                                             {roidsBalance ?? '—'}
@@ -79,7 +137,7 @@ export function Navbar() {
                                     </div>
                                     <Link
                                         href="/dashboard"
-                                        className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium ml-3"
+                                        className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium ml-3 translate-y-[2px]"
                                     >
                                         Dashboard
                                     </Link>
@@ -89,6 +147,7 @@ export function Navbar() {
                         </div>
 
                         <button
+                            ref={buttonRef}
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="md:hidden text-muted-foreground hover:text-foreground transition-colors"
                         >
@@ -96,21 +155,26 @@ export function Navbar() {
                         </button>
 
                         <div className="hidden md:flex items-center space-x-6">
-                            <Link
-                                href="/"
-                                className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-600 transition-colors text-xs font-medium"
+                            <div
+                                onMouseEnter={() => setEngineMenuOpen(true)}
+                                onMouseLeave={() => setEngineMenuOpen(false)}
                             >
-                                3D Engine
-                            </Link>
+                                <Link
+                                    href="/"
+                                    className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-600 transition-colors text-xs font-medium translate-y-[2px]"
+                                >
+                                    3D Engine
+                                </Link>
+                            </div>
                             <Link
                                 href="/community"
-                                className="text-emerald-500 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors text-xs font-medium"
+                                className="text-emerald-500 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors text-xs font-medium translate-y-[2px]"
                             >
                                 Community
                             </Link>
                             <Link
                                 href="https://developers.psychoroid.com"
-                                className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -118,7 +182,7 @@ export function Navbar() {
                             </Link>
                             <Link
                                 href="/pricing"
-                                className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
                             >
                                 Pricing
                             </Link>
@@ -126,14 +190,14 @@ export function Navbar() {
                             {session ? (
                                 <button
                                     onClick={handleSignOut}
-                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
                                 >
                                     Sign out
                                 </button>
                             ) : (
                                 <Link
                                     href="/auth/sign-in"
-                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
                                 >
                                     Sign In
                                 </Link>
@@ -141,7 +205,26 @@ export function Navbar() {
                         </div>
                     </div>
 
-                    <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} py-6 border-t border-border`}>
+                    <AnimatePresence>
+                        {companyMenuOpen && (
+                            <DockDropdown isOpen={companyMenuOpen}>
+                                <CompanyDropdown />
+                            </DockDropdown>
+                        )}
+                    </AnimatePresence>
+
+                    <AnimatePresence>
+                        {engineMenuOpen && (
+                            <DockDropdown isOpen={engineMenuOpen}>
+                                <EngineDropdown />
+                            </DockDropdown>
+                        )}
+                    </AnimatePresence>
+
+                    <div
+                        ref={menuRef}
+                        className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} pt-6 pb-4 border-t border-border mt-3`}
+                    >
                         <div className="flex flex-col space-y-5">
                             {session && (
                                 <>
@@ -200,12 +283,15 @@ export function Navbar() {
                                     </button>
                                 </>
                             ) : (
-                                <Link
-                                    href="/auth/sign-in"
-                                    className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
-                                >
-                                    Sign In
-                                </Link>
+                                <>
+                                    <div className="h-px w-full bg-border"></div>
+                                    <Link
+                                        href="/auth/sign-in"
+                                        className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
+                                    >
+                                        Sign In
+                                    </Link>
+                                </>
                             )}
                         </div>
                     </div>

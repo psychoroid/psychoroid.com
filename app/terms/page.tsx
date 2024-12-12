@@ -15,7 +15,7 @@ export default function TermsOfService() {
                             <div className="flex flex-col space-y-1">
                                 <h1 className="text-xl font-semibold text-foreground">Terms</h1>
                                 <p className="text-xs text-muted-foreground">
-                                    Terms of service
+                                    Terms and conditions
                                 </p>
                             </div>
                         </div>

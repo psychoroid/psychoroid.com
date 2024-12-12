@@ -47,7 +47,7 @@ export default function SettingsLayout({
         <div className="space-y-8">
             <div className="grid grid-cols-12 gap-4 sm:gap-8">
                 <div className="col-span-2 sm:col-span-4">
-                    <nav className="space-y-2">
+                    <nav className="space-y-2 sticky top-0">
                         {settingsNavItems.map((item) => {
                             const Icon = item.icon
                             const isActive = pathname === item.href

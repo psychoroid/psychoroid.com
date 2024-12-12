@@ -83,9 +83,39 @@ export default function BillingSettings() {
         window.location.href = '/pricing'
     }
 
+    const handleManageBilling = async () => {
+        setIsLoading(true)
+        try {
+            const response = await fetch('/api/create-billing-portal-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: user?.id,
+                }),
+            })
+
+            const data = await response.json()
+
+            if (data.url) {
+                window.location.href = data.url
+            } else {
+                throw new Error('No URL returned from billing portal')
+            }
+        } catch (error) {
+            console.error('Error accessing billing portal:', error)
+            toast.error('Failed to access billing portal', {
+                description: 'Please subscribe to a plan first'
+            })
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
-        <div>
-            <div className="flex flex-col space-y-1 mb-6">
+        <div className="space-y-6">
+            <div className="flex flex-col space-y-1">
                 <h1 className="text-xl font-semibold text-foreground">Billing and subscription</h1>
                 <p className="text-xs text-muted-foreground">
                     Your subscription details and credits balance
@@ -130,17 +160,27 @@ export default function BillingSettings() {
                                         </div>
                                     )}
                                 </div>
-                                <Button
-                                    onClick={isSubscribed ? handleManageSubscription : handleSubscribe}
-                                    disabled={isLoading}
-                                    className="rounded-none bg-blue-500 hover:bg-blue-600 text-white h-7 px-2.5 sm:h-10 sm:px-6 w-[80px] sm:w-auto text-[11px] sm:text-sm"
-                                >
-                                    {isLoading
-                                        ? 'Processing...'
-                                        : isSubscribed
-                                            ? 'Manage Subscription'
-                                            : 'Upgrade'}
-                                </Button>
+                                <div className="flex gap-4">
+                                    <Button
+                                        onClick={handleManageBilling}
+                                        disabled={isLoading}
+                                        className="rounded-none bg-gray-500 hover:bg-gray-600 text-white"
+                                    >
+                                        {isLoading ? 'Loading...' : 'Manage Billing'}
+                                    </Button>
+
+                                    <Button
+                                        onClick={isSubscribed ? handleManageSubscription : handleSubscribe}
+                                        disabled={isLoading}
+                                        className="rounded-none bg-blue-500 hover:bg-blue-600 text-white"
+                                    >
+                                        {isLoading
+                                            ? 'Processing...'
+                                            : isSubscribed
+                                                ? 'Manage Subscription'
+                                                : 'Upgrade'}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>

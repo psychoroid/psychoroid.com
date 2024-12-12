@@ -169,64 +169,62 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-background flex flex-col justify-between">
-            <div>
-                <Navbar />
-                <div className="p-8 pt-24">
-                    <div className="max-w-7xl mx-auto text-gray-900 dark:text-white">
-                        <ImageUpload
-                            onImageUpload={handleImageUpload}
-                            onModelUrlChange={setModelUrl}
-                            onProgressUpdate={handleProgressUpdate}
-                        />
+        <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-background">
+            <Navbar />
+            <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24">
+                <div className="max-w-7xl mx-auto text-gray-900 dark:text-white">
+                    <ImageUpload
+                        onImageUpload={handleImageUpload}
+                        onModelUrlChange={setModelUrl}
+                        onProgressUpdate={handleProgressUpdate}
+                    />
 
-                        {selectedImage && (
-                            <div className="grid grid-cols-10 gap-8 mt-2">
-                                {/* Left Panel - 2D Preview */}
-                                <div className="rounded-lg p-6 shadow-sm col-span-3 border dark:border-gray-300 border-gray-200 bg-transparent overflow-hidden">
-                                    <ImagePreview
-                                        imagePaths={uploadedImages}
-                                        selectedImage={selectedImage}
-                                        onImageClick={handleImageClick}
-                                        onImageRemove={handleImageRemove}
-                                        currentPage={page}
-                                        onPageChange={setPage}
-                                        isLoading={false}
-                                        isExpanded={isExpanded}
-                                        processingImages={processingImages}
-                                    />
-                                </div>
+                    {selectedImage && (
+                        <div className="grid grid-cols-1 md:grid-cols-10 gap-4 md:gap-8 mt-2">
+                            {/* Left Panel - 2D Preview */}
+                            <div className="rounded-lg p-4 md:p-6 shadow-sm md:col-span-3 border dark:border-gray-300 border-gray-200 bg-transparent overflow-hidden">
+                                <ImagePreview
+                                    imagePaths={uploadedImages}
+                                    selectedImage={selectedImage}
+                                    onImageClick={handleImageClick}
+                                    onImageRemove={handleImageRemove}
+                                    currentPage={page}
+                                    onPageChange={setPage}
+                                    isLoading={false}
+                                    isExpanded={isExpanded}
+                                    processingImages={processingImages}
+                                />
+                            </div>
 
-                                {/* Right Panel - 3D Viewer */}
-                                <div className="rounded-lg p-6 shadow-sm col-span-7 border dark:border-gray-300 border-gray-200 bg-transparent">
-                                    <div className="relative h-96 flex gap-4">
-                                        <div className="flex-grow">
-                                            <ProductViewer
-                                                key={modelUrl}
-                                                imagePath={selectedImage}
-                                                modelUrl={modelUrl}
-                                                isRotating={isRotating}
-                                                zoom={zoom}
-                                                isExpanded={isExpanded}
-                                                onClose={handleClose}
-                                            />
-                                        </div>
-                                        <div className="flex flex-col justify-center space-y-2">
-                                            <ProductControls
-                                                isRotating={isRotating}
-                                                onRotateToggle={() => setIsRotating(!isRotating)}
-                                                onZoomIn={handleZoomIn}
-                                                onZoomOut={handleZoomOut}
-                                                onExpand={handleExpand}
-                                            />
-                                        </div>
+                            {/* Right Panel - 3D Viewer */}
+                            <div className="rounded-lg p-4 md:p-6 shadow-sm md:col-span-7 border dark:border-gray-300 border-gray-200 bg-transparent">
+                                <div className="relative h-[300px] md:h-96 flex gap-4">
+                                    <div className="flex-grow">
+                                        <ProductViewer
+                                            key={modelUrl}
+                                            imagePath={selectedImage}
+                                            modelUrl={modelUrl}
+                                            isRotating={isRotating}
+                                            zoom={zoom}
+                                            isExpanded={isExpanded}
+                                            onClose={handleClose}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col justify-center space-y-2">
+                                        <ProductControls
+                                            isRotating={isRotating}
+                                            onRotateToggle={() => setIsRotating(!isRotating)}
+                                            onZoomIn={handleZoomIn}
+                                            onZoomOut={handleZoomOut}
+                                            onExpand={handleExpand}
+                                        />
                                     </div>
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
-            </div>
+            </main>
             <Footer />
         </div>
     )

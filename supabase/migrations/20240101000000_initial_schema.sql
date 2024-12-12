@@ -7,12 +7,9 @@ CREATE TYPE visibility_type_enum AS ENUM ('public', 'private', 'unlisted');
 CREATE TYPE support_status_enum AS ENUM ('open', 'in_progress', 'resolved', 'closed');
 CREATE TYPE feedback_sentiment_enum AS ENUM ('very_positive', 'positive', 'negative', 'very_negative');
 CREATE TYPE activity_type_enum AS ENUM (
-    'login',
-    'logout',
-    'signup',
     'password_reset',
     'email_change',
-    'profile_update',
+    'profile_updated',
     'subscription_created',
     'subscription_updated',
     'subscription_cancelled',
@@ -24,6 +21,15 @@ CREATE TYPE api_key_status_enum AS ENUM ('active', 'revoked');
 CREATE TYPE view_type_enum AS ENUM ('click', 'scroll', 'page_load');
 
 --------------- TABLES ---------------
+
+-- Profiles table
+CREATE TABLE public.profiles (
+    id uuid references auth.users on delete cascade primary key,
+    full_name text,
+    email text unique,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
 
 -- Products table
 CREATE TABLE products (
@@ -43,6 +49,8 @@ CREATE TABLE products (
     views_count integer default 0
 );
 
+CREATE INDEX idx_products_user_id ON products(user_id);
+
 -- Product Likes table
 CREATE TABLE product_likes (
     id uuid primary key default uuid_generate_v4(),
@@ -52,13 +60,20 @@ CREATE TABLE product_likes (
     unique(product_id, user_id)
 );
 
+CREATE INDEX idx_product_likes_product_id ON product_likes(product_id);
+CREATE INDEX idx_product_likes_user_id ON product_likes(user_id);
+CREATE INDEX idx_product_likes_composite ON product_likes(product_id, user_id);
+
 -- Product Downloads table
 CREATE TABLE product_downloads (
     id uuid primary key default uuid_generate_v4(),
     product_id uuid references products(id) on delete cascade,
     user_id uuid references auth.users(id),
+    format text not null,
     created_at timestamptz default now()
 );
+
+CREATE INDEX idx_product_downloads_efficient ON product_downloads(product_id, user_id, created_at DESC);
 
 -- User and Credits tables
 CREATE TABLE user_roids (
@@ -95,6 +110,9 @@ CREATE TABLE roids_transactions (
     )
 );
 
+CREATE INDEX idx_roids_transactions_user_id ON roids_transactions(user_id);
+CREATE INDEX idx_roids_transactions_product_id ON roids_transactions(product_id);
+
 -- Support tables
 CREATE TABLE support_requests (
     id uuid primary key default uuid_generate_v4(),
@@ -109,21 +127,7 @@ CREATE TABLE support_requests (
     updated_at timestamptz default now()
 );
 
--- Add trigger to clean up storage on request deletion
-CREATE OR REPLACE FUNCTION delete_support_request_image()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF OLD.image_path IS NOT NULL THEN
-        PERFORM delete_storage_object_from_bucket('support-request-images', OLD.image_path);
-    END IF;
-    RETURN OLD;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER cleanup_support_request_image
-    BEFORE DELETE ON support_requests
-    FOR EACH ROW
-    EXECUTE FUNCTION delete_support_request_image();
+CREATE INDEX idx_support_requests_user_id ON support_requests(user_id);
 
 -- Feedback table
 CREATE TABLE feedback (
@@ -135,6 +139,8 @@ CREATE TABLE feedback (
     updated_at timestamptz default now()
 );
 
+CREATE INDEX idx_feedback_user_id ON feedback(user_id);
+
 CREATE TABLE user_activity (
     id uuid primary key default uuid_generate_v4(),
     user_id uuid references auth.users(id) not null,
@@ -143,6 +149,10 @@ CREATE TABLE user_activity (
     product_id uuid references products(id),
     created_at timestamptz default now()
 );
+
+CREATE INDEX idx_user_activity_user_id ON user_activity(user_id);
+CREATE INDEX idx_user_activity_product_id ON user_activity(product_id);
+CREATE INDEX idx_user_activity_composite ON user_activity(user_id, product_id);
 
 -- API Keys table
 CREATE TABLE api_keys (
@@ -158,6 +168,8 @@ CREATE TABLE api_keys (
     updated_at timestamptz default now()
 );
 
+CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
+
 -- Create user activities table
 CREATE TABLE IF NOT EXISTS user_activities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -166,6 +178,8 @@ CREATE TABLE IF NOT EXISTS user_activities (
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE INDEX idx_user_activities_user_id ON user_activities(user_id);
 
 -- Product Views table
 CREATE TABLE product_views (
@@ -176,3 +190,19 @@ CREATE TABLE product_views (
     created_at timestamptz default now()
 );
 
+CREATE INDEX idx_product_views_product_id ON product_views(product_id);
+CREATE INDEX idx_product_views_user_id ON product_views(user_id);
+CREATE INDEX idx_product_views_composite ON product_views(product_id, user_id);
+
+-- Stripe Customers table
+CREATE TABLE customers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    stripe_customer_id TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(user_id)
+);
+
+CREATE INDEX idx_customers_user_id ON customers(user_id);
+CREATE INDEX idx_customers_stripe_customer_id ON customers(stripe_customer_id);

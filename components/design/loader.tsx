@@ -2,7 +2,7 @@
 
 export default function Loader() {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="fixed inset-0 flex items-center justify-center bg-background">
             <svg
                 width="24"
                 height="24"

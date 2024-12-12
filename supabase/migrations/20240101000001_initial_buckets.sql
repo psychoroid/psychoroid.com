@@ -121,3 +121,22 @@ where not exists (
 create policy "Public Access to Converted Models"
     on storage.objects for select
     using ( bucket_id = 'converted-models' );
+
+-- Add temp-conversions bucket
+insert into storage.buckets (id, name, public)
+select 'temp-conversions', 'temp-conversions', true
+where not exists (
+    select 1 from storage.buckets where id = 'temp-conversions'
+);
+
+-- Set up storage policies for temp-conversions bucket
+create policy "Authenticated Users Can Upload Temp Conversions"
+    on storage.objects for insert
+    with check (
+        bucket_id = 'temp-conversions'
+        and auth.uid() is not null
+    );
+
+create policy "Public Access to Temp Conversions"
+    on storage.objects for select
+    using ( bucket_id = 'temp-conversions' );

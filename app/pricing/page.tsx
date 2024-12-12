@@ -228,10 +228,9 @@ export default function PricingPage() {
         <div className="h-svh bg-background flex flex-col overflow-hidden">
             <Navbar />
             <div className="flex-grow overflow-auto md:h-[calc(100vh-8rem)] md:overflow-hidden scrollbar-hide">
-                <div className="max-w-3xl mx-auto px-4 py-8 mt-[4.5rem] md:mt-16 md:h-full">
-                    <div className="grid grid-cols-12 gap-8">
-                        {/* Left side - Title */}
-                        <div className="col-span-4">
+                <div className="max-w-3xl mx-auto px-4 py-8 mt-16 md:mt-16 md:h-full">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 mb-8">
+                        <div className="md:col-span-4">
                             <div className="flex flex-col space-y-1">
                                 <h1 className="text-xl font-semibold text-foreground">Pricing</h1>
                                 <p className="text-xs text-muted-foreground">
@@ -240,17 +239,13 @@ export default function PricingPage() {
                             </div>
                         </div>
 
-                        {/* Right side - Content */}
-                        <div className="col-span-8 text-foreground">
-                            <div className="mt-4">
-                                <p className="text-xs text-muted-foreground mb-2">
-                                    From individual creators to professional studios - all plans include access to our AI-powered 3D engine with varying levels of features and priority.
-                                </p>
-                            </div>
+                        <div className="md:col-span-8">
+                            <p className="text-xs text-muted-foreground md:pt-2 mt-2">
+                                From individual creators to professional studios - all plans include access to our AI-powered 3D engine with varying levels of features and priority.
+                            </p>
                         </div>
                     </div>
 
-                    {/* Cards Section */}
                     <div className="mt-8 md:mt-6 -mx-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0 px-4 md:px-0">
                             {pricingPlans.map((plan, index) => (

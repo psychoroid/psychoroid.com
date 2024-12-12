@@ -3,57 +3,117 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/supabase';
+import { clearAuthState } from '@/lib/utils/localStorage';
 
 export type UserContextType = {
     user: User | null;
     session: Session | null;
     isLoading: boolean;
+    lastActivity: string | null;
+    roidsBalance: number | null;
+    assetsCount: number | null;
+    signOut: () => Promise<void>;
+    refreshUserData: () => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType>({
     user: null,
     session: null,
     isLoading: true,
+    lastActivity: null,
+    roidsBalance: null,
+    assetsCount: null,
+    signOut: async () => { },
+    refreshUserData: async () => { }
 });
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
+    const [lastActivity, setLastActivity] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [roidsBalance, setRoidsBalance] = useState<number | null>(null);
+    const [assetsCount, setAssetsCount] = useState<number | null>(null);
+
+    const fetchUserData = async (userId: string) => {
+        try {
+            const { data, error } = await supabase.rpc('get_user_dashboard_data', {
+                p_user_id: userId
+            })
+
+            if (error) throw error
+
+            if (data && data.length > 0) {
+                setLastActivity(data[0].last_activity)
+                setRoidsBalance(data[0].roids_balance)
+                setAssetsCount(data[0].assets_count)
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error)
+        }
+    }
+
+    const refreshUserData = async () => {
+        if (session?.user?.id) {
+            await fetchUserData(session.user.id);
+        }
+    };
+
+    const signOut = async () => {
+        try {
+            clearAuthState();
+
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+
+            setUser(null);
+            setSession(null);
+            setLastActivity(null);
+            setRoidsBalance(null);
+            setAssetsCount(null);
+
+            window.location.href = '/auth/sign-in';
+        } catch (error) {
+            console.error('Error signing out:', error);
+            window.location.href = '/auth/sign-in';
+        }
+    };
 
     useEffect(() => {
-        async function getUser() {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) throw error;
-
-                setSession(session);
-                setUser(session?.user ?? null);
-            } catch (error) {
-                console.error('Error loading user:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        getUser();
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
+
+            if (session?.user) {
+                await fetchUserData(session.user.id);
+            } else {
+                setRoidsBalance(null);
+                setAssetsCount(null);
+                setLastActivity(null);
+            }
+
             setIsLoading(false);
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
-    const value = {
-        user,
-        session,
-        isLoading
-    };
-
-    return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+    return (
+        <UserContext.Provider value={{
+            user,
+            session,
+            isLoading,
+            lastActivity,
+            roidsBalance,
+            assetsCount,
+            signOut,
+            refreshUserData
+        }}>
+            {children}
+        </UserContext.Provider>
+    );
 }
 
 export const useUser = () => {

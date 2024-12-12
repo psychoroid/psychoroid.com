@@ -2,7 +2,7 @@
 
 import { useUser } from '@/lib/contexts/UserContext'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Navbar } from '@/components/design/Navbar'
 import { Footer } from '@/components/design/Footer'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
@@ -15,26 +15,32 @@ export default function DashboardLayout({
 }) {
   const { session, isLoading } = useUser()
   const router = useRouter()
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   useEffect(() => {
-    if (!isLoading && !session) {
-      router.push('/auth/sign-in')
+    if (!isLoading) {
+      setIsInitialLoad(false)
+      if (!session) {
+        router.push('/auth/sign-in')
+      }
     }
   }, [session, isLoading, router])
 
-  if (isLoading) {
+  // Show loader only on initial load
+  if (isInitialLoad && isLoading) {
     return <HeadLoader />
   }
 
-  if (!session) {
+  // Don't render anything while redirecting
+  if (!session && !isLoading) {
     return null
   }
 
   return (
-    <div className="h-svh bg-background flex flex-col overflow-hidden">
+    <div className="h-svh bg-background flex flex-col">
       <Navbar />
-      <main className="flex-1 overflow-hidden pt-16">
-        <div className="max-w-3xl mx-auto px-4 py-8 h-full">
+      <main className="flex-1 overflow-y-auto scrollbar-hide pt-16">
+        <div className="max-w-3xl mx-auto px-4 py-8">
           <DashboardNav />
           {children}
         </div>

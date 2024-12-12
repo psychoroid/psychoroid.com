@@ -70,7 +70,7 @@ export default function FeedbackForm() {
                 <div className="absolute bottom-8 right-0 w-80 bg-background border border-border shadow-lg">
                     <div className="p-4">
                         <Textarea
-                            placeholder="Ideas or suggestions on how to improve our psychoroid..."
+                            placeholder="Ideas or suggestions on how to improve psychoroid.com ..."
                             value={feedback}
                             onChange={(e) => setFeedback(e.target.value)}
                             className="min-h-[100px] mb-4 text-xs placeholder:text-xs bg-background rounded-none resize-none"

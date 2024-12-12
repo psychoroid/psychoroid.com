@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { saveAs } from 'file-saver';
 import { supabase } from '@/lib/supabase/supabase';
 import toast from 'react-hot-toast';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { USDZExporter } from 'three/examples/jsm/exporters/USDZExporter';
+import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter';
+import { STLExporter } from 'three/examples/jsm/exporters/STLExporter';
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
+import * as THREE from 'three';
 
 const EXPORT_FORMATS = {
     '3D & Gaming': [
@@ -41,6 +47,34 @@ interface ConversionStatus {
     progress: number;
 }
 
+const getStorageUrl = (path: string, bucket?: string) => {
+    try {
+        if (path.startsWith('http')) return path;
+
+        const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (!baseUrl) throw new Error('Supabase URL not configured');
+
+        // For default model, use the provided bucket
+        if (bucket) {
+            // Remove bucket name if it's already in the path
+            const cleanPath = path.replace(`${bucket}/`, '');
+            return `${baseUrl}/storage/v1/object/public/${bucket}/${cleanPath}`;
+        }
+
+        // For user models, use the path as is
+        const parts = path.split('/');
+        if (parts.length < 2) throw new Error('Invalid storage path format');
+
+        const pathBucket = parts[0];
+        const filePath = parts.slice(1).join('/');
+
+        return `${baseUrl}/storage/v1/object/public/${pathBucket}/${filePath}`;
+    } catch (error) {
+        console.error('Error generating storage URL:', error);
+        return path;
+    }
+};
+
 export function DownloadModal({ isOpen, onClose, product, onDownload }: DownloadModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const downloadingRef = useRef<boolean>(false);
@@ -73,35 +107,166 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                 throw new Error('No model path provided');
             }
 
-            const response = await fetch('/api/convert-model', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    modelUrl: product.model_path,
-                    format,
-                    quality: 'high',
-                    productId: product.id
-                })
-            });
+            // Use the same URL construction logic as ModelPreview
+            const bucket = product.tags?.includes('template') ? 'default-assets' : 'product-models';
+            const modelUrl = getStorageUrl(product.model_path, bucket);
 
+            // Download the GLB file
+            const response = await fetch(modelUrl);
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Conversion failed');
+                throw new Error(`Failed to fetch model: ${response.statusText}`);
+            }
+            const modelBuffer = await response.arrayBuffer();
+
+            // Create Three.js scene and load model
+            const scene = new THREE.Scene();
+            const loader = new GLTFLoader();
+            const gltf = await loader.parseAsync(modelBuffer, '');
+            scene.add(gltf.scene);
+
+            let convertedData;
+
+            // Handle different format conversions
+            switch (format.toLowerCase()) {
+                case 'usdz':
+                    const usdzExporter = new USDZExporter();
+                    convertedData = await usdzExporter.parse(scene);
+                    break;
+
+                case 'gltf':
+                    const gltfExporter = new GLTFExporter();
+                    convertedData = await new Promise<Blob>((resolve, reject) => {
+                        gltfExporter.parse(
+                            scene,
+                            (result) => {
+                                if (result instanceof ArrayBuffer) {
+                                    resolve(new Blob([result], { type: 'model/gltf-binary' }));
+                                } else {
+                                    // For JSON format (GLTF)
+                                    const text = JSON.stringify(result, null, 2);
+                                    resolve(new Blob([text], { type: 'model/gltf+json' }));
+                                }
+                            },
+                            (error) => {
+                                reject(error);
+                            },
+                            { binary: false }
+                        );
+                    });
+                    break;
+
+                case 'fbx':
+                    // First export to GLB
+                    const glbExporter = new GLTFExporter();
+                    const glbData = await new Promise<ArrayBuffer>((resolve, reject) => {
+                        glbExporter.parse(
+                            scene,
+                            (result) => {
+                                resolve(result instanceof ArrayBuffer ? result :
+                                    new TextEncoder().encode(JSON.stringify(result)).buffer);
+                            },
+                            (error) => reject(error),
+                            { binary: true }
+                        );
+                    });
+
+                    // Upload GLB to temporary storage
+                    const tempFileName = `temp-${product.id}-${Date.now()}.glb`;
+                    const { data: tempData, error: tempError } = await supabase.storage
+                        .from('temp-conversions')
+                        .upload(tempFileName, new Blob([glbData], { type: 'model/gltf-binary' }), {
+                            contentType: 'model/gltf-binary',
+                            upsert: true
+                        });
+
+                    if (tempError) throw tempError;
+
+                    // Get temporary URL
+                    const { data: { publicUrl: tempUrl } } = supabase.storage
+                        .from('temp-conversions')
+                        .getPublicUrl(tempFileName);
+
+                    // Call conversion service
+                    const fbxResponse = await fetch('/api/convert-fbx', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: tempUrl })
+                    });
+
+                    if (!fbxResponse.ok) {
+                        const errorData = await fbxResponse.json();
+                        throw errorData;
+                    }
+
+                    convertedData = new Blob([await fbxResponse.arrayBuffer()], {
+                        type: 'application/octet-stream'
+                    });
+                    break;
+
+                case 'obj':
+                    const objExporter = new OBJExporter();
+                    const objString = objExporter.parse(scene);
+                    convertedData = new TextEncoder().encode(objString).buffer;
+                    break;
+
+                case 'stl':
+                    const stlExporter = new STLExporter();
+                    const stlString = stlExporter.parse(scene, { binary: true });
+                    convertedData = stlString;
+                    break;
+
+                default:
+                    throw new Error(`Unsupported format: ${format}`);
             }
 
-            const data = await response.json();
-            if (!data.convertedUrl) {
-                throw new Error('No converted URL received');
-            }
+            // Upload the converted file to Supabase
+            const fileName = `converted-${product.id}-${Date.now()}.${format.toLowerCase()}`;
+            const { data, error } = await supabase.storage
+                .from('converted-models')
+                .upload(fileName,
+                    convertedData instanceof Blob ? convertedData :
+                        new Blob([convertedData as ArrayBuffer | ArrayBufferView | Blob | string], {
+                            type: getContentType(format)
+                        }), {
+                    contentType: getContentType(format),
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (error) throw error;
+
+            // Get the public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('converted-models')
+                .getPublicUrl(fileName);
 
             setConversionStatus({ isConverting: false, progress: 100 });
-            return data.convertedUrl;
+            return publicUrl;
+
         } catch (error) {
             setConversionStatus({ isConverting: false, progress: 0 });
             console.error('Conversion error details:', error);
             throw error;
+        }
+    };
+
+    // Helper function to get content type
+    const getContentType = (format: string): string => {
+        switch (format.toLowerCase()) {
+            case 'usdz':
+                return 'model/vnd.usdz+zip';
+            case 'obj':
+                return 'model/obj';
+            case 'stl':
+                return 'model/stl';
+            case 'glb':
+                return 'model/gltf-binary';
+            case 'gltf':
+                return 'model/gltf+json';
+            case 'fbx':
+                return 'application/octet-stream';
+            default:
+                return 'application/octet-stream';
         }
     };
 
@@ -150,8 +315,8 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                 // Record download with format
                 try {
                     const { error: downloadError } = await supabase.rpc('record_product_download', {
-                        p_product_id: product.id,
-                        p_format: format
+                        p_format: format,
+                        p_product_id: product.id
                     });
 
                     if (downloadError) {

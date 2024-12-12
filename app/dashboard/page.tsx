@@ -4,74 +4,16 @@ import { useUser } from '@/lib/contexts/UserContext'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { DashboardCard } from '@/components/dashboard/DashboardCard'
 import { Card } from '@/components/ui/card'
-import { Coins, Clock } from 'lucide-react'
-import { Box } from 'lucide-react'
-
-import { getUserRoidsBalance } from '@/lib/roids/roids'
-import { useEffect, useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase/supabase'
+import { Coins, Clock, Box } from 'lucide-react'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { QuickActions } from '@/components/dashboard/QuickActions'
 
 export default function DashboardPage() {
-    const { user } = useUser()
-    const [roidsBalance, setRoidsBalance] = useState<number | null>(null)
-    const [assetsCount, setAssetsCount] = useState<number>(0)
-    const [lastActivity, setLastActivity] = useState<string | null>(null)
-
+    const { user, lastActivity, roidsBalance, assetsCount } = useUser()
     const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'User'
 
-    const fetchDashboardData = useCallback(async () => {
-        if (!user?.id) return;
-
-        try {
-            // Fetch ROIDS balance
-            const balance = await getUserRoidsBalance(user.id)
-            setRoidsBalance(balance)
-
-            // Fetch assets count
-            const { count: assets } = await supabase
-                .from('products')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', user.id)
-
-            setAssetsCount(assets || 0)
-
-            // Fetch last activity
-            const { data: activities } = await supabase
-                .from('user_activity')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
-                .limit(1)
-
-            if (activities?.[0]) {
-                setLastActivity(activities[0].created_at)
-            }
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error)
-        }
-    }, [user?.id])
-
-    useEffect(() => {
-        fetchDashboardData()
-    }, [fetchDashboardData])
-
     return (
-        <div
-            className="h-full flex flex-col md:overflow-hidden overflow-auto"
-            style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                paddingBottom: '4rem',
-            }}
-        >
-            <style jsx global>{`
-                div::-webkit-scrollbar {
-                    display: none;
-                }
-            `}</style>
-
+        <div className="h-full flex flex-col md:overflow-hidden overflow-auto pb-16">
             <div className="space-y-6 flex-shrink-0">
                 <DashboardHeader
                     title="Dashboard"
@@ -88,7 +30,7 @@ export default function DashboardPage() {
                     />
                     <DashboardCard
                         title="Assets"
-                        value={assetsCount}
+                        value={assetsCount ?? '—'}
                         description="3D models created"
                         icon={Box}
                         iconClassName="text-cyan-500 dark:text-cyan-400"
@@ -103,17 +45,17 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 md:h-[370px] min-h-[800px] md:min-h-0">
-                <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col h-[400px] md:h-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 flex-1">
+                <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col">
                     <h3 className="text-sm font-medium mb-4">Recent activity</h3>
-                    <div className="flex-1 min-h-0 overflow-auto">
+                    <div className="flex-1 overflow-auto">
                         <RecentActivity />
                     </div>
                 </Card>
 
-                <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col h-[400px] md:h-auto">
+                <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col">
                     <h3 className="text-sm font-medium mb-4">Quick actions</h3>
-                    <div className="flex-1 min-h-0 overflow-auto">
+                    <div className="flex-1 overflow-auto">
                         <QuickActions />
                     </div>
                 </Card>

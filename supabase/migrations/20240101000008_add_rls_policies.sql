@@ -1,4 +1,5 @@
 -- Enable RLS on all tables
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_downloads ENABLE ROW LEVEL SECURITY;
@@ -11,6 +12,10 @@ ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_views ENABLE ROW LEVEL SECURITY;
 
 -- Drop any existing policies
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
+DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+
 DROP POLICY IF EXISTS "Public products are viewable by everyone" ON products;
 DROP POLICY IF EXISTS "Users can view their own products" ON products;
 DROP POLICY IF EXISTS "Users can create their own products" ON products;
@@ -40,6 +45,29 @@ DROP POLICY IF EXISTS "Users can update their own API keys" ON api_keys;
 
 DROP POLICY IF EXISTS "Users can record their own views" ON product_views;
 DROP POLICY IF EXISTS "Users can view their own view history" ON product_views;
+
+-- Profiles Policies
+CREATE POLICY "Public profiles are viewable by everyone"
+    ON profiles FOR SELECT
+    USING ( true );
+
+CREATE POLICY "Users can insert their own profile"
+    ON profiles FOR INSERT
+    WITH CHECK ( auth.uid() = id );
+
+CREATE POLICY "Users can update their own profile"
+    ON profiles FOR UPDATE
+    USING ( auth.uid() = id );
+
+-- Allow the service role to manage profiles
+CREATE POLICY "Service role can manage profiles"
+    ON profiles FOR ALL
+    TO service_role
+    USING (true)
+    WITH CHECK (true);
+
+-- Grant profiles permissions
+GRANT ALL ON profiles TO authenticated;
 
 -- Products Policies
 CREATE POLICY "Public products are viewable by everyone" 
