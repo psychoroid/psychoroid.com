@@ -162,8 +162,14 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                         glbExporter.parse(
                             scene,
                             (result) => {
-                                resolve(result instanceof ArrayBuffer ? result :
-                                    new TextEncoder().encode(JSON.stringify(result)).buffer);
+                                if (result instanceof ArrayBuffer) {
+                                    resolve(result);
+                                } else {
+                                    // Handle JSON result by converting to ArrayBuffer
+                                    const jsonString = JSON.stringify(result);
+                                    const encoder = new TextEncoder();
+                                    resolve(encoder.encode(jsonString).buffer);
+                                }
                             },
                             (error) => reject(error),
                             { binary: true }
@@ -225,7 +231,7 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                 .from('converted-models')
                 .upload(fileName,
                     convertedData instanceof Blob ? convertedData :
-                        new Blob([convertedData as ArrayBuffer | ArrayBufferView | Blob | string], {
+                        new Blob([convertedData as ArrayBuffer], {
                             type: getContentType(format)
                         }), {
                     contentType: getContentType(format),
