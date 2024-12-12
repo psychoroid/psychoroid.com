@@ -12,8 +12,16 @@ import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter';
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import * as THREE from 'three';
+import type {
+    ModelFormat,
+    FormatCategories,
+    ConversionStatus,
+    DownloadModalProps,
+    ModelContentType
+} from '@/types/models';
+import { getStorageUrl } from '@/lib/utils/storage';
 
-const EXPORT_FORMATS = {
+const EXPORT_FORMATS: FormatCategories = {
     '3D & Gaming': [
         { name: 'GLB', ext: 'glb', desc: 'Standard 3D format' },
         { name: 'GLTF', ext: 'gltf', desc: 'For web & three.js' },
@@ -30,48 +38,23 @@ const EXPORT_FORMATS = {
     ]
 };
 
-interface DownloadModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    product: {
-        id: string;
-        name: string;
-        model_path: string;
-        tags?: string[];
-    };
-    onDownload: (id: string) => void;
-}
-
-interface ConversionStatus {
-    isConverting: boolean;
-    progress: number;
-}
-
-const getStorageUrl = (path: string, bucket?: string) => {
-    try {
-        if (path.startsWith('http')) return path;
-
-        const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        if (!baseUrl) throw new Error('Supabase URL not configured');
-
-        // For default model, use the provided bucket
-        if (bucket) {
-            // Remove bucket name if it's already in the path
-            const cleanPath = path.replace(`${bucket}/`, '');
-            return `${baseUrl}/storage/v1/object/public/${bucket}/${cleanPath}`;
-        }
-
-        // For user models, use the path as is
-        const parts = path.split('/');
-        if (parts.length < 2) throw new Error('Invalid storage path format');
-
-        const pathBucket = parts[0];
-        const filePath = parts.slice(1).join('/');
-
-        return `${baseUrl}/storage/v1/object/public/${pathBucket}/${filePath}`;
-    } catch (error) {
-        console.error('Error generating storage URL:', error);
-        return path;
+// Helper function to get content type
+const getContentType = (format: ModelFormat): ModelContentType => {
+    switch (format.toLowerCase() as ModelFormat) {
+        case 'usdz':
+            return 'model/vnd.usdz+zip';
+        case 'obj':
+            return 'model/obj';
+        case 'stl':
+            return 'model/stl';
+        case 'glb':
+            return 'model/gltf-binary';
+        case 'gltf':
+            return 'model/gltf+json';
+        case 'fbx':
+            return 'application/octet-stream';
+        default:
+            return 'application/octet-stream';
     }
 };
 
@@ -98,7 +81,7 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
         };
     }, [isOpen, onClose]);
 
-    const convertModel = async (format: string): Promise<string> => {
+    const convertModel = async (format: ModelFormat): Promise<string> => {
         try {
             setConversionStatus({ isConverting: true, progress: 0 });
 
@@ -167,10 +150,11 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                                 } else {
                                     // Handle JSON result by converting to ArrayBuffer
                                     const jsonString = JSON.stringify(result);
-                                    // Create a proper ArrayBuffer instead of using TextEncoder directly
-                                    const bytes = new TextEncoder().encode(jsonString);
-                                    const buffer = bytes.buffer.slice(0); // Create a new ArrayBuffer copy
-                                    resolve(buffer);
+                                    // Convert to Uint8Array first, then create a new ArrayBuffer
+                                    const uint8Array = new TextEncoder().encode(jsonString);
+                                    const arrayBuffer = new ArrayBuffer(uint8Array.byteLength);
+                                    new Uint8Array(arrayBuffer).set(uint8Array);
+                                    resolve(arrayBuffer);
                                 }
                             },
                             (error) => reject(error),
@@ -258,27 +242,7 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
         }
     };
 
-    // Helper function to get content type
-    const getContentType = (format: string): string => {
-        switch (format.toLowerCase()) {
-            case 'usdz':
-                return 'model/vnd.usdz+zip';
-            case 'obj':
-                return 'model/obj';
-            case 'stl':
-                return 'model/stl';
-            case 'glb':
-                return 'model/gltf-binary';
-            case 'gltf':
-                return 'model/gltf+json';
-            case 'fbx':
-                return 'application/octet-stream';
-            default:
-                return 'application/octet-stream';
-        }
-    };
-
-    const handleDownload = async (format: string) => {
+    const handleDownload = async (format: ModelFormat) => {
         if (downloadingRef.current) return;
 
         try {

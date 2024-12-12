@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/supabase';
 import Loader from '@/components/design/loader';
 
-export default function AuthCallbackPage() {
+function CallbackContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         const handleAuthCallback = async () => {
@@ -31,15 +32,20 @@ export default function AuthCallbackPage() {
                         console.error('Error fetching profile:', profileError);
                     }
 
-                    // If no profile exists, it will be created automatically by the database trigger
+                    // Initialize profile if it doesn't exist
                     if (!profile) {
-                        console.log('Profile will be created by database trigger');
+                        await supabase.rpc('initialize_user_profile', {
+                            p_user_id: session.user.id,
+                            p_email: session.user.email
+                        });
                     }
-                }
 
-                // Redirect to home page after successful auth
-                router.push('/');
-                router.refresh();
+                    // Always redirect to home
+                    router.push('/');
+                    router.refresh();
+                } else {
+                    router.push('/auth/sign-in');
+                }
             } catch (error) {
                 console.error('Unexpected error during auth callback:', error);
                 router.push('/auth/sign-in');
@@ -47,7 +53,15 @@ export default function AuthCallbackPage() {
         };
 
         handleAuthCallback();
-    }, [router]);
+    }, [router, searchParams]);
 
     return <Loader />;
+}
+
+export default function AuthCallbackPage() {
+    return (
+        <Suspense fallback={<Loader />}>
+            <CallbackContent />
+        </Suspense>
+    );
 } 
