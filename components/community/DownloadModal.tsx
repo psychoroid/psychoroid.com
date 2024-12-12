@@ -167,8 +167,10 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                                 } else {
                                     // Handle JSON result by converting to ArrayBuffer
                                     const jsonString = JSON.stringify(result);
-                                    const encoder = new TextEncoder();
-                                    resolve(encoder.encode(jsonString).buffer);
+                                    // Create a proper ArrayBuffer instead of using TextEncoder directly
+                                    const bytes = new TextEncoder().encode(jsonString);
+                                    const buffer = bytes.buffer.slice(0); // Create a new ArrayBuffer copy
+                                    resolve(buffer);
                                 }
                             },
                             (error) => reject(error),
