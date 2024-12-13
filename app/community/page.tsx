@@ -21,6 +21,7 @@ export default function CommunityPage() {
     const [zoom, setZoom] = useState(1);
     const [isExpanded, setIsExpanded] = useState(false);
     const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchUserLikes = useCallback(async () => {
         if (!user?.id) return;
@@ -37,24 +38,65 @@ export default function CommunityPage() {
         }
     }, [user?.id]);
 
+    const fetchCommunityProducts = useCallback(async () => {
+        try {
+            const cached = localStorage.getItem('community_products');
+            if (cached) {
+                const { data, timestamp } = JSON.parse(cached);
+                if (Date.now() - timestamp < 5 * 60 * 1000) {
+                    setProducts(data);
+                    setIsLoading(false);
+                    return;
+                }
+            }
+
+            const { data, error } = await supabase
+                .rpc('get_trending_products', { p_limit: 50, p_offset: 0 });
+
+            if (error) throw error;
+
+            localStorage.setItem('community_products', JSON.stringify({
+                data,
+                timestamp: Date.now()
+            }));
+
+            setProducts(data as CommunityProduct[]);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         fetchCommunityProducts();
         if (user?.id) {
             fetchUserLikes();
         }
-    }, [searchQuery, user?.id, fetchUserLikes]);
+    }, [searchQuery, user?.id, fetchUserLikes, fetchCommunityProducts]);
 
-    const fetchCommunityProducts = async () => {
-        try {
-            const { data, error } = await supabase
-                .rpc('get_trending_products', { p_limit: 50, p_offset: 0 });
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchCommunityProducts();
+            }
+        };
 
-            if (error) throw error;
-            setProducts(data as CommunityProduct[]);
-        } catch (error) {
-            console.error('Error fetching products:', error);
-        }
-    };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [fetchCommunityProducts]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                fetchCommunityProducts();
+            }
+        }, 10000); // Refresh every 10 seconds when visible
+
+        return () => clearInterval(interval);
+    }, [fetchCommunityProducts]);
 
     const handleLike = async (productId: string) => {
         if (!user) return;
@@ -73,8 +115,18 @@ export default function CommunityPage() {
             }
             setUserLikes(newLikes);
 
-            // Refresh products to update counts
-            fetchCommunityProducts();
+            // Update products array with new like count
+            setProducts(prevProducts =>
+                prevProducts.map(p => {
+                    if (p.id === productId) {
+                        return {
+                            ...p,
+                            likes_count: p.likes_count + (data ? 1 : -1)
+                        };
+                    }
+                    return p;
+                })
+            );
         } catch (error) {
             console.error('Error toggling like:', error);
         }
@@ -147,14 +199,26 @@ export default function CommunityPage() {
 
                     {/* Grid Section - Now can extend full width */}
                     <div className="flex-grow pb-8">
-                        <CommunityGrid
-                            products={products}
-                            onProductSelect={handleProductSelect}
-                            selectedProduct={selectedProduct}
-                            onLike={handleLike}
-                            onDownload={handleDownload}
-                            userLikes={userLikes}
-                        />
+                        {isLoading ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                                {[...Array(12)].map((_, i) => (
+                                    <div key={i} className="animate-pulse">
+                                        <div className="bg-muted aspect-[4/3] mb-4" />
+                                        <div className="h-4 bg-muted w-3/4 mb-2" />
+                                        <div className="h-3 bg-muted w-1/2" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <CommunityGrid
+                                products={products}
+                                onProductSelect={handleProductSelect}
+                                selectedProduct={selectedProduct}
+                                onLike={handleLike}
+                                onDownload={handleDownload}
+                                userLikes={userLikes}
+                            />
+                        )}
                     </div>
 
                     {/* Preview Modal remains the same */}

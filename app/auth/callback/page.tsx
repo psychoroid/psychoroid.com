@@ -21,26 +21,28 @@ function CallbackContent() {
                 }
 
                 if (session) {
-                    // Check if profile exists
+                    // Use RPC function to get profile
                     const { data: profile, error: profileError } = await supabase
-                        .from('profiles')
-                        .select('*')
-                        .eq('id', session.user.id)
-                        .single();
+                        .rpc('get_user_profile', {
+                            p_user_id: session.user.id
+                        });
 
-                    if (profileError && profileError.code !== 'PGRST116') {
+                    if (profileError) {
                         console.error('Error fetching profile:', profileError);
                     }
 
                     // Initialize profile if it doesn't exist
                     if (!profile) {
-                        await supabase.rpc('initialize_user_profile', {
+                        const { error: initError } = await supabase.rpc('initialize_user_profile', {
                             p_user_id: session.user.id,
                             p_email: session.user.email
                         });
+
+                        if (initError) {
+                            console.error('Error initializing profile:', initError);
+                        }
                     }
 
-                    // Always redirect to home
                     router.push('/');
                     router.refresh();
                 } else {

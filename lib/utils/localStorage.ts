@@ -19,26 +19,56 @@ export const removeLocalStorageItem = (key: string) => {
 
 export const clearAuthState = () => {
     if (typeof window !== 'undefined') {
-        // Auth tokens
-        localStorage.removeItem('supabase.auth.token');
-        localStorage.removeItem('supabase.auth.refreshToken');
-        localStorage.removeItem('sb-access-token');
-        localStorage.removeItem('sb-refresh-token');
-        localStorage.removeItem('supabase.auth.expires_at');
-        localStorage.removeItem('supabase.auth.expires_in');
-        
-        // User data
-        localStorage.removeItem('user-roids-balance');
-        localStorage.removeItem('cached_roids_balance');
-        
-        // Cache data
-        localStorage.removeItem('cachedImages');
-        localStorage.removeItem('cachedSelectedImage');
-        
-        // Clear any other app-specific data
-        localStorage.removeItem('theme');
-        
-        // Optional: Clear entire localStorage if you want to be thorough
-        // localStorage.clear();
+        try {
+            // Clear Supabase specific items
+            const supabaseKeys = [
+                'supabase.auth.token',
+                'supabase.auth.refreshToken',
+                'sb-access-token',
+                'sb-refresh-token',
+                'supabase.auth.expires_at',
+                'supabase.auth.expires_in',
+                'sb-provider-token',
+                'supabase.auth.provider-token',
+            ];
+
+            // Clear user specific items
+            const userKeys = [
+                'user-roids-balance',
+                'cached_roids_balance',
+                'cachedImages',
+                'cachedSelectedImage',
+                'theme'
+            ];
+
+            // Clear all Supabase related items
+            supabaseKeys.forEach(key => {
+                try {
+                    localStorage.removeItem(key);
+                    sessionStorage.removeItem(key);
+                } catch (e) {
+                    console.error(`Error clearing ${key}:`, e);
+                }
+            });
+
+            // Clear all user related items
+            userKeys.forEach(key => {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {
+                    console.error(`Error clearing ${key}:`, e);
+                }
+            });
+
+            // Clear any items that start with 'sb-'
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('sb-')) {
+                    localStorage.removeItem(key);
+                }
+            });
+
+        } catch (error) {
+            console.error('Error clearing auth state:', error);
+        }
     }
 }; 

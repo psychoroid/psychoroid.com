@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DockDropdown } from './DockDropdown';
 import { CompanyDropdown } from './dropdowns/CompanyDropdown';
 import { EngineDropdown } from './dropdowns/EngineDropdown';
-import { getLocalStorageItem, setLocalStorageItem } from '@/lib/utils/localStorage';
+import { getLocalStorageItem, setLocalStorageItem, clearAuthState } from '@/lib/utils/localStorage';
 
 export function Navbar() {
     const router = useRouter();
@@ -83,9 +83,19 @@ export function Navbar() {
     const handleSignOut = async () => {
         try {
             setIsMenuOpen(false);
+            // First clear local storage
+            clearAuthState();
+
+            // Wait for signOut to complete
             await signOut();
+
+            // Force navigation after a small delay to ensure cleanup is complete
+            setTimeout(() => {
+                window.location.href = '/auth/sign-in';
+            }, 100);
         } catch (error) {
             console.error('Error during sign out:', error);
+            // Force redirect even if there's an error
             window.location.href = '/auth/sign-in';
         }
     };

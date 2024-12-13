@@ -26,10 +26,14 @@ CREATE TYPE view_type_enum AS ENUM ('click', 'scroll', 'page_load');
 CREATE TABLE public.profiles (
     id uuid references auth.users on delete cascade primary key,
     full_name text,
-    email text unique,
+    email text,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    CONSTRAINT profiles_email_key UNIQUE (email)
 );
+
+-- Add indexes for better performance
+CREATE INDEX IF NOT EXISTS profiles_email_idx ON profiles(email);
 
 -- Products table
 CREATE TABLE products (

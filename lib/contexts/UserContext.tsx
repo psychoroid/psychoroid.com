@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/supabase';
 import { clearAuthState } from '@/lib/utils/localStorage';
@@ -53,29 +53,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
-    const refreshUserData = async () => {
+    const refreshUserData = useCallback(async () => {
         if (session?.user?.id) {
             await fetchUserData(session.user.id);
         }
-    };
+    }, [session?.user?.id]);
 
     const signOut = async () => {
         try {
-            clearAuthState();
-
-            const { error } = await supabase.auth.signOut();
-            if (error) throw error;
-
+            // First clear all states
             setUser(null);
             setSession(null);
             setLastActivity(null);
             setRoidsBalance(null);
             setAssetsCount(null);
 
-            window.location.href = '/auth/sign-in';
+            // Then sign out from Supabase
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+
+            // Clear any remaining auth state
+            clearAuthState();
+
+            return Promise.resolve();
         } catch (error) {
             console.error('Error signing out:', error);
-            window.location.href = '/auth/sign-in';
+            return Promise.reject(error);
         }
     };
 

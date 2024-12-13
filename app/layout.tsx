@@ -15,9 +15,9 @@ export const viewport = {
 }
 
 export const metadata: Metadata = {
-    title: 'psychoroid.com | AI driven 3D Tools',
+    title: 'psychoroid.com | Open Source Gen AI 3D toolkit',
     description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
-    keywords: '3D viewer, AI 3D tool, product visualization, 3D modeling, Game tools, WebGL, interactive 3D',
+    keywords: '3D viewer, AI 3D tool, product visualization, 3D modeling, Game tools, WebGL, interactive 3D, Blender, Unreal Engine, Unity, Godot, Open Source, AI, AI 3D, AI 3D Toolkit, AI 3D Toolkit for Blender, AI 3D Toolkit for Unreal Engine, AI 3D Toolkit for Unity, AI 3D Toolkit for Godot',
     authors: [{ name: 'Prince Muichkine' }],
     creator: 'Prince Muichkine',
     publisher: 'Prince Muichkine',
@@ -36,13 +36,13 @@ export const metadata: Metadata = {
         type: 'website',
         locale: 'en_US',
         url: 'https://psychoroid.com',
-        title: 'psychoroid.com | AI driven 3D Tools',
+        title: 'psychoroid.com | Open Source Gen AI 3D toolkit',
         description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
         siteName: 'PsychoRoid',
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'psychoroid.com | AI driven 3D Tools',
+        title: 'psychoroid.com | Open Source Gen AI 3D toolkit',
         description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
         creator: '@PrinceMuichkine',
     },

@@ -84,9 +84,11 @@ export default function BillingSettings() {
     }
 
     const handleManageBilling = async () => {
-        setIsLoading(true)
+        if (!isSubscribed) return;
+
+        setIsLoading(true);
         try {
-            const response = await fetch('/api/create-billing-portal-session', {
+            const response = await fetch('/api/create-portal-session', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -94,24 +96,26 @@ export default function BillingSettings() {
                 body: JSON.stringify({
                     userId: user?.id,
                 }),
-            })
+            });
 
-            const data = await response.json()
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to access billing portal');
+            }
 
             if (data.url) {
-                window.location.href = data.url
+                window.location.href = data.url;
             } else {
-                throw new Error('No URL returned from billing portal')
+                throw new Error('No URL returned from billing portal');
             }
         } catch (error) {
-            console.error('Error accessing billing portal:', error)
-            toast.error('Failed to access billing portal', {
-                description: 'Please subscribe to a plan first'
-            })
+            console.error('Error accessing billing portal:', error);
+            toast.error('Failed to access billing portal');
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
 
     return (
         <div className="space-y-6">
@@ -149,25 +153,35 @@ export default function BillingSettings() {
                                                         ? format(new Date(subscriptionDetails.periodEnd), 'MMM d, yyyy')
                                                         : '...'}`
                                                     : 'Subscription ending soon'
-                                                : 'Upgrade to get more credits and features'}
+                                                : 'Upgrade to get more credits and features.'}
                                         </p>
                                     </div>
-                                    {isSubscribed && (
+                                    {isSubscribed && subscriptionDetails.type !== 'scale' && (
                                         <div className="text-xs text-muted-foreground">
                                             <p>• Cancel anytime with prorated refund</p>
-                                            <p>• Instant access to premium features</p>
+                                            <p>• Instant access to enterprise features</p>
                                             <p>• Priority support</p>
+                                        </div>
+                                    )}
+                                    {isSubscribed && subscriptionDetails.type === 'scale' && (
+                                        <div className="text-xs text-muted-foreground">
+                                            <p>• Unlimited API calls</p>
+                                            <p>• Enterprise support</p>
+                                            <p>• Custom integrations</p>
+                                            <p>• Dedicated account manager</p>
                                         </div>
                                     )}
                                 </div>
                                 <div className="flex gap-4">
-                                    <Button
-                                        onClick={handleManageBilling}
-                                        disabled={isLoading}
-                                        className="rounded-none bg-gray-500 hover:bg-gray-600 text-white"
-                                    >
-                                        {isLoading ? 'Loading...' : 'Manage Billing'}
-                                    </Button>
+                                    {isSubscribed && (
+                                        <Button
+                                            onClick={handleManageBilling}
+                                            disabled={isLoading}
+                                            className="rounded-none bg-gray-500 hover:bg-gray-600 text-white"
+                                        >
+                                            {isLoading ? 'Loading...' : 'Manage Billing'}
+                                        </Button>
+                                    )}
 
                                     <Button
                                         onClick={isSubscribed ? handleManageSubscription : handleSubscribe}

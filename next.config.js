@@ -31,11 +31,7 @@ const nextConfig = {
                 hostname: 'res.cloudinary.com',
                 pathname: '/dzrdlevfn/**',
             }
-        ],
-        domains: [
-            'peyzpnmmgsxjydvpussg.supabase.co',
-            'res.cloudinary.com'
-            // Add any other domains you're loading images from
+            // Add any other domains you need here using the same pattern
         ],
     },
 }

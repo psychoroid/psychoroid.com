@@ -81,11 +81,17 @@ CREATE OR REPLACE FUNCTION log_api_key_activity()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        INSERT INTO user_activities (user_id, activity_type)
-        VALUES (NEW.user_id, 'api_key_generated');
+        PERFORM record_user_activity(
+            NEW.user_id,
+            'api_key_generated'::activity_type_enum,
+            jsonb_build_object('key_name', NEW.name)
+        );
     ELSIF TG_OP = 'UPDATE' AND NEW.status = 'revoked' AND OLD.status = 'active' THEN
-        INSERT INTO user_activities (user_id, activity_type)
-        VALUES (NEW.user_id, 'api_key_revoked');
+        PERFORM record_user_activity(
+            NEW.user_id,
+            'api_key_revoked'::activity_type_enum,
+            jsonb_build_object('key_name', NEW.name)
+        );
     END IF;
     RETURN NEW;
 END;

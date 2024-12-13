@@ -169,10 +169,10 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-background">
+        <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-background">
             <Navbar />
-            <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24">
-                <div className="max-w-7xl mx-auto text-gray-900 dark:text-white">
+            <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24 overflow-auto">
+                <div className="max-w-7xl mx-auto text-gray-900 dark:text-white pb-4">
                     <ImageUpload
                         onImageUpload={handleImageUpload}
                         onModelUrlChange={setModelUrl}

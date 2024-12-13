@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { ActivityIcon } from '@/components/dashboard/ActivityIcon'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface Activity {
     id: string
@@ -18,42 +19,125 @@ interface Activity {
 
 const ITEMS_PER_PAGE = 10
 const MAX_PAGES = 20
+const CACHE_KEY = 'recent_activities_cache'
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export function RecentActivity() {
     const { user } = useUser()
-    const [activities, setActivities] = useState<Activity[]>([])
+    const [activities, setActivities] = useState<Activity[]>(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY)
+                if (cached) {
+                    const { data, timestamp } = JSON.parse(cached)
+                    if (Date.now() - timestamp < CACHE_DURATION) {
+                        return data
+                    }
+                }
+            } catch (error) {
+                console.error('Error reading cache:', error)
+            }
+        }
+        return []
+    })
     const [currentPage, setCurrentPage] = useState(1)
     const [totalCount, setTotalCount] = useState(0)
+    const [isLoading, setIsLoading] = useState(true)
 
     const fetchActivities = useCallback(async () => {
-        // Get total count first
-        const { count } = await supabase
-            .from('user_activity')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user!.id)
+        if (!user?.id) return
 
-        setTotalCount(Math.min((count || 0), ITEMS_PER_PAGE * MAX_PAGES))
+        try {
+            const [countResponse, dataResponse] = await Promise.all([
+                supabase
+                    .from('user_activity')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('user_id', user.id),
 
-        // Then get paginated data
-        const { data, error } = await supabase
-            .from('user_activity')
-            .select(`*,
-                products (
-                    name,
-                    image_path
-                )`)
-            .eq('user_id', user!.id)
-            .order('created_at', { ascending: false })
-            .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
+                supabase
+                    .from('user_activity')
+                    .select(`*,
+                        products (
+                            name,
+                            image_path
+                        )`)
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
+            ])
 
-        if (!error && data) {
-            setActivities(data)
+            const count = countResponse.count || 0
+            setTotalCount(Math.min(count, ITEMS_PER_PAGE * MAX_PAGES))
+
+            if (dataResponse.data) {
+                setActivities(dataResponse.data)
+                // Cache the results
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    data: dataResponse.data,
+                    timestamp: Date.now()
+                }))
+            }
+        } catch (error) {
+            console.error('Error fetching activities:', error)
+        } finally {
+            setIsLoading(false)
         }
-    }, [user, currentPage])
+    }, [user?.id, currentPage])
 
     useEffect(() => {
         fetchActivities()
+
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                fetchActivities()
+            }
+        }, 30000)
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchActivities()
+            }
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+
+        return () => {
+            clearInterval(interval)
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
+        }
     }, [fetchActivities])
+
+    // Loading skeleton
+    if (isLoading && activities.length === 0) {
+        return (
+            <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 w-full h-[49px] px-4">
+                        <Skeleton className="h-6 w-6 rounded-full" />
+                        <div className="space-y-2 flex-1">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-3 w-16" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
+    // Empty state
+    if (!isLoading && activities.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+                <ActivityIcon
+                    type="empty_state"
+                    className="h-8 w-8 text-muted-foreground mb-4"
+                />
+                <h3 className="text-sm font-medium text-foreground mb-1">No recent activity</h3>
+                <p className="text-xs text-muted-foreground">
+                    Your activity will appear here
+                </p>
+            </div>
+        )
+    }
 
     const getActivityMessage = (activity: Activity) => {
         const messages = {
@@ -73,21 +157,6 @@ export function RecentActivity() {
     }
 
     const totalPages = Math.min(Math.ceil(totalCount / ITEMS_PER_PAGE), MAX_PAGES)
-
-    if (activities.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-                <ActivityIcon
-                    type="empty_state"
-                    className="h-8 w-8 text-muted-foreground mb-4"
-                />
-                <h3 className="text-sm font-medium text-foreground mb-1">No recent activity</h3>
-                <p className="text-xs text-muted-foreground">
-                    Your activity will appear here
-                </p>
-            </div>
-        )
-    }
 
     return (
         <div className="flex flex-col h-full">

@@ -1,12 +1,34 @@
 'use client'
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { UserAuthForm } from '@/components/auth/user-auth-form'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import Grid from '@/components/design/grid'
-import { LandingViewer } from '@/components/3D/LandingViewer'
+import dynamic from 'next/dynamic'
+import { supabase } from '@/lib/supabase/supabase';
+
+// Dynamically import LandingViewer with no SSR to avoid Three.js server-side issues
+const LandingViewer = dynamic(
+    () => import('@/components/3D/LandingViewer').then(mod => mod.LandingViewer),
+    { ssr: false }
+)
 
 export default function SignIn() {
+    const router = useRouter();
+
+    useEffect(() => {
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                router.push('/');
+            }
+        };
+
+        checkSession();
+    }, [router]);
+
     return (
         <div className='container relative grid h-svh flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0'>
             <div className='relative hidden h-full flex-col bg-black p-10 text-white dark:border-r lg:flex'>

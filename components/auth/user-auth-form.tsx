@@ -65,8 +65,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             description: "You have successfully signed in.",
           })
 
-          // Refresh the page to update the authentication state
-          window.location.reload();
+          // Redirect to home page
+          window.location.href = '/';
         }
       } catch (error) {
         console.error('Error during sign in:', error)

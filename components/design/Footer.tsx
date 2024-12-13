@@ -25,7 +25,7 @@ export function Footer() {
                         </Link>
                         <div className="h-4 w-px bg-border"></div>
                         <Link
-                            href="https://x.com/bm_diop"
+                            href="https://x.com/psychoroidx"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-muted-foreground hover:text-foreground transition-colors"

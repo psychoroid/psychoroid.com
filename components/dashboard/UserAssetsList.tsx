@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Package, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import Image from 'next/image';
 import { memo } from 'react';
 import debounce from 'lodash/debounce';
 import { Skeleton } from "@/components/ui/skeleton"
+import { usePathname } from 'next/navigation'
+import { formatCount } from '@/lib/utils/products';
 
 interface UserAsset {
     id: string;
@@ -175,7 +177,14 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle }: {
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span>{asset.likes_count} likes</span>
                     <span>{asset.downloads_count} downloads</span>
-                    <span>{asset.views_count || 0} views</span>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-1.5 rounded-none text-muted-foreground"
+                    >
+                        <Eye className="h-4 w-4" />
+                        <span className="text-xs">{formatCount(asset.views_count || 0)}</span>
+                    </Button>
                     <span className="truncate">
                         Created {formatDistanceToNow(new Date(asset.created_at), {
                             addSuffix: true,
@@ -200,20 +209,47 @@ export const UserAssetsList = memo(function UserAssetsList({
     onAssetUpdate
 }: UserAssetsListProps) {
     const [searchQuery, setSearchQuery] = useState('');
+    const pathname = usePathname();
+    const [localAssets, setLocalAssets] = useState<UserAsset[]>([]);
 
-    // Debounce search handler
-    const handleSearch = useMemo(
-        () => debounce((query: string) => {
-            setSearchQuery(query);
-            onSearch(query);
-        }, 300),
-        [onSearch]
-    );
+    // Initialize with cached data if available
+    useEffect(() => {
+        const cachedAssets = localStorage.getItem('cached_user_assets');
+        if (cachedAssets) {
+            setLocalAssets(JSON.parse(cachedAssets));
+        }
+    }, []);
 
+    // Update local assets when props change
+    useEffect(() => {
+        if (assets.length > 0) {
+            setLocalAssets(assets);
+            // Cache the latest assets
+            localStorage.setItem('cached_user_assets', JSON.stringify(assets));
+        }
+    }, [assets]);
+
+    // Optimized visibility toggle
     const handleVisibilityToggle = useCallback(async (asset: UserAsset, index: number) => {
         try {
             const newVisibility = asset.visibility === 'public' ? 'private' : 'public';
 
+            // Optimistic update
+            const updatedAsset: UserAsset = {
+                ...asset,
+                visibility: newVisibility as 'public' | 'private' | 'unlisted'
+            };
+
+            setLocalAssets(prev => {
+                const newAssets = [...prev];
+                const index = newAssets.findIndex(a => a.id === asset.id);
+                if (index !== -1) {
+                    newAssets[index] = updatedAsset;
+                }
+                return newAssets;
+            });
+
+            // API call
             const { data, error } = await supabase.rpc('toggle_model_visibility', {
                 p_product_id: asset.id,
                 p_visibility: newVisibility
@@ -224,23 +260,49 @@ export const UserAssetsList = memo(function UserAssetsList({
 
             toast.success(`Model is now ${newVisibility}`);
 
+            // Background refresh
             if (onAssetUpdate) {
                 onAssetUpdate();
             }
         } catch (error: any) {
             console.error('Error toggling visibility:', error);
             toast.error(error.message || 'Failed to update visibility');
+
+            // Revert optimistic update on error
+            if (onAssetUpdate) {
+                onAssetUpdate();
+            }
         }
     }, [onAssetUpdate]);
 
-    if (isLoading && assets.length === 0) {
+    // Debounce search handler
+    const handleSearch = useMemo(
+        () => debounce((query: string) => {
+            setSearchQuery(query);
+            onSearch(query);
+        }, 300),
+        [onSearch]
+    );
+
+    // Reset state when pathname changes
+    useEffect(() => {
+        setSearchQuery('')
+    }, [pathname])
+
+    // Force refresh of assets periodically when visible
+    useEffect(() => {
+        if (document.visibilityState === 'visible' && onAssetUpdate) {
+            const interval = setInterval(onAssetUpdate, 30000) // Refresh every 30 seconds
+            return () => clearInterval(interval)
+        }
+    }, [onAssetUpdate])
+
+    // Show skeleton loader only for initial empty state
+    if (isLoading && localAssets.length === 0) {
         return (
             <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
-                    <div
-                        key={i}
-                        className="flex gap-4 p-3 border border-border rounded-none h-[120px]"
-                    >
+                    <div key={i} className="flex gap-4 p-3 border border-border rounded-none h-[120px]">
                         <Skeleton className="w-24 h-24 flex-shrink-0" />
                         <div className="flex-1 space-y-3">
                             <Skeleton className="h-4 w-3/4" />
@@ -250,7 +312,7 @@ export const UserAssetsList = memo(function UserAssetsList({
                     </div>
                 ))}
             </div>
-        )
+        );
     }
 
     return (
@@ -268,7 +330,7 @@ export const UserAssetsList = memo(function UserAssetsList({
 
             {/* Assets List */}
             <div className="space-y-4 h-[calc(100vh-16rem)] overflow-y-auto scrollbar-hide">
-                {assets.length === 0 ? (
+                {localAssets.length === 0 ? (
                     <div className="text-center py-12 border border-dashed border-border rounded-lg">
                         <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-medium text-foreground mb-2">No assets found</h3>
@@ -280,7 +342,7 @@ export const UserAssetsList = memo(function UserAssetsList({
                     </div>
                 ) : (
                     <>
-                        {assets.map((asset, index) => (
+                        {localAssets.map((asset, index) => (
                             <AssetCard
                                 key={asset.id}
                                 asset={asset}

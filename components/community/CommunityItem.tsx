@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Heart, Download, Eye } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,14 +10,7 @@ import { ModelPreview } from '@/components/3D/ModelPreview';
 import Image from 'next/image';
 import { saveAs } from 'file-saver';
 import { DownloadModal } from './DownloadModal';
-
-// Helper function to format numbers
-const formatCount = (count: number): string => {
-    if (count >= 1000) {
-        return `${(count / 1000).toFixed(1)}k`;
-    }
-    return count.toString();
-};
+import { formatCount } from '@/lib/utils/products';
 
 interface CommunityItemProps {
     product: CommunityProduct;
@@ -35,28 +28,51 @@ export function CommunityItem({
     isLiked
 }: CommunityItemProps) {
     const itemRef = useRef<HTMLDivElement>(null);
-    const lastViewRef = useRef<Date | null>(null);
+    const [likeCount, setLikeCount] = useState(product.likes_count || 0);
+    const [isLikedState, setIsLikedState] = useState(isLiked);
+    const viewTimeoutRef = useRef<NodeJS.Timeout>();
+    const lastViewRef = useRef<number>(Date.now());
     const [showDownloadModal, setShowDownloadModal] = useState(false);
 
+    // Update local state when props change
+    useEffect(() => {
+        setIsLikedState(isLiked);
+        setLikeCount(product.likes_count || 0);
+    }, [isLiked, product.likes_count]);
+
+    // Handle view counting with debouncing
+    const handleView = useCallback(async () => {
+        const now = Date.now();
+        if (now - lastViewRef.current >= 5 * 60 * 1000) {
+            try {
+                await supabase.rpc('record_product_view', {
+                    p_product_id: product.id,
+                    p_view_type: 'scroll'
+                });
+            } catch (error) {
+                console.error('Error recording view:', error);
+            }
+        }
+    }, [product.id]);
+
+    // Intersection Observer setup
     useEffect(() => {
         const observer = new IntersectionObserver(
-            async (entries) => {
-                entries.forEach(async (entry) => {
+            (entries) => {
+                entries.forEach((entry) => {
                     if (entry.isIntersecting) {
-                        const now = new Date();
-                        const shouldCount = !lastViewRef.current ||
-                            (now.getTime() - lastViewRef.current.getTime()) > 5 * 60 * 1000;
-
-                        if (shouldCount) {
-                            lastViewRef.current = now;
-                            const { error } = await supabase.rpc('record_product_view', {
-                                p_product_id: product.id,
-                                p_view_type: 'scroll'
-                            });
-
-                            if (error) {
-                                console.error('Error recording view:', error);
-                            }
+                        // Clear any existing timeout
+                        if (viewTimeoutRef.current) {
+                            clearTimeout(viewTimeoutRef.current);
+                        }
+                        // Set a new timeout to record the view after 2 seconds of visibility
+                        viewTimeoutRef.current = setTimeout(() => {
+                            handleView();
+                        }, 2000);
+                    } else {
+                        // Clear timeout if element is no longer visible
+                        if (viewTimeoutRef.current) {
+                            clearTimeout(viewTimeoutRef.current);
                         }
                     }
                 });
@@ -68,20 +84,28 @@ export function CommunityItem({
             observer.observe(itemRef.current);
         }
 
-        // Record page load view
+        return () => {
+            if (viewTimeoutRef.current) {
+                clearTimeout(viewTimeoutRef.current);
+            }
+            observer.disconnect();
+        };
+    }, [handleView]);
+
+    // Record initial view on mount
+    useEffect(() => {
         const recordInitialView = async () => {
             const { error } = await supabase.rpc('record_product_view', {
                 p_product_id: product.id,
                 p_view_type: 'page_load'
             });
 
-            if (error) {
-                console.error('Error recording initial view:', error);
+            if (!error) {
+                setLikeCount(prev => prev + 1);
             }
         };
 
         recordInitialView();
-        return () => observer.disconnect();
     }, [product.id]);
 
     const handleSelect = async () => {
@@ -91,13 +115,28 @@ export function CommunityItem({
                 p_view_type: 'click'
             });
 
-            if (error) {
-                console.error('Error recording view:', error);
+            if (!error) {
+                setLikeCount(prev => prev + 1);
             }
             onSelect(product);
         } catch (error) {
             console.error('Error recording view:', error);
             onSelect(product);
+        }
+    };
+
+    const handleLikeClick = async () => {
+        // Optimistic update
+        setIsLikedState(prev => !prev);
+        setLikeCount(prev => prev + (isLikedState ? -1 : 1));
+
+        try {
+            await onLike(product.id);
+        } catch (error) {
+            // Revert on error
+            setIsLikedState(prev => !prev);
+            setLikeCount(prev => prev + (isLikedState ? 1 : -1));
+            console.error('Error toggling like:', error);
         }
     };
 
@@ -174,13 +213,13 @@ export function CommunityItem({
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className={`flex items-center gap-1.5 rounded-none ${isLiked ? 'text-red-500' : 'hover:text-red-500'}`}
-                                onClick={() => onLike(product.id)}
+                                className={`flex items-center gap-1.5 rounded-none ${isLikedState ? 'text-red-500' : 'hover:text-red-500'}`}
+                                onClick={handleLikeClick}
                             >
                                 <Heart
-                                    className={`h-4 w-4 ${isLiked ? 'fill-red-500' : ''}`}
+                                    className={`h-4 w-4 ${isLikedState ? 'fill-red-500' : ''}`}
                                 />
-                                <span className="text-xs">{formatCount(product.likes_count)}</span>
+                                <span className="text-xs">{formatCount(likeCount)}</span>
                             </Button>
 
                             {/* Views */}

@@ -3,36 +3,49 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2024-11-20.acacia'
+})
 
 export async function POST(req: Request) {
     try {
-        const supabase = createRouteHandlerClient({ cookies })
-        const { data: { session } } = await supabase.auth.getSession()
-
-        if (!session) {
-            return new NextResponse('Unauthorized', { status: 401 })
+        const { userId } = await req.json()
+        
+        if (!userId) {
+            return NextResponse.json(
+                { error: 'User ID is required' },
+                { status: 400 }
+            )
         }
-
-        const { data: userData } = await supabase
-            .from('user_roids')
+        
+        const supabase = createRouteHandlerClient({ cookies })
+        
+        // Get customer ID from your database
+        const { data: customer, error: customerError } = await supabase
+            .from('customers')
             .select('stripe_customer_id')
-            .eq('user_id', session.user.id)
+            .eq('user_id', userId)
             .single()
 
-        if (!userData?.stripe_customer_id) {
-            return new NextResponse('No Stripe customer found', { status: 400 })
+        if (customerError || !customer?.stripe_customer_id) {
+            return NextResponse.json(
+                { error: 'No active subscription found' },
+                { status: 400 }
+            )
         }
 
-        const portalSession = await stripe.billingPortal.sessions.create({
-            customer: userData.stripe_customer_id,
-            return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/settings/billing`,
-            configuration: process.env.STRIPE_PORTAL_CONFIGURATION_ID,
+        // Create Stripe portal session
+        const session = await stripe.billingPortal.sessions.create({
+            customer: customer.stripe_customer_id,
+            return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing`,
         })
 
-        return NextResponse.json({ url: portalSession.url })
+        return NextResponse.json({ url: session.url })
     } catch (error) {
-        console.error('Portal session error:', error)
-        return new NextResponse('Error creating portal session', { status: 500 })
+        console.error('Error creating portal session:', error)
+        return NextResponse.json(
+            { error: 'Failed to create portal session' },
+            { status: 500 }
+        )
     }
 } 
