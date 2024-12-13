@@ -205,7 +205,7 @@ BEGIN
             'private'::visibility_type_enum,
             0,
             0,
-            ARRAY['template']::text[],
+            ARRAY['starter']::text[],
             false,
             v_model_path
         ) RETURNING id INTO v_product_id;

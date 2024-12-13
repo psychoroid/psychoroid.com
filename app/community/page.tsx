@@ -41,28 +41,27 @@ export default function CommunityPage() {
     const fetchCommunityProducts = useCallback(async () => {
         try {
             setIsLoading(true);
-            console.log('Fetching community products...');
 
             const { data, error } = await supabase
-                .rpc('get_trending_products', { p_limit: 50, p_offset: 0 });
-
-            console.log('Fetched data:', data); // Debug log
-            console.log('Error if any:', error); // Debug log
+                .rpc('get_trending_products', {
+                    p_limit: 50,
+                    p_offset: 0
+                });
 
             if (error) throw error;
 
             if (data && Array.isArray(data)) {
-                console.log('Number of products:', data.length); // Debug log
-                console.log('First product:', data[0]); // Debug log
-
+                // Store with timestamp for cache validation
                 localStorage.setItem('community_products', JSON.stringify({
                     data,
                     timestamp: Date.now()
                 }));
 
-                setProducts(data as CommunityProduct[]);
+                setProducts(data.map(product => ({
+                    ...product,
+                    views_count: product.views_count || 0  // Ensure views_count is initialized
+                })));
             } else {
-                console.log('No data or invalid data format received');
                 setProducts([]);
             }
         } catch (error) {

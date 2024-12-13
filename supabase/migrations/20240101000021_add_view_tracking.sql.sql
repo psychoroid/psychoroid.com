@@ -3,7 +3,10 @@ CREATE OR REPLACE FUNCTION record_product_view(
     p_product_id UUID,
     p_view_type view_type_enum DEFAULT 'click'
 )
-RETURNS BOOLEAN
+RETURNS TABLE (
+    success BOOLEAN,
+    views_count INTEGER
+)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
@@ -37,9 +40,11 @@ BEGIN
                 UPDATE products
                 SET views_count = COALESCE(v_view_count, 0) + 1,
                     updated_at = NOW()
-                WHERE id = p_product_id;
+                WHERE id = p_product_id
+                RETURNING views_count INTO v_view_count;
                 
-                RETURN TRUE;
+                RETURN QUERY SELECT true, v_view_count;
+                RETURN;
             END IF;
             
         WHEN 'page_load' THEN
@@ -53,7 +58,8 @@ BEGIN
                     updated_at = NOW()
                 WHERE id = p_product_id;
                 
-                RETURN TRUE;
+                RETURN QUERY SELECT true, v_view_count;
+                RETURN;
             END IF;
             
         WHEN 'click' THEN
@@ -67,11 +73,12 @@ BEGIN
                     updated_at = NOW()
                 WHERE id = p_product_id;
                 
-                RETURN TRUE;
+                RETURN QUERY SELECT true, v_view_count;
+                RETURN;
             END IF;
     END CASE;
     
-    RETURN FALSE;
+    RETURN QUERY SELECT false, v_view_count;
 END;
 $$;
 

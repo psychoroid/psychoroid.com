@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Package, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Search, Package, ChevronLeft, ChevronRight, Eye, Heart, Download } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import debounce from 'lodash/debounce';
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePathname } from 'next/navigation'
 import { formatCount } from '@/lib/utils/products';
+import { getTagColor } from '@/lib/utils/tagColors';
 
 interface UserAsset {
     id: string;
@@ -129,15 +130,12 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle }: {
                 </p>
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1 translate-y-[3px]">
                     {asset.tags?.slice(0, 4).map((tag, index) => (
                         <Badge
                             key={index}
                             variant="outline"
-                            className={`text-xs rounded-none ${tag === 'starter'
-                                ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                                : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
-                                } hover:bg-accent/50`}
+                            className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50`}
                         >
                             {tag}
                         </Badge>
@@ -158,10 +156,7 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle }: {
                                             <Badge
                                                 key={index}
                                                 variant="outline"
-                                                className={`text-xs rounded-none ${tag === 'starter'
-                                                    ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                                                    : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
-                                                    } hover:bg-accent/50`}
+                                                className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50`}
                                             >
                                                 {tag}
                                             </Badge>
@@ -173,23 +168,41 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle }: {
                     )}
                 </div>
 
-                {/* Stats */}
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span>{asset.likes_count} likes</span>
-                    <span>{asset.downloads_count} downloads</span>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="flex items-center gap-1.5 rounded-none text-muted-foreground"
-                    >
-                        <Eye className="h-4 w-4" />
-                        <span className="text-xs">{formatCount(asset.views_count || 0)}</span>
-                    </Button>
-                    <span className="truncate">
-                        Created {formatDistanceToNow(new Date(asset.created_at), {
-                            addSuffix: true,
-                            includeSeconds: true
-                        }).replace('about ', '')}
+                {/* Stats and Time - Updated Layout */}
+                <div className="flex items-center justify-between mt-auto pt-1">
+                    {/* Stats with Icons */}
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex items-center gap-1.5 rounded-none text-muted-foreground hover:bg-accent/30 pointer-events-none"
+                        >
+                            <Heart className="h-4 w-4" />
+                            <span className="text-xs">{formatCount(asset.likes_count)}</span>
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex items-center gap-1.5 rounded-none text-muted-foreground hover:bg-accent/30 pointer-events-none"
+                        >
+                            <Download className="h-4 w-4" />
+                            <span className="text-xs">{formatCount(asset.downloads_count)}</span>
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex items-center gap-1.5 rounded-none text-muted-foreground hover:bg-accent/30 pointer-events-none"
+                        >
+                            <Eye className="h-4 w-4" />
+                            <span className="text-xs">{formatCount(asset.views_count)}</span>
+                        </Button>
+                    </div>
+
+                    {/* Keep the time display */}
+                    <span className="text-xs text-muted-foreground">
+                        Created {formatDistanceToNow(new Date(asset.created_at))} ago
                     </span>
                 </div>
             </div>

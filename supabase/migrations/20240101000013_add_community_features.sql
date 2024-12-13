@@ -13,6 +13,7 @@ RETURNS TABLE (
     visibility visibility_type_enum,
     likes_count INTEGER,
     downloads_count INTEGER,
+    views_count INTEGER,
     tags TEXT[],
     is_featured BOOLEAN,
     created_at TIMESTAMPTZ,
@@ -34,13 +35,14 @@ BEGIN
         p.visibility,
         p.likes_count,
         p.downloads_count,
+        p.views_count,
         p.tags,
         p.is_featured,
         p.created_at,
         p.updated_at
     FROM products p
     WHERE p.visibility = 'public'
-    ORDER BY (p.likes_count + p.downloads_count) DESC, p.created_at DESC
+    ORDER BY (p.likes_count + p.downloads_count + p.views_count) DESC, p.created_at DESC
     LIMIT p_limit
     OFFSET p_offset;
 END;

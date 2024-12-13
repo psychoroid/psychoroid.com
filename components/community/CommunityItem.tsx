@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { saveAs } from 'file-saver';
 import { DownloadModal } from './DownloadModal';
 import { formatCount } from '@/lib/utils/products';
+import { getTagColor } from '@/lib/utils/tagColors';
 
 interface CommunityItemProps {
     product: CommunityProduct;
@@ -33,6 +34,7 @@ export function CommunityItem({
     const viewTimeoutRef = useRef<NodeJS.Timeout>();
     const lastViewRef = useRef<number>(Date.now());
     const [showDownloadModal, setShowDownloadModal] = useState(false);
+    const [viewCount, setViewCount] = useState(product.views_count || 0);
 
     // Update local state when props change
     useEffect(() => {
@@ -40,18 +42,46 @@ export function CommunityItem({
         setLikeCount(product.likes_count || 0);
     }, [isLiked, product.likes_count]);
 
+    // Update when product changes
+    useEffect(() => {
+        setViewCount(product.views_count || 0);
+    }, [product.views_count]);
+
+    // Record initial view on mount
+    useEffect(() => {
+        const recordInitialView = async () => {
+            const { data, error } = await supabase.rpc('record_product_view', {
+                p_product_id: product.id,
+                p_view_type: 'page_load'
+            });
+
+            // Only update if we get a successful response with the new count
+            if (!error && data?.views_count) {
+                setViewCount(data.views_count);
+            }
+        };
+
+        recordInitialView();
+    }, [product.id]);
+
     // Handle view counting with debouncing
     const handleView = useCallback(async () => {
         const now = Date.now();
         if (now - lastViewRef.current >= 5 * 60 * 1000) {
             try {
-                await supabase.rpc('record_product_view', {
+                const { data, error } = await supabase.rpc('record_product_view', {
                     p_product_id: product.id,
                     p_view_type: 'scroll'
                 });
+
+                // Only update if we get a successful response with the new count
+                if (!error && data?.views_count) {
+                    setViewCount(data.views_count);
+                }
             } catch (error) {
                 console.error('Error recording view:', error);
             }
+            lastViewRef.current = now;
         }
     }, [product.id]);
 
@@ -91,22 +121,6 @@ export function CommunityItem({
             observer.disconnect();
         };
     }, [handleView]);
-
-    // Record initial view on mount
-    useEffect(() => {
-        const recordInitialView = async () => {
-            const { error } = await supabase.rpc('record_product_view', {
-                p_product_id: product.id,
-                p_view_type: 'page_load'
-            });
-
-            if (!error) {
-                setLikeCount(prev => prev + 1);
-            }
-        };
-
-        recordInitialView();
-    }, [product.id]);
 
     const handleSelect = async () => {
         try {
@@ -153,7 +167,7 @@ export function CommunityItem({
                             <ModelPreview
                                 modelUrl={product.model_path}
                                 imageUrl={product.image_path}
-                                bucket={product.tags?.includes('template') ? 'default-assets' : 'product-models'}
+                                bucket={product.tags?.includes('starter') ? 'default-assets' : 'product-models'}
                             />
                         </div>
                     ) : (
@@ -182,15 +196,12 @@ export function CommunityItem({
 
                     {/* Tags */}
                     {product.tags && product.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="flex flex-wrap gap-1 mt-2 translate-y-[3px]">
                             {product.tags.slice(0, 3).map((tag, index) => (
                                 <Badge
                                     key={index}
                                     variant="outline"
-                                    className={`text-xs rounded-none ${tag === 'starter'
-                                        ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                                        : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
-                                        } hover:bg-accent/50`}
+                                    className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50`}
                                 >
                                     {tag}
                                 </Badge>
@@ -229,7 +240,7 @@ export function CommunityItem({
                                 className="flex items-center gap-1.5 rounded-none text-muted-foreground"
                             >
                                 <Eye className="h-4 w-4" />
-                                <span className="text-xs">{formatCount(product.views_count || 0)}</span>
+                                <span className="text-xs">{formatCount(viewCount)}</span>
                             </Button>
 
                             {/* Downloads */}
