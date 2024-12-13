@@ -7,7 +7,7 @@ import { AuthModal } from '@/components/auth/AuthModal'
 import { useUser } from '@/lib/contexts/UserContext'
 import { ImageUploadProps } from '@/types/components'
 import { ProductDetails } from '@/types/product'
-import { PROGRESS_MESSAGES } from '@/lib/constants/progressMessages'
+import { PROGRESS_MESSAGES } from '@/lib/utils/progressMessages'
 
 interface SavedProgresses {
   [key: string]: number;

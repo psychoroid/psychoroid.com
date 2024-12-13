@@ -8,7 +8,8 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within this project, please send an email to [dev@psychoroid.com]. All security vulnerabilities will be promptly addressed.
+If you discover a security vulnerability within this project, please send an email to [dev@psychoroid.com]. 
+All security vulnerabilities will be promptly addressed.
 
 Please include the following information in your report:
 
@@ -24,4 +25,4 @@ This information will help us triage your report more quickly.
 
 ## Preferred Languages
 
-We prefer all communications to be in English. 
+We prefer all communications to be in English.

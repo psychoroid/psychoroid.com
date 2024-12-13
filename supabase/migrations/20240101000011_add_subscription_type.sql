@@ -6,8 +6,9 @@ BEGIN
         UPDATE user_roids
         SET subscription_type = 
             CASE 
-                WHEN NEW.description LIKE '%pro%' THEN 'pro'
-                WHEN NEW.description LIKE '%intense%' THEN 'intense'
+                WHEN NEW.description LIKE '%automate%' THEN 'automate'
+                WHEN NEW.description LIKE '%scale%' THEN 'scale'
+                WHEN NEW.description LIKE '%enterprise%' THEN 'enterprise'
                 ELSE 'free'
             END
         WHERE user_id = NEW.user_id;

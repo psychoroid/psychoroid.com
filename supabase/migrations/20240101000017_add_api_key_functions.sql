@@ -29,7 +29,7 @@ BEGIN
     END IF;
 
     -- Generate a random API key with psychoroid prefix
-    v_key := 'pskrd_sk_' || encode(extensions.digest(gen_random_uuid()::text, 'sha256'), 'hex');
+    v_key := 'psyrd_sk_' || encode(extensions.digest(gen_random_uuid()::text, 'sha256'), 'hex');
     v_prefix := substring(v_key from 10 for 8);
     v_key_hash := extensions.crypt(v_key, extensions.gen_salt('bf'));
 

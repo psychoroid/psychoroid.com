@@ -1,5 +1,10 @@
-This project is mostly licensed under the GNU Affero General Public License (AGPL) as described below. However, certain files within this project are licensed under a different commercial license. These files are clearly marked with the following comment at the top of the file: /* @proprietary license */
-Files with this comment are not licensed under the AGPL v3, but instead are subject to the commercial license terms defined later in this file.
+  This project is mostly licensed under the GNU Affero General Public
+License (AGPL) as described below. However, certain files within this
+project are licensed under a different commercial license. These
+files are clearly marked with the following comment at the top of
+the file: /* @proprietary license */ Files with this comment are not
+licensed under the AGPL v3, but instead are subject to the commercial
+license terms defined later in this file.
 
 
                     GNU AFFERO GENERAL PUBLIC LICENSE

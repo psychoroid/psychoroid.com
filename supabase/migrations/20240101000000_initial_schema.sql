@@ -1,6 +1,6 @@
 --------------- ENUMS ---------------
 
-CREATE TYPE subscription_type_enum AS ENUM ('free', 'pro', 'intense');
+CREATE TYPE subscription_type_enum AS ENUM ('free', 'automate', 'scale', 'enterprise');
 CREATE TYPE subscription_status_enum AS ENUM ('active', 'canceled', 'past_due', 'unpaid');
 CREATE TYPE transaction_type_enum AS ENUM ('purchase', 'usage', 'refund', 'subscription');
 CREATE TYPE visibility_type_enum AS ENUM ('public', 'private', 'unlisted');
