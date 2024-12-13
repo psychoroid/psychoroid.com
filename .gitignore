@@ -12,21 +12,12 @@
 /.next/
 /out/
 
-# API Keys & Business Logic
-/lib/supabase/middleware.ts
-/scripts/
-
 # AI Prompts
 /lib/huggingface/prompts/
 
 # Database
-
 *.sqlite
 
-# Authentication
-/auth/
-/components/auth/
-/lib/auth/
 
 # Environment & Secrets
 .env*
@@ -35,12 +26,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
-**/secrets.*
-*.pem
-*.key
 
-# Vercel
-.vercel
 
 # Logs
 npm-debug.log*
@@ -55,24 +41,8 @@ yarn-error.log*
 *.swp
 *.swo
 
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
 # Project specific
 .cursorrules
 FIRSTPRINCIPLES.md
 SECURITY.md
 LICENSE
-
-# ML Models & Training Data
-/models/
-/datasets/
-*.weights
-*.h5
-*.pkl
-
-# Business Logic
-/lib/pricing/
-/lib/billing/
-/lib/subscriptions/
