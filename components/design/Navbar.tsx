@@ -9,7 +9,7 @@ import { Dock } from '@/components/ui/dock';
 import Image from 'next/image';
 import { useUser } from '@/lib/contexts/UserContext';
 import { Coins, Menu } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { DockDropdown } from './DockDropdown';
 import { CompanyDropdown } from './dropdowns/CompanyDropdown';
 import { EngineDropdown } from './dropdowns/EngineDropdown';
@@ -82,21 +82,30 @@ export function Navbar() {
 
     const handleSignOut = async () => {
         try {
+            // Get current path before signing out
+            const currentPath = window.location.pathname;
             setIsMenuOpen(false);
-            // First clear local storage
+
+            // Store the intended redirect path
+            if (!currentPath.startsWith('/dashboard')) {
+                sessionStorage.setItem('signOutRedirectPath', currentPath);
+            }
+
+            await signOut();
             clearAuthState();
 
-            // Wait for signOut to complete
-            await signOut();
+            // Force immediate redirect if on dashboard
+            if (currentPath.startsWith('/dashboard')) {
+                window.location.href = '/';  // Use window.location for immediate redirect
+            }
 
-            // Force navigation after a small delay to ensure cleanup is complete
-            setTimeout(() => {
-                window.location.href = '/auth/sign-in';
-            }, 100);
         } catch (error) {
-            console.error('Error during sign out:', error);
-            // Force redirect even if there's an error
-            window.location.href = '/auth/sign-in';
+            console.error('Error signing out:', error);
+
+            // Even if sign out fails, force redirect from dashboard
+            if (window.location.pathname.startsWith('/dashboard')) {
+                window.location.href = '/';
+            }
         }
     };
 

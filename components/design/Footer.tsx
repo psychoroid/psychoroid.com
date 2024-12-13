@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { Twitter, Github } from 'lucide-react';
+import { Github } from 'lucide-react';
 import FeedbackForm from './feedback-form';
+import { XIcon } from '@/components/icons/XIcon';
 
 export function Footer() {
     return (
@@ -30,7 +31,7 @@ export function Footer() {
                             rel="noopener noreferrer"
                             className="text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            <Twitter className="h-3 w-3" />
+                            <XIcon className="h-3 w-3 fill-current" />
                         </Link>
                         <div className="h-4 w-px bg-border"></div>
                         <div className="flex items-center space-x-6">

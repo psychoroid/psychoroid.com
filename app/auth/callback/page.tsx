@@ -46,7 +46,14 @@ function CallbackContent() {
                     router.push('/');
                     router.refresh();
                 } else {
-                    router.push('/auth/sign-in');
+                    // Check if this is a sign-out redirect
+                    const signOutRedirectPath = sessionStorage.getItem('signOutRedirectPath');
+                    if (signOutRedirectPath) {
+                        sessionStorage.removeItem('signOutRedirectPath');
+                        router.push(signOutRedirectPath);
+                    } else {
+                        router.push('/auth/sign-in');
+                    }
                 }
             } catch (error) {
                 console.error('Unexpected error during auth callback:', error);

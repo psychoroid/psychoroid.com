@@ -27,7 +27,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                             Welcome back
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Sign in to continue to psychoroid.com
+                            Sign in to explore psychoroid.com
                         </p>
                     </div>
                     <UserAuthForm />

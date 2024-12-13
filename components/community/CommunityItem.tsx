@@ -1,17 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { Heart, Download, Eye } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Heart, Download, Share2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { CommunityProduct } from '@/types/community';
 import { supabase } from '@/lib/supabase/supabase';
 import { ModelPreview } from '@/components/3D/ModelPreview';
 import Image from 'next/image';
-import { saveAs } from 'file-saver';
 import { DownloadModal } from './DownloadModal';
 import { formatCount } from '@/lib/utils/products';
 import { getTagColor } from '@/lib/utils/tagColors';
+import { ShareModal } from './ShareModal';
+import { AuthModal } from '@/components/auth/AuthModal';
+import { useUser } from '@/lib/contexts/UserContext';
 
 interface CommunityItemProps {
     product: CommunityProduct;
@@ -28,13 +30,12 @@ export function CommunityItem({
     onDownload,
     isLiked
 }: CommunityItemProps) {
-    const itemRef = useRef<HTMLDivElement>(null);
     const [likeCount, setLikeCount] = useState(product.likes_count || 0);
     const [isLikedState, setIsLikedState] = useState(isLiked);
-    const viewTimeoutRef = useRef<NodeJS.Timeout>();
-    const lastViewRef = useRef<number>(Date.now());
     const [showDownloadModal, setShowDownloadModal] = useState(false);
-    const [viewCount, setViewCount] = useState(product.views_count || 0);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const { user } = useUser();
 
     // Update local state when props change
     useEffect(() => {
@@ -42,85 +43,17 @@ export function CommunityItem({
         setLikeCount(product.likes_count || 0);
     }, [isLiked, product.likes_count]);
 
-    // Update when product changes
-    useEffect(() => {
-        setViewCount(product.views_count || 0);
-    }, [product.views_count]);
-
     // Record initial view on mount
     useEffect(() => {
         const recordInitialView = async () => {
-            const { data, error } = await supabase.rpc('record_product_view', {
+            await supabase.rpc('record_product_view', {
                 p_product_id: product.id,
                 p_view_type: 'page_load'
             });
-
-            // Only update if we get a successful response with the new count
-            if (!error && data?.views_count) {
-                setViewCount(data.views_count);
-            }
         };
 
         recordInitialView();
     }, [product.id]);
-
-    // Handle view counting with debouncing
-    const handleView = useCallback(async () => {
-        const now = Date.now();
-        if (now - lastViewRef.current >= 5 * 60 * 1000) {
-            try {
-                const { data, error } = await supabase.rpc('record_product_view', {
-                    p_product_id: product.id,
-                    p_view_type: 'scroll'
-                });
-
-                // Only update if we get a successful response with the new count
-                if (!error && data?.views_count) {
-                    setViewCount(data.views_count);
-                }
-            } catch (error) {
-                console.error('Error recording view:', error);
-            }
-            lastViewRef.current = now;
-        }
-    }, [product.id]);
-
-    // Intersection Observer setup
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        // Clear any existing timeout
-                        if (viewTimeoutRef.current) {
-                            clearTimeout(viewTimeoutRef.current);
-                        }
-                        // Set a new timeout to record the view after 2 seconds of visibility
-                        viewTimeoutRef.current = setTimeout(() => {
-                            handleView();
-                        }, 2000);
-                    } else {
-                        // Clear timeout if element is no longer visible
-                        if (viewTimeoutRef.current) {
-                            clearTimeout(viewTimeoutRef.current);
-                        }
-                    }
-                });
-            },
-            { threshold: 0.5 }
-        );
-
-        if (itemRef.current) {
-            observer.observe(itemRef.current);
-        }
-
-        return () => {
-            if (viewTimeoutRef.current) {
-                clearTimeout(viewTimeoutRef.current);
-            }
-            observer.disconnect();
-        };
-    }, [handleView]);
 
     const handleSelect = async () => {
         try {
@@ -140,6 +73,11 @@ export function CommunityItem({
     };
 
     const handleLikeClick = async () => {
+        if (!user) {
+            setShowAuthModal(true);
+            return;
+        }
+
         // Optimistic update
         setIsLikedState(prev => !prev);
         setLikeCount(prev => prev + (isLikedState ? -1 : 1));
@@ -154,9 +92,18 @@ export function CommunityItem({
         }
     };
 
+    const handleDownloadClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!user) {
+            setShowAuthModal(true);
+            return;
+        }
+        setShowDownloadModal(true);
+    };
+
     return (
         <>
-            <div ref={itemRef} className="group relative bg-card overflow-hidden border border-border hover:border-primary transition-all rounded-none">
+            <div className="group relative bg-card overflow-hidden border border-border hover:border-primary transition-all rounded-none">
                 {/* Image Container */}
                 <div
                     className="aspect-[4/3] cursor-pointer overflow-hidden bg-transparent"
@@ -233,39 +180,47 @@ export function CommunityItem({
                                 <span className="text-xs">{formatCount(likeCount)}</span>
                             </Button>
 
-                            {/* Views */}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="flex items-center gap-1.5 rounded-none text-muted-foreground"
-                            >
-                                <Eye className="h-4 w-4" />
-                                <span className="text-xs">{formatCount(viewCount)}</span>
-                            </Button>
-
-                            {/* Downloads */}
+                            {/* Downloads - Moved before Share */}
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 className="flex items-center gap-1.5 rounded-none"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowDownloadModal(true);
-                                }}
+                                onClick={handleDownloadClick}
                             >
                                 <Download className="h-4 w-4" />
                                 <span className="text-xs">{formatCount(product.downloads_count)}</span>
+                            </Button>
+
+                            {/* Share - Moved after Downloads */}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1.5 rounded-none hover:text-primary"
+                                onClick={() => setShowShareModal(true)}
+                            >
+                                <Share2 className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <AuthModal
+                isOpen={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+            />
+
             <DownloadModal
                 isOpen={showDownloadModal}
                 onClose={() => setShowDownloadModal(false)}
                 product={product}
                 onDownload={onDownload}
+            />
+
+            <ShareModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                product={product}
             />
         </>
     );
