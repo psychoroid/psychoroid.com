@@ -25,8 +25,8 @@ export default function FAQPage() {
                             <section className="mb-8 mt-4">
                                 <h2 className="text-sm font-medium mb-4">— What is psychoroid.com?</h2>
                                 <p className="text-xs mb-2">
-                                    psychoroid.com is an AI-powered 3D Toolkit platform that converts text and 2D images into high-quality 3D assets.
-                                    Built for creators, game developers, and 3D enthusiasts, our platform makes 3D creation accessible to everyone.
+                                    psychoroid.com is an AI-powered 3D platform that converts text and/or 2D images into high-quality 3D assets.
+                                    Built for creators, developers, enterprises and 3D enthusiasts, our platform makes 3D creation accessible to everyone.
                                 </p>
                             </section>
 

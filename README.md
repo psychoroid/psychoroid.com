@@ -1,39 +1,32 @@
-# psychoroid.com
+# psychoroid.com | Open Source 3D AI Engine
 
-An open-source 3D asset creation and distribution platform powered by AI.
+Enterprise-grade 3D asset creation and processing engine powered by AI.
 
 ## Overview
 
-[Psychoroid] psychoroid.com is a web-based platform that democratizes 3D content creation. The core UI and basic functionality are open source, while advanced features like AI processing and enterprise capabilities are available through our hosted platform.
+[psychoroid.com](https://psychoroid.com) is a web-based open-source engine for automated 3D asset creation, optimization, and distribution. Built for developers, creators and enterprises.
 
-### Game Development Resources
-- 🎮 Ready-to-use game assets
-- 🛠️ AI Game Character Design (AI-GCD) w/ Unity & Unreal Engine compatible formats
-- 📦 Optimized Production-grade Game Assets
+## Core Features
 
-### E-commerce & Manufacturing
-- 🏭 3D printing-ready files
-- 🛍️ E-commerce product generation & visualization
-- 📱 AR product preview
+### 3D Processing
+- 2D to 3D conversion pipeline
+- Batch processing capabilities
+- Multiple export formats support
+- Quality validation tools
 
-### Professional Tools
-- 💾 Batch processing capabilities
-- 🔍 Quality validation tools
-- 📐 Measurement and scaling tools
-- 🎯 Format-specific optimizations
-- 📚 API & Documentation
+### Enterprise Integration
+- RESTful API
+- Webhook support
+- Custom pipeline development
+- Enterprise authentication
 
-## Premium Features (Hosted Version)
+### Deployment Options
+- Cloud-based SaaS
+- On-premise installation
+- Hybrid deployment
+- Custom requirements
 
-Visit [psychoroid.com](https://psychoroid.com) for access to:
-- 🤖 AI-powered 2D to 3D conversion
-- 🎮 Game-ready asset optimization
-- 🏭 Manufacturing & 3D printing tools
-- 🛍️ E-commerce integration
-- 📊 Advanced analytics
-- 🔐 Enterprise security
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
@@ -41,4 +34,4 @@ Visit [psychoroid.com](https://psychoroid.com) for access to:
 
 ### Installation
 - npm or yarn
-- Git
+- git

@@ -15,9 +15,9 @@ export const viewport = {
 }
 
 export const metadata: Metadata = {
-    title: 'psychoroid.com | Open Source Generative AI 3D platform',
-    description: 'The open source generative AI 3D toolkit for product visualization, 3D modeling, and game development.',
-    keywords: '3D viewer, AI 3D, open source, product visualization, 3D modeling, game development, WebGL, Blender, Unity, Unreal Engine, Godot, generative AI, 3D toolkit, interactive 3D, 3D scan, AR, VR, metaverse, 3D print, CAD, mesh, texturing, rigging, animation, opensource, AI 3D Toolkit, AI 3D Toolkit for Blender, AI 3D Toolkit for Unreal Engine, AI 3D Toolkit for Unity, AI 3D Toolkit for Godot',
+    title: 'psychoroid.com | Open Source Generative AI 3D Engine',
+    description: 'The open source generative AI 3D platform for product visualization, 3D modeling, and game development.',
+    keywords: '3D viewer, AI 3D, open source, product visualization, 3D modeling, game development, WebGL, Blender, Unity, Unreal Engine, Godot, generative AI, 3D engine, interactive 3D, 3D scan, AR, VR, metaverse, 3D print, CAD, mesh, texturing, rigging, animation, opensource',
     authors: [{ name: 'Princemuichkine' }],
     creator: 'Princemuichkine',
     publisher: 'Princemuichkine',
@@ -36,14 +36,14 @@ export const metadata: Metadata = {
         type: 'website',
         locale: 'en_US',
         url: 'https://psychoroid.com',
-        title: 'psychoroid.com | Open Source Generative AI 3D platform',
-        description: 'The open source generative AI 3D toolkit for product visualization, 3D modeling, and game development.',
+        title: 'psychoroid.com | Open Source Generative AI 3D Engine',
+        description: 'The open source generative AI 3D platform for product visualization, 3D modeling, and game development.',
         siteName: 'psychoroid.com',
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'psychoroid.com | Open Source Generative AI 3D platform',
-        description: 'The open source generative AI 3D toolkit for product visualization, 3D modeling, and game development.',
+        title: 'psychoroid.com | Open Source Generative AI 3D Engine',
+        description: 'The open source generative AI 3D platform for product visualization, 3D modeling, and game development.',
         creator: '@Princemuichkine',
     },
     verification: {
