@@ -40,29 +40,34 @@ export default function CommunityPage() {
 
     const fetchCommunityProducts = useCallback(async () => {
         try {
-            const cached = localStorage.getItem('community_products');
-            if (cached) {
-                const { data, timestamp } = JSON.parse(cached);
-                if (Date.now() - timestamp < 5 * 60 * 1000) {
-                    setProducts(data);
-                    setIsLoading(false);
-                    return;
-                }
-            }
+            setIsLoading(true);
+            console.log('Fetching community products...');
 
             const { data, error } = await supabase
                 .rpc('get_trending_products', { p_limit: 50, p_offset: 0 });
 
+            console.log('Fetched data:', data); // Debug log
+            console.log('Error if any:', error); // Debug log
+
             if (error) throw error;
 
-            localStorage.setItem('community_products', JSON.stringify({
-                data,
-                timestamp: Date.now()
-            }));
+            if (data && Array.isArray(data)) {
+                console.log('Number of products:', data.length); // Debug log
+                console.log('First product:', data[0]); // Debug log
 
-            setProducts(data as CommunityProduct[]);
+                localStorage.setItem('community_products', JSON.stringify({
+                    data,
+                    timestamp: Date.now()
+                }));
+
+                setProducts(data as CommunityProduct[]);
+            } else {
+                console.log('No data or invalid data format received');
+                setProducts([]);
+            }
         } catch (error) {
             console.error('Error fetching products:', error);
+            setProducts([]);
         } finally {
             setIsLoading(false);
         }
@@ -76,6 +81,12 @@ export default function CommunityPage() {
     }, [searchQuery, user?.id, fetchUserLikes, fetchCommunityProducts]);
 
     useEffect(() => {
+        // Set up auto-refresh interval
+        const interval = setInterval(() => {
+            fetchCommunityProducts();
+        }, 5 * 60 * 1000); // Refreshes every 5 minutes
+
+        // Also refresh when tab becomes visible
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
                 fetchCommunityProducts();
@@ -83,19 +94,11 @@ export default function CommunityPage() {
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
+            clearInterval(interval);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [fetchCommunityProducts]);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (document.visibilityState === 'visible') {
-                fetchCommunityProducts();
-            }
-        }, 10000); // Refresh every 10 seconds when visible
-
-        return () => clearInterval(interval);
     }, [fetchCommunityProducts]);
 
     const handleLike = async (productId: string) => {

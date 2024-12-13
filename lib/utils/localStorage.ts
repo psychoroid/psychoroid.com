@@ -34,7 +34,10 @@ export const clearAuthState = () => {
         'user-roids-balance',
         'cached_roids_balance',
         'cachedImages',
-        'cachedSelectedImage'
+        'cachedSelectedImage',
+        // Add community-specific keys
+        'community_products',
+        'last_view_timestamps'
     ];
 
     // Batch remove known keys
@@ -47,12 +50,14 @@ export const clearAuthState = () => {
         }
     });
 
-    // One-time sweep for sb- prefixed items
+    // Clear any cached product data
     try {
-        Object.keys(localStorage)
-            .filter(key => key.startsWith('sb-'))
-            .forEach(key => localStorage.removeItem(key));
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-') || key.includes('product') || key.includes('community')) {
+                localStorage.removeItem(key);
+            }
+        });
     } catch (e) {
-        console.error('Error clearing sb- prefixed items:', e);
+        console.error('Error clearing product cache:', e);
     }
 }; 

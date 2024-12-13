@@ -17,7 +17,7 @@ interface Activity {
     product_id?: string
 }
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 4
 const MAX_PAGES = 20
 const CACHE_KEY = 'recent_activities_cache'
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
