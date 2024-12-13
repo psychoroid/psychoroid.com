@@ -16,8 +16,8 @@ export const viewport = {
 
 export const metadata: Metadata = {
     title: 'psychoroid.com | Open Source Gen AI 3D toolkit',
-    description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
-    keywords: '3D viewer, AI 3D tool, product visualization, 3D modeling, Game tools, WebGL, interactive 3D, Blender, Unreal Engine, Unity, Godot, Open Source, AI, AI 3D, AI 3D Toolkit, AI 3D Toolkit for Blender, AI 3D Toolkit for Unreal Engine, AI 3D Toolkit for Unity, AI 3D Toolkit for Godot',
+    description: 'The open source generative AI 3D toolkit for product visualization, 3D modeling, and game development.',
+    keywords: '3D viewer, AI 3D, open source, product visualization, 3D modeling, game development, WebGL, Blender, Unity, Unreal Engine, Godot, generative AI, 3D toolkit, interactive 3D, 3D scan, AR, VR, metaverse, 3D print, CAD, mesh, texturing, rigging, animation, opensource, AI 3D Toolkit, AI 3D Toolkit for Blender, AI 3D Toolkit for Unreal Engine, AI 3D Toolkit for Unity, AI 3D Toolkit for Godot',
     authors: [{ name: 'Prince Muichkine' }],
     creator: 'Prince Muichkine',
     publisher: 'Prince Muichkine',
@@ -37,13 +37,13 @@ export const metadata: Metadata = {
         locale: 'en_US',
         url: 'https://psychoroid.com',
         title: 'psychoroid.com | Open Source Gen AI 3D toolkit',
-        description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
-        siteName: 'PsychoRoid',
+        description: 'The open source generative AI 3D toolkit for product visualization, 3D modeling, and game development.',
+        siteName: 'psychoroid.com',
     },
     twitter: {
         card: 'summary_large_image',
         title: 'psychoroid.com | Open Source Gen AI 3D toolkit',
-        description: 'AI driven 3D tools for product visualization, 3D modeling, and game development.',
+        description: 'The open source generative AI 3D toolkit for product visualization, 3D modeling, and game development.',
         creator: '@PrinceMuichkine',
     },
     verification: {

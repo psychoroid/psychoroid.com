@@ -95,7 +95,7 @@ export default function PricingPage() {
                 'Free retries',
                 'Animate your creations',
             ],
-            description: 'Unlock Psychoroid\'s full potential',
+            description: 'Unlock psychoroid.com\'s full potential',
             type: 'subscription' as const
         }
     ];

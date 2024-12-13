@@ -4,7 +4,7 @@ An open-source 3D asset creation and distribution platform powered by AI.
 
 ## Overview
 
-[Psychoroid Studios] psychoroid.com is a web-based platform that democratizes 3D content creation. The core UI and basic functionality are open source, while advanced features like AI processing and enterprise capabilities are available through our hosted platform.
+[Psychoroid] psychoroid.com is a web-based platform that democratizes 3D content creation. The core UI and basic functionality are open source, while advanced features like AI processing and enterprise capabilities are available through our hosted platform.
 
 ### Game Development Resources
 - 🎮 Ready-to-use game assets
