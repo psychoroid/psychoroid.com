@@ -39,12 +39,28 @@ export const metadata: Metadata = {
         title: 'psychoroid.com | Open Source Generative AI 3D Engine',
         description: 'The open source generative AI 3D platform for product visualization, 3D modeling, and game development.',
         siteName: 'psychoroid.com',
+        images: [
+            {
+                url: '/main.png',
+                width: 575,
+                height: 575,
+                alt: 'psychoroid.com | Open Source Generative AI 3D Engine',
+            }
+        ],
     },
     twitter: {
         card: 'summary_large_image',
         title: 'psychoroid.com | Open Source Generative AI 3D Engine',
         description: 'The open source generative AI 3D platform for product visualization, 3D modeling, and game development.',
         creator: '@Princemuichkine',
+        images: [
+            {
+                url: '/psychoroid.png',
+                width: 575,
+                height: 575,
+                alt: 'psychoroid.com | Open Source Generative AI 3D Engine',
+            }
+        ],
     },
     verification: {
         google: 'your-google-site-verification',
@@ -54,12 +70,19 @@ export const metadata: Metadata = {
     icons: {
         icon: [
             { url: '/favicon.ico' },
-            { url: '/psychoroid.png' },
+            { url: '/main.png' },
         ],
         apple: [
             { url: '/psychoroid.png' },
         ],
         shortcut: ['/favicon.ico'],
+    },
+    manifest: '/manifest.json',
+    themeColor: '#000000',
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: 'default',
+        title: 'psychoroid.com',
     },
 }
 

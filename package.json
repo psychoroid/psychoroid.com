@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "NODE_NO_WARNINGS=1 next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "generate-sitemap": "python scripts/generate_sitemap.py",

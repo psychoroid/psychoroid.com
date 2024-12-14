@@ -126,7 +126,7 @@ export function Navbar() {
                                     className="focus:outline-none"
                                 >
                                     <Image
-                                        src="/main.png"
+                                        src="/transparent.png"
                                         alt="Logo"
                                         width={60}
                                         height={60}

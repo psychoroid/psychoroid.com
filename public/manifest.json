@@ -1,0 +1,28 @@
+{
+  "name": "psychoroid.com | Open Source Generative AI 3D Engine",
+  "short_name": "psychoroid.com",
+  "description": "The open source generative AI 3D platform for asset creation and distribution.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/main.png",
+      "sizes": "575x575",
+      "type": "image/png"
+    },
+    {
+      "src": "/psychoroid.png",
+      "sizes": "575x575",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+} 
