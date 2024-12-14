@@ -1,4 +1,4 @@
-# psychoroid.com | Open Source 3D AI Engine
+# psychoroid.com
 
 Enterprise-grade 3D asset creation and processing engine powered by AI.
 
