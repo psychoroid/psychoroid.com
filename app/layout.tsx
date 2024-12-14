@@ -6,6 +6,8 @@ import { ThemeProviderWrapper } from '../components/ui/ThemeProvider'
 import { UserProvider } from '@/lib/contexts/UserContext'
 import { Toaster } from 'sonner';
 import { TranslationProvider } from '@/lib/contexts/TranslationContext';
+import { headers } from 'next/headers';
+import { languages } from '@/lib/i18n/config';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -92,8 +94,15 @@ export default function RootLayout({
 }: {
     children: React.ReactNode
 }) {
+    // Get the user's preferred language from headers
+    const headersList = headers();
+    const acceptLanguage = headersList.get('accept-language');
+    const browserLang = acceptLanguage?.split(',')[0].split('-')[0] || 'en';
+    const supportedLangs = languages.map(l => l.code);
+    const defaultLang = supportedLangs.includes(browserLang) ? browserLang : 'en';
+
     return (
-        <html lang="en" suppressHydrationWarning className="dark">
+        <html lang={defaultLang} suppressHydrationWarning className="dark">
             <body className={`${inter.className} dark:bg-background dark:text-foreground`}>
                 <ThemeProviderWrapper defaultTheme="dark">
                     <TranslationProvider>

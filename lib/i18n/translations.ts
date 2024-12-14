@@ -15,16 +15,22 @@ export const getTranslations = (lang: Language) => {
 };
 
 export const t = (lang: Language, key: string) => {
-  const keys = key.split('.');
-  let value = getTranslations(lang);
-  
-  for (const k of keys) {
-    if (value?.[k]) {
-      value = value[k];
-    } else {
-      return key;
+  try {
+    const keys = key.split('.');
+    let value = getTranslations(lang);
+    
+    for (const k of keys) {
+      if (value?.[k]) {
+        value = value[k];
+      } else {
+        console.warn(`Translation missing for key: ${key} in language: ${lang}`);
+        return getTranslations('en')[key] || key;
+      }
     }
+    
+    return value;
+  } catch (error) {
+    console.error(`Translation error for key: ${key}`, error);
+    return key;
   }
-  
-  return value;
 }; 

@@ -11,9 +11,12 @@ import { CommunityGrid } from '@/components/community/CommunityGrid';
 import { Search } from 'lucide-react';
 import { useUser } from '@/lib/contexts/UserContext';
 import type { CommunityProduct, ProductLike } from '@/types/community';
+import { useTranslation } from '@/lib/contexts/TranslationContext';
+import { t } from '@/lib/i18n/translations';
 
 export default function CommunityPage() {
     const { user } = useUser();
+    const { currentLanguage } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState<CommunityProduct[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<CommunityProduct | null>(null);
@@ -176,9 +179,11 @@ export default function CommunityPage() {
                             {/* Left side - Title */}
                             <div className="md:col-span-4">
                                 <div className="flex flex-col space-y-1 md:pl-4">
-                                    <h1 className="text-xl font-semibold text-foreground">Discover models</h1>
+                                    <h1 className="text-xl font-semibold text-foreground">
+                                        {t(currentLanguage, 'community.title')}
+                                    </h1>
                                     <p className="text-xs text-muted-foreground">
-                                        Explore public assets created by our community
+                                        {t(currentLanguage, 'community.subtitle')}
                                     </p>
                                 </div>
                             </div>
@@ -189,7 +194,7 @@ export default function CommunityPage() {
                                     <Search className="absolute left-3 top-1/2 -translate-y-[25%] h-[14px] w-[14px] text-muted-foreground pointer-events-none" />
                                     <Input
                                         type="text"
-                                        placeholder="Search models, creators, or tags..."
+                                        placeholder={t(currentLanguage, 'community.search.placeholder')}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="w-full pl-9 h-9 text-xs rounded-none"
@@ -199,7 +204,7 @@ export default function CommunityPage() {
                         </div>
                     </div>
 
-                    {/* Grid Section - Now can extend full width */}
+                    {/* Grid Section */}
                     <div className="flex-grow pb-8">
                         {isLoading ? (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
@@ -223,7 +228,7 @@ export default function CommunityPage() {
                         )}
                     </div>
 
-                    {/* Preview Modal remains the same */}
+                    {/* Preview Modal */}
                     {selectedProduct && (
                         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
                             <div className="fixed inset-2 md:inset-4 bg-background border rounded-lg shadow-lg p-4 md:p-6">
@@ -234,7 +239,7 @@ export default function CommunityPage() {
                                             onClick={() => setSelectedProduct(null)}
                                             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                                         >
-                                            Close
+                                            {t(currentLanguage, 'community.preview.close')}
                                         </button>
                                     </div>
                                     <div className="flex-grow relative">

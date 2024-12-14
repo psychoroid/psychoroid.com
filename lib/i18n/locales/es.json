@@ -76,9 +76,108 @@
   },
   "footer": {
     "copyright": "Copyright © 2025 — psychoroid.com",
-    "feedback": "Feedback",
     "faq": "FAQ",
     "privacy": "Privacidad",
     "terms": "Términos"
+  },
+  "faq": {
+    "title": "FAQ",
+    "subtitle": "Preguntas frecuentes",
+    "sections": {
+      "what_is": {
+        "title": "¿Qué es psychoroid.com?",
+        "content": "psychoroid.com es una plataforma 3D impulsada por IA que convierte texto y/o imágenes 2D en assets 3D de alta calidad. Diseñada para creadores, desarrolladores, empresas y entusiastas del 3D, nuestra plataforma hace que la creación 3D sea accesible para todos."
+      },
+      "credits": {
+        "title": "¿Cómo funcionan los créditos?",
+        "content": "Los créditos (ROIDS) son nuestra moneda virtual utilizada para generar assets 3D. Cada tarea de conversión cuesta una cantidad determinada de créditos. Los usuarios gratuitos reciben 200 ROIDS al registrarse, mientras que los suscriptores reciben ROIDS mensuales según su plan."
+      },
+      "formats": {
+        "title": "¿Qué formatos de archivo se admiten?",
+        "content": "Para entrada, admitimos archivos JPG y PNG de hasta 5MB. Los formatos de salida incluyen GLB, GLTF y USDZ, haciendo que nuestros modelos sean compatibles con la mayoría de software y plataformas 3D."
+      },
+      "security": {
+        "title": "¿Están seguros mis assets?",
+        "content": "Sí, nos tomamos muy en serio la seguridad de los datos. Tus assets se almacenan de forma segura y nunca compartiremos tus datos ni los usaremos para entrenamiento sin tu consentimiento explícito."
+      },
+      "commercial": {
+        "title": "¿Puedo usar los modelos comercialmente?",
+        "content": "Sí. Los suscriptores de pago poseen todos los derechos de sus modelos generados. Los usuarios gratuitos reciben una licencia CC BY 4.0, permitiendo el uso comercial con atribución a psychoroid.com."
+      },
+      "subscription": {
+        "title": "¿Cómo gestiono mi suscripción?",
+        "content": "Puedes gestionar tu suscripción, incluyendo actualizaciones y cancelaciones, desde la configuración de tu cuenta en tu Dashboard. Los cambios en las suscripciones tienen efecto inmediato y las cancelaciones se procesan al final del período de facturación actual. No hay reembolsos excepto en casos de fraude."
+      }
+    }
+  },
+  "privacy": {
+    "title": "Privacy",
+    "subtitle": "Política de privacidad",
+    "sections": {
+      "collection": {
+        "title": "Recopilación de datos",
+        "content": "Recopilamos información esencial de la cuenta (email, contraseña), detalles de pago para transacciones y el contenido que subes para generar assets 3D. Estos datos son necesarios para proporcionar nuestros servicios y mejorar tu experiencia."
+      },
+      "usage": {
+        "title": "Uso de datos",
+        "content": "Tus datos se utilizan para proporcionar nuestros servicios de generación 3D, procesar pagos y mantener tu cuenta. Analizamos patrones de uso para mejorar nuestros modelos de IA y la experiencia del usuario, siempre respetando tu privacidad."
+      },
+      "security": {
+        "title": "Seguridad de datos",
+        "content": "Utilizamos cifrado y medidas de seguridad estándar de la industria para proteger tus datos. Tus assets 3D e información personal se almacenan de forma segura y el acceso está estrictamente controlado."
+      },
+      "rights": {
+        "title": "Tus derechos",
+        "content": "Puedes acceder, modificar o eliminar tus datos en cualquier momento a través de tu Dashboard. También puedes solicitar una copia de tus datos o optar por no participar en la recopilación de datos no esencial contactando a nuestro equipo de soporte."
+      },
+      "contact": {
+        "title": "Contacto",
+        "content": "Para consultas sobre privacidad o solicitudes de datos, contáctanos en dev@psychoroid.com. Normalmente respondemos dentro de las 48 horas."
+      }
+    }
+  },
+  "terms": {
+    "title": "Terms",
+    "subtitle": "Términos y condiciones",
+    "sections": {
+      "service": {
+        "title": "Términos del servicio",
+        "content": "Al usar psychoroid.com, aceptas estos términos y nuestra política de privacidad. Nuestros servicios están disponibles para usuarios mayores de 13 años, y debes proporcionar información precisa de la cuenta."
+      },
+      "rights": {
+        "title": "Derechos de contenido",
+        "content": "Los suscriptores de pago poseen todos los derechos de sus modelos 3D generados. Los usuarios gratuitos reciben una licencia CC BY 4.0, requiriendo atribución a psychoroid.com para uso comercial. Conservas los derechos de tu contenido original subido."
+      },
+      "credits": {
+        "title": "Créditos y pagos",
+        "content": "Los créditos ROIDS no son transferibles ni reembolsables. Los pagos de suscripción se procesan al inicio de cada período de facturación. Las cancelaciones tienen efecto al final del período. No hay reembolsos excepto en casos de fraude."
+      },
+      "rules": {
+        "title": "Reglas de uso",
+        "content": "Aceptas no hacer mal uso de nuestros servicios, subir contenido malicioso o intentar acceso no autorizado. Nos reservamos el derecho de suspender cuentas que violen estos términos o participen en actividades fraudulentas."
+      },
+      "changes": {
+        "title": "Cambios en el servicio",
+        "content": "Podemos modificar nuestros servicios o términos con previo aviso. El uso continuado después de los cambios constituye aceptación. Para preguntas sobre estos términos, contacta a dev@psychoroid.com."
+      }
+    }
+  },
+  "feedback_form": {
+    "button": "Feedback",
+    "placeholder": "Ideas o sugerencias para mejorar psychoroid.com...",
+    "submit": "Enviar"
+  },
+  "community": {
+    "title": "Descubrir modelos",
+    "subtitle": "Explora recursos públicos creados por nuestra comunidad",
+    "search": {
+      "placeholder": "Buscar modelos, creadores o etiquetas..."
+    },
+    "preview": {
+      "close": "Cerrar"
+    },
+    "loading": {
+      "message": "Cargando..."
+    }
   }
 }

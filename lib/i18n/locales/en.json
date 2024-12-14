@@ -76,7 +76,6 @@
   },
   "footer": {
     "copyright": "Copyright © 2025 — psychoroid.com",
-    "feedback": "Feedback",
     "faq": "FAQ",
     "privacy": "Privacy",
     "terms": "Terms"
@@ -161,6 +160,24 @@
         "title": "Service Changes",
         "content": "We may modify our services or terms with notice. Continued use after changes constitutes acceptance. For questions about these terms, contact dev@psychoroid.com."
       }
+    }
+  },
+  "feedback_form": {
+    "button": "Feedback",
+    "placeholder": "Ideas or suggestions on how to improve psychoroid.com...",
+    "submit": "Submit"
+  },
+  "community": {
+    "title": "Discover models",
+    "subtitle": "Explore public assets created by our community",
+    "search": {
+      "placeholder": "Search models, creators, or tags..."
+    },
+    "preview": {
+      "close": "Close"
+    },
+    "loading": {
+      "message": "Loading..."
     }
   }
 } 

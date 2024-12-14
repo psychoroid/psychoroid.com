@@ -87,11 +87,11 @@
     "sections": {
       "what_is": {
         "title": "Qu'est-ce que psychoroid.com ?",
-        "content": "psychoroid.com est une plateforme 3D alimentée par l'IA qui convertit du texte et/ou des images 2D en assets 3D de haute qualité. Conçue pour les créateurs, développeurs, entreprises et passionnés de 3D, notre plateforme rend la création 3D accessible à tous."
+        "content": "psychoroid.com est une plateforme 3D augmentée par l'IA qui convertit du texte et/ou des images 2D en assets 3D de haute qualité. Conçue pour les créateurs, développeurs, entreprises et passionnés de 3D, notre plateforme rend la création 3D accessible à tous."
       },
       "credits": {
         "title": "Comment fonctionnent les crédits ?",
-        "content": "Les crédits (ROIDS) sont notre monnaie virtuelle utilisée pour générer des assets 3D. Chaque conversion coûte un certain nombre de crédits. Les utilisateurs gratuits reçoivent 200 ROIDS à l'inscription, tandis que les abonnés reçoivent des ROIDS mensuels selon leur plan."
+        "content": "Les crédits (ROIDS) sont notre monnaie virtuelle utilisée pour générer des assets. Chaque conversion coûte un certain nombre de crédits. Les utilisateurs gratuits reçoivent 200 ROIDS à l'inscription, tandis que les abonnés reçoivent des ROIDS mensuels selon leur plan."
       },
       "formats": {
         "title": "Quels formats de fichiers sont supportés ?",
@@ -117,7 +117,7 @@
     "sections": {
       "collection": {
         "title": "Collecte des données",
-        "content": "Nous collectons les informations essentielles du compte (email, mot de passe), les détails de paiement pour les transactions, et le contenu que vous téléchargez pour générer des assets 3D. Ces données sont nécessaires pour fournir nos services et améliorer votre expérience."
+        "content": "Nous collectons les informations essentielles pour faire fonctionner votre compte (email, mot de passe), les détails de paiement pour les transactions, et le contenu que vous téléchargez pour générer des assets. Ces données sont nécessaires pour fournir nos services et améliorer votre expérience."
       },
       "usage": {
         "title": "Utilisation des données",
@@ -125,7 +125,7 @@
       },
       "security": {
         "title": "Sécurité des données",
-        "content": "Nous utilisons des mesures de cryptage et de sécurité standard de l'industrie pour protéger vos données. Vos assets 3D et informations personnelles sont stockés de manière sécurisée, et l'accès est strictement contrôlé."
+        "content": "Nous utilisons des mesures de cryptage et de sécurité standard de l'industrie pour protéger vos données. Vos assets et informations personnelles sont stockés de manière sécurisée, et l'accès est strictement contrôlé."
       },
       "rights": {
         "title": "Vos droits",
@@ -161,6 +161,24 @@
         "title": "Modifications du service",
         "content": "Nous pouvons modifier nos services ou conditions avec préavis. L'utilisation continue après les modifications constitue une acceptation. Pour toute question sur ces conditions, contactez dev@psychoroid.com."
       }
+    }
+  },
+  "feedback_form": {
+    "button": "Feedback",
+    "placeholder": "Idées ou suggestions pour améliorer psychoroid.com...",
+    "submit": "Envoyer"
+  },
+  "community": {
+    "title": "Explorer les modèles",
+    "subtitle": "Découvrez les ressources créées par notre communauté",
+    "search": {
+      "placeholder": "Rechercher des modèles, créateurs ou tags..."
+    },
+    "preview": {
+      "close": "Fermer"
+    },
+    "loading": {
+      "message": "Chargement..."
     }
   }
 } 

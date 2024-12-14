@@ -80,5 +80,105 @@
     "faq": "FAQ",
     "privacy": "Privacidade",
     "terms": "Termos"
+  },
+  "faq": {
+    "title": "FAQ",
+    "subtitle": "Perguntas frequentes",
+    "sections": {
+      "what_is": {
+        "title": "O que é psychoroid.com?",
+        "content": "psychoroid.com é uma plataforma 3D alimentada por IA que converte texto e/ou imagens 2D em assets 3D de alta qualidade. Projetada para criadores, desenvolvedores, empresas e entusiastas de 3D, nossa plataforma torna a criação 3D acessível a todos."
+      },
+      "credits": {
+        "title": "Como funcionam os créditos?",
+        "content": "Os créditos (ROIDS) são nossa moeda virtual usada para gerar assets 3D. Cada tarefa de conversão custa uma certa quantidade de créditos. Usuários gratuitos recebem 200 ROIDS ao se registrar, enquanto assinantes recebem ROIDS mensais com base em seu plano."
+      },
+      "formats": {
+        "title": "Quais formatos de arquivo são suportados?",
+        "content": "Para entrada, suportamos arquivos JPG e PNG até 5MB. Os formatos de saída incluem GLB, GLTF e USDZ, tornando nossos modelos compatíveis com a maioria dos softwares e plataformas 3D."
+      },
+      "security": {
+        "title": "Meus assets estão seguros?",
+        "content": "Sim, levamos a segurança dos dados muito a sério. Seus assets são armazenados com segurança e nunca compartilharemos seus dados ou os usaremos para treinamento sem seu consentimento explícito."
+      },
+      "commercial": {
+        "title": "Posso usar os modelos comercialmente?",
+        "content": "Sim. Assinantes pagos possuem todos os direitos sobre seus modelos gerados. Usuários gratuitos recebem uma licença CC BY 4.0, permitindo uso comercial com atribuição ao psychoroid.com."
+      },
+      "subscription": {
+        "title": "Como gerencio minha assinatura?",
+        "content": "Você pode gerenciar sua assinatura, incluindo atualizações e cancelamentos, nas configurações da sua conta no Dashboard. Alterações nas assinaturas têm efeito imediato e cancelamentos são processados no final do período de faturamento atual. Não há reembolsos exceto em casos de fraude."
+      }
+    }
+  },
+  "privacy": {
+    "title": "Privacy",
+    "subtitle": "Política de privacidade",
+    "sections": {
+      "collection": {
+        "title": "Coleta de dados",
+        "content": "Coletamos informações essenciais da conta (email, senha), detalhes de pagamento para transações e o conteúdo que você envia para gerar assets 3D. Esses dados são necessários para fornecer nossos serviços e melhorar sua experiência."
+      },
+      "usage": {
+        "title": "Uso de dados",
+        "content": "Seus dados são usados para fornecer nossos serviços de geração 3D, processar pagamentos e manter sua conta. Analisamos padrões de uso para melhorar nossos modelos de IA e a experiência do usuário, sempre respeitando sua privacidade."
+      },
+      "security": {
+        "title": "Segurança de dados",
+        "content": "Usamos criptografia e medidas de segurança padrão da indústria para proteger seus dados. Seus assets 3D e informações pessoais são armazenados com segurança e o acesso é estritamente controlado."
+      },
+      "rights": {
+        "title": "Seus direitos",
+        "content": "Você pode acessar, modificar ou excluir seus dados a qualquer momento através do seu Dashboard. Você também pode solicitar uma cópia de seus dados ou optar por não participar da coleta de dados não essencial contatando nossa equipe de suporte."
+      },
+      "contact": {
+        "title": "Contato",
+        "content": "Para questões de privacidade ou solicitações de dados, contate-nos em dev@psychoroid.com. Normalmente respondemos dentro de 48 horas."
+      }
+    }
+  },
+  "terms": {
+    "title": "Terms",
+    "subtitle": "Termos e condições",
+    "sections": {
+      "service": {
+        "title": "Termos de serviço",
+        "content": "Ao usar psychoroid.com, você concorda com estes termos e nossa política de privacidade. Nossos serviços estão disponíveis para usuários maiores de 13 anos, e você deve fornecer informações precisas da conta."
+      },
+      "rights": {
+        "title": "Direitos de conteúdo",
+        "content": "Assinantes pagos possuem todos os direitos sobre seus modelos 3D gerados. Usuários gratuitos recebem uma licença CC BY 4.0, exigindo atribuição ao psychoroid.com para uso comercial. Você mantém os direitos sobre seu conteúdo original enviado."
+      },
+      "credits": {
+        "title": "Créditos e pagamentos",
+        "content": "Os créditos ROIDS não são transferíveis nem reembolsáveis. Os pagamentos de assinatura são processados no início de cada período de faturamento. Cancelamentos têm efeito no final do período. Não há reembolsos exceto em casos de fraude."
+      },
+      "rules": {
+        "title": "Regras de uso",
+        "content": "Você concorda em não fazer uso indevido de nossos serviços, enviar conteúdo malicioso ou tentar acesso não autorizado. Reservamo-nos o direito de suspender contas que violem estes termos ou se envolvam em atividades fraudulentas."
+      },
+      "changes": {
+        "title": "Alterações no serviço",
+        "content": "Podemos modificar nossos serviços ou termos com aviso prévio. O uso continuado após as alterações constitui aceitação. Para perguntas sobre estes termos, contate dev@psychoroid.com."
+      }
+    }
+  },
+  "feedback_form": {
+    "button": "Feedback",
+    "placeholder": "Ideias ou sugestões para melhorar psychoroid.com...",
+    "submit": "Enviar"
+  },
+  "community": {
+    "title": "Descobrir modelos",
+    "subtitle": "Explore recursos públicos criados por nossa comunidade",
+    "search": {
+      "placeholder": "Pesquisar modelos, criadores ou tags..."
+    },
+    "preview": {
+      "close": "Fechar"
+    },
+    "loading": {
+      "message": "Carregando..."
+    }
   }
 }

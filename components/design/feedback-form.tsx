@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { useUser } from '@/lib/contexts/UserContext'
 import { supabase } from '@/lib/supabase/supabase'
 import { toast } from 'react-hot-toast'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 type Sentiment = 'very_positive' | 'positive' | 'negative' | 'very_negative' | 'null'
 
@@ -19,6 +21,7 @@ const emojis: { [key in Sentiment]: string } = {
 
 export default function FeedbackForm() {
     const { user } = useUser()
+    const { currentLanguage } = useTranslation()
     const [isOpen, setIsOpen] = useState(false)
     const [feedback, setFeedback] = useState('')
     const [sentiment, setSentiment] = useState<Sentiment>('null')
@@ -64,13 +67,13 @@ export default function FeedbackForm() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
             >
-                Feedback
+                {t(currentLanguage, 'feedback_form.button')}
             </button>
             {isOpen && (
                 <div className="absolute bottom-8 right-0 w-80 bg-background border border-border shadow-lg">
                     <div className="p-4">
                         <Textarea
-                            placeholder="Ideas or suggestions on how to improve psychoroid.com ..."
+                            placeholder={t(currentLanguage, 'feedback_form.placeholder')}
                             value={feedback}
                             onChange={(e) => setFeedback(e.target.value)}
                             className="min-h-[100px] mb-4 text-xs placeholder:text-xs bg-background rounded-none resize-none"
@@ -95,7 +98,7 @@ export default function FeedbackForm() {
                                 className="rounded-none"
                                 disabled={!feedback.trim() || sentiment === 'null'}
                             >
-                                Submit
+                                {t(currentLanguage, 'feedback_form.submit')}
                             </Button>
                         </div>
                     </div>
