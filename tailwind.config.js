@@ -50,19 +50,52 @@ module.exports = {
 			},
 			keyframes: {
 				marquee: {
-					'0%': { transform: 'translateX(0)' },
-					'100%': { transform: 'translateX(calc(-100% - var(--gap)))' }
+					'0%': {
+						transform: 'translateX(0)'
+					},
+					'100%': {
+						transform: 'translateX(calc(-100% - var(--gap)))'
+					}
 				},
 				'marquee-vertical': {
-					'0%': { transform: 'translateY(0)' },
-					'100%': { transform: 'translateY(calc(-100% - var(--gap)))' }
+					'0%': {
+						transform: 'translateY(0)'
+					},
+					'100%': {
+						transform: 'translateY(calc(-100% - var(--gap)))'
+					}
+				},
+				rippling: {
+					'0%': {
+						opacity: '1'
+					},
+					'100%': {
+						transform: 'scale(2)',
+						opacity: '0'
+					}
+				},
+				grid: {
+					'0%': {
+						transform: 'translateY(-50%)'
+					},
+					'100%': {
+						transform: 'translateY(0)'
+					}
+				},
+				'border-beam': {
+					'100%': {
+						'offset-distance': '100%'
+					}
 				}
 			},
 			animation: {
 				marquee: 'marquee var(--duration) infinite linear',
-				'marquee-vertical': 'marquee-vertical var(--duration) linear infinite'
+				'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
+				rippling: 'rippling var(--duration) ease-out',
+				grid: 'grid 15s linear infinite',
+				'border-beam': 'border-beam calc(var(--duration)*1s) infinite linear'
 			}
 		}
 	},
 	plugins: []
-};
+}

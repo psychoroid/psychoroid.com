@@ -24,5 +24,72 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["AI", "3D", "open-source"],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "label": "Home screen of psychoroid.com"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "3D Engine",
+      "url": "/engine",
+      "description": "Access the 3D engine"
+    },
+    {
+      "name": "Community",
+      "url": "/community",
+      "description": "Browse community assets"
+    },
+    {
+      "name": "Pricing",
+      "url": "/pricing",
+      "description": "Get more information about our pricing structure"
+    }
+  ],
+  "locales": {
+    "en": {
+      "name": "psychoroid.com | Open Source Generative AI 3D Engine",
+      "short_name": "psychoroid.com",
+      "description": "The open source generative AI 3D platform for asset creation and distribution."
+    },
+    "es": {
+      "name": "psychoroid.com | Motor 3D de IA Generativa de Código Abierto",
+      "short_name": "psychoroid.com",
+      "description": "La plataforma 3D de código abierto para creación y distribución de assets."
+    },
+    "fr": {
+      "name": "psychoroid.com | Moteur 3D IA Générative Open Source",
+      "short_name": "psychoroid.com",
+      "description": "La plateforme 3D open source pour la création et la distribution d'assets."
+    },
+    "ja": {
+      "name": "psychoroid.com | オープンソース生成AI 3Dエンジン",
+      "short_name": "psychoroid.com",
+      "description": "アセット作成と配布のためのオープンソース3Dプラットフォーム。"
+    },
+    "ko": {
+      "name": "psychoroid.com | 오픈소스 생성형 AI 3D 엔진",
+      "short_name": "psychoroid.com",
+      "description": "에셋 제작 및 배포를 위한 오픈소스 3D 플랫폼."
+    },
+    "pt": {
+      "name": "psychoroid.com | Motor 3D de IA Generativa de Código Aberto",
+      "short_name": "psychoroid.com",
+      "description": "A plataforma 3D de código aberto para criação e distribuição de assets."
+    },
+    "zh": {
+      "name": "psychoroid.com | 开源生成式AI 3D引擎",
+      "short_name": "psychoroid.com",
+      "description": "用于资产创建和分发的开源3D平台。"
+    }
+  }
 } 
