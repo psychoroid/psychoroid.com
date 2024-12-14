@@ -1,14 +1,10 @@
-const JavaScriptObfuscator = require('javascript-obfuscator');
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-    enabled: process.env.ANALYZE === 'true',
-});
+const WebpackObfuscator = require('webpack-obfuscator');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
     swcMinify: true,
 
-    // Optimize and protect production builds
     webpack: (config, { dev, isServer }) => {
         // Keep existing rules
         config.module.rules.push({
@@ -22,62 +18,25 @@ const nextConfig = {
             },
         });
 
-        // Add code protection for production builds
+        // Add lightweight code protection for production builds only
         if (!dev && !isServer) {
-            // Add JavaScript Obfuscator
-            config.module.rules.push({
-                test: /\.(js|jsx|ts|tsx)$/,
-                exclude: /node_modules/,
-                use: {
-                    loader: 'webpack-obfuscator',
-                    options: {
-                        compact: true,
-                        controlFlowFlattening: true,
-                        controlFlowFlatteningThreshold: 1,
-                        deadCodeInjection: true,
-                        deadCodeInjectionThreshold: 0.9,
-                        debugProtection: true,
-                        disableConsoleOutput: true,
-                        identifierNamesGenerator: 'hexadecimal',
-                        log: false,
-                        renameGlobals: true,
-                        rotateStringArray: true,
-                        selfDefending: true,
-                        shuffleStringArray: true,
-                        splitStrings: true,
-                        stringArray: true,
-                        stringArrayThreshold: 1,
-                        transformObjectKeys: true,
-                        unicodeEscapeSequence: false
-                    }
-                }
-            });
-
-            // Optimize chunks
-            config.optimization = {
-                ...config.optimization,
-                minimize: true,
-                splitChunks: {
-                    chunks: 'all',
-                    minSize: 20000,
-                    maxSize: 244000,
-                    minChunks: 1,
-                    maxAsyncRequests: 30,
-                    maxInitialRequests: 30,
-                    cacheGroups: {
-                        defaultVendors: {
-                            test: /[\\/]node_modules[\\/]/,
-                            priority: -10,
-                            reuseExistingChunk: true,
-                        },
-                        default: {
-                            minChunks: 2,
-                            priority: -20,
-                            reuseExistingChunk: true,
-                        },
-                    },
-                },
-            };
+            config.plugins.push(
+                new WebpackObfuscator({
+                    compact: true,
+                    controlFlowFlattening: false,
+                    deadCodeInjection: false,
+                    debugProtection: true,
+                    disableConsoleOutput: true,
+                    identifierNamesGenerator: 'hexadecimal',
+                    log: false,
+                    renameGlobals: false,
+                    rotateStringArray: true,
+                    selfDefending: true,
+                    stringArray: true,
+                    stringArrayThreshold: 0.75,
+                    transformObjectKeys: false
+                }, [])
+            );
         }
 
         config.experiments = {
@@ -88,7 +47,6 @@ const nextConfig = {
         return config;
     },
 
-    // Keep existing image configuration
     images: {
         remotePatterns: [
             {
@@ -103,11 +61,6 @@ const nextConfig = {
             }
         ],
     },
-
-    // Additional production optimizations
-    productionBrowserSourceMaps: false,
-    compress: true,
 }
 
-// Export with bundle analyzer wrapper
-module.exports = withBundleAnalyzer(nextConfig); 
+module.exports = nextConfig 

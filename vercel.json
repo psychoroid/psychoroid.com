@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "ANALYZE=true npm run build",
+  "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
