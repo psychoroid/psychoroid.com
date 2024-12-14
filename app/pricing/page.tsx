@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from '@/lib/supabase/supabase';
+import { useTranslation } from '@/lib/contexts/TranslationContext';
+import { t } from '@/lib/i18n/translations';
 
 // Define the plan type - remove loadingPlan from required props
 type PricingPlan = Omit<PricingCardProps, 'onPurchase' | 'isLoading' | 'isLoggedIn' | 'loadingPlan'>;
@@ -36,6 +38,7 @@ export default function PricingPage() {
     const [customCredits, setCustomCredits] = useState<number>(1000);
     const [isUserSubscribed, setIsUserSubscribed] = useState(false);
     const CREDIT_PRICE = 0.01; // $0.01 per credit
+    const { currentLanguage } = useTranslation();
 
     useEffect(() => {
         const checkSubscription = async () => {
@@ -232,16 +235,18 @@ export default function PricingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 mb-8">
                         <div className="md:col-span-4">
                             <div className="flex flex-col space-y-1">
-                                <h1 className="text-xl font-semibold text-foreground">Pricing</h1>
+                                <h1 className="text-xl font-semibold text-foreground">
+                                    {t(currentLanguage, 'home.pricing.title')}
+                                </h1>
                                 <p className="text-xs text-muted-foreground">
-                                    Choose your plan
+                                    {t(currentLanguage, 'home.features.description')}
                                 </p>
                             </div>
                         </div>
 
                         <div className="md:col-span-8">
                             <p className="text-xs text-muted-foreground md:pt-2 mt-2">
-                                From individual creators to professional studios - all plans include access to our AI-powered 3D engine with varying levels of features and priority.
+                                {t(currentLanguage, 'home.pricing.description')}
                             </p>
                         </div>
                     </div>

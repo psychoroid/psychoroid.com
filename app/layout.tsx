@@ -5,6 +5,7 @@ import './globals.css'
 import { ThemeProviderWrapper } from '../components/ui/ThemeProvider'
 import { UserProvider } from '@/lib/contexts/UserContext'
 import { Toaster } from 'sonner';
+import { TranslationProvider } from '@/lib/contexts/TranslationContext';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -12,6 +13,7 @@ export const viewport = {
     width: 'device-width',
     initialScale: 1,
     maximumScale: 1,
+    themeColor: '#000000',
 }
 
 export const metadata: Metadata = {
@@ -78,7 +80,6 @@ export const metadata: Metadata = {
         shortcut: ['/favicon.ico'],
     },
     manifest: '/manifest.json',
-    themeColor: '#000000',
     appleWebApp: {
         capable: true,
         statusBarStyle: 'default',
@@ -95,9 +96,11 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning className="dark">
             <body className={`${inter.className} dark:bg-background dark:text-foreground`}>
                 <ThemeProviderWrapper defaultTheme="dark">
-                    <UserProvider>
-                        {children}
-                    </UserProvider>
+                    <TranslationProvider>
+                        <UserProvider>
+                            {children}
+                        </UserProvider>
+                    </TranslationProvider>
                 </ThemeProviderWrapper>
                 <Analytics />
                 <Toaster theme="dark" />

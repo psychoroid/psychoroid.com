@@ -1,0 +1,84 @@
+{
+  "home": {
+    "title": "Open Source Generative AI 3D Engine",
+    "subtitle": "個人クリエイターからプロのスタジオまで - すべてのプランにAI搭載3Dエンジンへのアクセスが含まれ、機能と優先度が異なります。",
+    "features": {
+      "title": "機能",
+      "description": "プランを選択"
+    },
+    "pricing": {
+      "title": "料金",
+      "description": "個人クリエイターからプロのスタジオまで - すべてのプランにAI搭載3Dエンジンへのアクセスが含まれ、機能と優先度が異なります。"
+    }
+  },
+  "pricing": {
+    "card": {
+      "free": "無料",
+      "no_card": "クレジットカード不要",
+      "month": "月",
+      "year": "年",
+      "get_started": "始める",
+      "subscribe": "購読する",
+      "processing": "処理中...",
+      "per_month": "/ 月",
+      "per_year": "/ 年",
+      "currency": "¥"
+    },
+    "plans": {
+      "explore": {
+        "name": "エクスプローラー",
+        "description": "技術を試す",
+        "features": [
+          "**サインアップ時に200クレジット**",
+          "限定的なキュー優先度",
+          "1つのタスクを同時実行",
+          "アセットはパブリックライセンス"
+        ]
+      },
+      "automate": {
+        "name": "オートメーション",
+        "description": "スタジオやチームに最適",
+        "features": [
+          "**月2,000クレジット**",
+          "標準的なキュー優先度",
+          "5つのタスクを同時実行",
+          "アセットはプライベートで顧客所有",
+          "コミュニティアセットのダウンロード",
+          "AIテクスチャ編集",
+          "APIアクセス"
+        ]
+      },
+      "scale": {
+        "name": "スケール",
+        "description": "psychoroid.comの可能性を最大限に",
+        "features": [
+          "**月6,000クレジット**",
+          "最高のキュー優先度",
+          "20のタスクを同時実行",
+          "アセットはプライベートで顧客所有",
+          "コミュニティアセットのダウンロード",
+          "AIテクスチャ編集",
+          "APIアクセス",
+          "無料再試行",
+          "作品をアニメーション化"
+        ]
+      }
+    }
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "engine": "3D Engine",
+    "community": "コミュニティ",
+    "resources": "リソース",
+    "pricing": "料金",
+    "sign_in": "ログイン",
+    "sign_out": "ログアウト"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025 — psychoroid.com",
+    "feedback": "Feedback",
+    "faq": "FAQ",
+    "privacy": "プライバシー",
+    "terms": "利用規約"
+  }
+} 

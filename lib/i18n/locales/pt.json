@@ -1,0 +1,84 @@
+{
+  "home": {
+    "title": "Open Source Generative AI 3D Engine",
+    "subtitle": "De criadores individuais a estúdios profissionais - todos os planos incluem acesso ao nosso motor 3D com diferentes níveis de recursos e prioridade.",
+    "features": {
+      "title": "Recursos",
+      "description": "Escolha seu plano"
+    },
+    "pricing": {
+      "title": "Preços",
+      "description": "De criadores individuais a estúdios profissionais - todos os planos incluem acesso ao nosso motor 3D com diferentes níveis de recursos e prioridade."
+    }
+  },
+  "pricing": {
+    "card": {
+      "free": "Grátis",
+      "no_card": "Sem cartão",
+      "month": "mês",
+      "year": "ano",
+      "get_started": "Começar",
+      "subscribe": "Assinar",
+      "processing": "Processando...",
+      "per_month": "/ mês",
+      "per_year": "/ ano",
+      "currency": "€"
+    },
+    "plans": {
+      "explore": {
+        "name": "Explorar",
+        "description": "Experimente nossa tecnologia",
+        "features": [
+          "**200 créditos ao se registrar**",
+          "Prioridade limitada na fila",
+          "1 tarefa na fila",
+          "Ativos sob licença pública"
+        ]
+      },
+      "automate": {
+        "name": "Automatizar",
+        "description": "Ideal para estúdios e equipes",
+        "features": [
+          "**2.000 créditos por mês**",
+          "Prioridade padrão na fila",
+          "5 tarefas na fila",
+          "Ativos são privados e de propriedade do cliente",
+          "Download de ativos da comunidade",
+          "Edição de textura por IA",
+          "Acesso à API"
+        ]
+      },
+      "scale": {
+        "name": "Escalar",
+        "description": "Libere todo o potencial",
+        "features": [
+          "**6.000 créditos por mês**",
+          "Prioridade máxima na fila",
+          "20 tarefas na fila",
+          "Ativos são privados e de propriedade do cliente",
+          "Download de ativos da comunidade",
+          "Edição de textura por IA",
+          "Acesso à API",
+          "Tentativas gratuitas",
+          "Anime suas criações"
+        ]
+      }
+    }
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "engine": "3D Engine",
+    "community": "Comunidade",
+    "resources": "Recursos",
+    "pricing": "Preços",
+    "sign_in": "Entrar",
+    "sign_out": "Sair"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025 — psychoroid.com",
+    "feedback": "Feedback",
+    "faq": "FAQ",
+    "privacy": "Privacidade",
+    "terms": "Termos"
+  }
+}

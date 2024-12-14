@@ -1,0 +1,84 @@
+{
+  "home": {
+    "title": "开源生成式AI 3D引擎",
+    "subtitle": "从个人创作者到专业工作室 - 所有计划都包含对我们的AI驱动3D引擎的访问权限，具有不同级别的功能和优先级。",
+    "features": {
+      "title": "功能",
+      "description": "选择您的计划"
+    },
+    "pricing": {
+      "title": "定价",
+      "description": "从个人创作者到专业工作室 - 所有计划都包含对我们的AI驱动3D引擎的访问权限，具有不同级别的功能和优先级。"
+    }
+  },
+  "pricing": {
+    "card": {
+      "free": "免费",
+      "no_card": "无需信用卡",
+      "month": "月",
+      "year": "年",
+      "get_started": "开始使用",
+      "subscribe": "订阅",
+      "processing": "处理中...",
+      "per_month": "/ 月",
+      "per_year": "/ 年",
+      "currency": "元"
+    },
+    "plans": {
+      "explore": {
+        "name": "探索版",
+        "description": "体验我们的技术",
+        "features": [
+          "**注册即赠200积分**",
+          "有限列优先级",
+          "1个任务同时进行",
+          "资产使用公共许可"
+        ]
+      },
+      "automate": {
+        "name": "自动化版",
+        "description": "适合工作室和团队",
+        "features": [
+          "**每月2,000积分**",
+          "标准队列优先级",
+          "5个任务同时进行",
+          "资产私有且归客户所有",
+          "下载社区资产",
+          "AI纹理编辑",
+          "API访问"
+        ]
+      },
+      "scale": {
+        "name": "扩展版",
+        "description": "释放psychoroid.com的全部潜力",
+        "features": [
+          "**每月6,000积分**",
+          "最高队列优先级",
+          "20个任务同时进行",
+          "资产私有且归客户所有",
+          "下载社区资产",
+          "AI纹理编辑",
+          "API访问",
+          "免费重试",
+          "为创作添加动画"
+        ]
+      }
+    }
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "engine": "3D Engine",
+    "community": "社区",
+    "resources": "资源",
+    "pricing": "定价",
+    "sign_in": "登录",
+    "sign_out": "退出"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025 — psychoroid.com",
+    "feedback": "Feedback",
+    "faq": "FAQ",
+    "privacy": "隐私政策",
+    "terms": "使用条款"
+  }
+} 

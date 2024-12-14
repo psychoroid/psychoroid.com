@@ -1,0 +1,84 @@
+{
+  "home": {
+    "title": "Open Source Generative AI 3D Engine",
+    "subtitle": "개인 크리에이터부터 전문 스튜디오까지 - 모든 플랜은 다양한 수준의 기능과 우선순위로 3D 엔진에 대한 액세스를 포함합니다.",
+    "features": {
+      "title": "기능",
+      "description": "플랜 선택"
+    },
+    "pricing": {
+      "title": "가격",
+      "description": "개인 크리에이터부터 전문 스튜디오까지 - 모든 플랜은 다양한 수준의 기능과 우선순위로 3D 엔진에 대한 액세스를 포함합니다."
+    }
+  },
+  "pricing": {
+    "card": {
+      "free": "무료",
+      "no_card": "신용카드 불필요",
+      "month": "월",
+      "year": "년",
+      "get_started": "시작하기",
+      "subscribe": "구독하기",
+      "processing": "처리 중...",
+      "per_month": "/ 월",
+      "per_year": "/ 년",
+      "currency": "₩"
+    },
+    "plans": {
+      "explore": {
+        "name": "탐색",
+        "description": "기술 체험하기",
+        "features": [
+          "**가입 시 200 크레딧**",
+          "제한된 대기열 우선순위",
+          "1개 작업 동시 실행",
+          "에셋은 공개 라이선스"
+        ]
+      },
+      "automate": {
+        "name": "자동화",
+        "description": "스튜디오와 팀에 최적화",
+        "features": [
+          "**월 2,000 크레딧**",
+          "표준 대기열 우선순위",
+          "5개 작업 동시 실행",
+          "에셋은 비공개 및 고객 소유",
+          "커뮤니티 에셋 다운로드",
+          "AI 텍스처 편집",
+          "API 접근"
+        ]
+      },
+      "scale": {
+        "name": "스케일",
+        "description": "psychoroid.com의 모든 잠재력 활용",
+        "features": [
+          "**월 6,000 크레딧**",
+          "최고 대기열 우선순위",
+          "20개 작업 동시 실행",
+          "에셋은 비공개 및 고객 소유",
+          "커뮤니티 에셋 다운로드",
+          "AI 텍스처 편집",
+          "API 접근",
+          "무료 재시도",
+          "창작물 애니메이션"
+        ]
+      }
+    }
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "engine": "3D Engine",
+    "community": "커뮤니티",
+    "resources": "리소스",
+    "pricing": "가격",
+    "sign_in": "로그인",
+    "sign_out": "로그아웃"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025 — psychoroid.com",
+    "feedback": "Feedback",
+    "faq": "FAQ",
+    "privacy": "개인정보 보호",
+    "terms": "이용약관"
+  }
+}

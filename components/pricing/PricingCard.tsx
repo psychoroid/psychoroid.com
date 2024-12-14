@@ -2,6 +2,9 @@
 
 import { Button } from '@/components/ui/button';
 import { PricingCardProps } from '@/types/components';
+import { useTranslation } from '@/lib/contexts/TranslationContext';
+import { t } from '@/lib/i18n/translations';
+import { getLocalizedPrice } from '@/lib/utils/currencyConversions';
 
 export function PricingCard({
     name,
@@ -16,50 +19,75 @@ export function PricingCard({
     isLoading,
     isLoggedIn,
     loadingPlan,
-    onPurchase
+    onPurchase,
+    type = 'subscription'
 }: PricingCardProps) {
     const isThisPlanLoading = loadingPlan === name;
+    const { currentLanguage } = useTranslation();
+    const currencySymbol = t(currentLanguage, 'pricing.card.currency') as any;
+
+    // Only convert price for paid plans (Automate and Scale)
+    const displayPrice = price === 0 ? 0 :
+        getLocalizedPrice(currencySymbol, name.toLowerCase() as 'automate' | 'scale');
+
+    // Get translated features based on plan type
+    const getTranslatedFeatures = (): string[] => {
+        const planKey = name.toLowerCase();
+        const basePath = `pricing.plans.${planKey}.features`;
+        return t(currentLanguage, basePath) || features;
+    };
+
+    const translatedFeatures = getTranslatedFeatures();
 
     return (
         <div className="flex flex-col h-full p-4 md:p-6 hover:bg-accent transition-colors">
             <div className="mb-6">
-                <h3 className="text-sm font-medium text-foreground mb-2">{name}</h3>
+                <h3 className="text-sm font-medium text-foreground mb-2">
+                    {t(currentLanguage, `pricing.plans.${name.toLowerCase()}.name`) || name}
+                </h3>
                 <div className="mb-4">
                     {price === 0 ? (
                         <>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-xl md:text-2xl font-semibold text-foreground">
-                                    Free
+                                    {t(currentLanguage, 'pricing.card.free')}
                                 </span>
                                 <span className="text-muted-foreground text-xs -translate-y-[1px]">•</span>
                                 <span className="text-xs text-muted-foreground">
-                                    No credit card needed
+                                    {t(currentLanguage, 'pricing.card.no_card')}
                                 </span>
                             </div>
                         </>
                     ) : (
                         <>
                             <div className="flex items-start">
-                                <span className="text-xs font-medium align-top mt-1.5 mr-0.5">$</span>
-                                <span className="text-2xl font-bold">{price}</span>
+                                <span className="text-xs font-medium align-top mt-1.5 mr-0.5">
+                                    {t(currentLanguage, 'pricing.card.currency')}
+                                </span>
+                                <span className="text-2xl font-bold">{displayPrice}</span>
                                 {period && (
                                     <span className="text-xs text-muted-foreground ml-1 mt-2">
-                                        / {period}
+                                        {t(currentLanguage, `pricing.card.per_${period}`)}
                                     </span>
                                 )}
                             </div>
                             {yearlyPrice && (
-                                <p className="text-xs text-muted-foreground mt-4 mb-4">${yearlyPrice}/ year</p>
+                                <p className="text-xs text-muted-foreground mt-4 mb-4">
+                                    {t(currentLanguage, 'pricing.card.currency')}{yearlyPrice}
+                                    {t(currentLanguage, 'pricing.card.per_year')}
+                                </p>
                             )}
                         </>
                     )}
                 </div>
-                <p className="text-xs text-muted-foreground mb-6">{description}</p>
+                <p className="text-xs text-muted-foreground mb-6">
+                    {t(currentLanguage, `pricing.plans.${name.toLowerCase()}.description`) || description}
+                </p>
             </div>
 
             <div className="flex-grow">
                 <ul className="space-y-3 mb-6">
-                    {features.map((feature, index) => (
+                    {translatedFeatures.map((feature: string, index: number) => (
                         <li key={index} className="flex items-start gap-2 text-xs">
                             <span className="text-foreground mt-0.5">•</span>
                             <span className="flex-1">
@@ -86,10 +114,12 @@ export function PricingCard({
                 >
                     {isThisPlanLoading ? (
                         <span className="flex items-center justify-center">
-                            Processing...
+                            {t(currentLanguage, 'pricing.card.processing')}
                         </span>
                     ) : (
-                        price === 0 ? 'Get Started' : 'Subscribe'
+                        price === 0
+                            ? t(currentLanguage, 'pricing.card.get_started')
+                            : t(currentLanguage, 'pricing.card.subscribe')
                     )}
                 </Button>
             )}

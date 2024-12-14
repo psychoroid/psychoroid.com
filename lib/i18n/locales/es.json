@@ -1,0 +1,84 @@
+{
+  "home": {
+    "title": "Open Source Generative AI 3D Engine",
+    "subtitle": "Desde creadores individuales hasta estudios profesionales - todos los planes incluyen acceso a nuestro motor 3D con diferentes niveles de funcionalidades y prioridad.",
+    "features": {
+      "title": "Características",
+      "description": "Elige tu plan"
+    },
+    "pricing": {
+      "title": "Precios",
+      "description": "Desde creadores individuales hasta estudios profesionales - todos los planes incluyen acceso a nuestro motor 3D con diferentes niveles de funcionalidades y prioridad."
+    }
+  },
+  "pricing": {
+    "card": {
+      "free": "Gratis",
+      "no_card": "Sin tarjeta",
+      "month": "mes",
+      "year": "año",
+      "get_started": "Comenzar",
+      "subscribe": "Suscribirse",
+      "processing": "Procesando...",
+      "per_month": "/ mes",
+      "per_year": "/ año",
+      "currency": "€"
+    },
+    "plans": {
+      "explore": {
+        "name": "Explorar",
+        "description": "Prueba nuestra tecnología",
+        "features": [
+          "**200 créditos al registrarse**",
+          "Prioridad limitada en la cola",
+          "1 tarea en cola",
+          "Los activos están bajo licencia pública"
+        ]
+      },
+      "automate": {
+        "name": "Automatizar",
+        "description": "Ideal para estudios y equipos",
+        "features": [
+          "**2.000 créditos por mes**",
+          "Prioridad estándar en la cola",
+          "5 tareas en cola",
+          "Los activos son privados y propiedad del cliente",
+          "Descarga de activos comunitarios",
+          "Edición de texturas con IA",
+          "Acceso a API"
+        ]
+      },
+      "scale": {
+        "name": "Escalar",
+        "description": "Libera todo el potencial",
+        "features": [
+          "**6.000 créditos por mes**",
+          "Máxima prioridad en la cola",
+          "20 tareas en cola",
+          "Los activos son privados y propiedad del cliente",
+          "Descarga de activos comunitarios",
+          "Edición de texturas con IA",
+          "Acceso a API",
+          "Reintentos gratuitos",
+          "Anima tus creaciones"
+        ]
+      }
+    }
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "engine": "3D Engine",
+    "community": "Comunidad",
+    "resources": "Recursos",
+    "pricing": "Precios",
+    "sign_in": "Iniciar sesión",
+    "sign_out": "Cerrar sesión"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025 — psychoroid.com",
+    "feedback": "Feedback",
+    "faq": "FAQ",
+    "privacy": "Privacidad",
+    "terms": "Términos"
+  }
+}

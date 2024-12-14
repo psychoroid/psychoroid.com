@@ -1,0 +1,166 @@
+{
+  "home": {
+    "title": "Open Source Generative AI 3D Engine",
+    "subtitle": "Des créateurs individuels aux studios professionnels - tous les plans incluent l'accès à notre moteur 3D avec différents niveaux de fonctionnalités et de priorité.",
+    "features": {
+      "title": "Fonctionnalités",
+      "description": "Choisissez votre plan"
+    },
+    "pricing": {
+      "title": "Tarification",
+      "description": "Des créateurs individuels aux studios professionnels - tous les plans incluent l'accès à notre moteur 3D avec différents niveaux de fonctionnalités et de priorité."
+    }
+  },
+  "pricing": {
+    "card": {
+      "free": "Gratuit",
+      "no_card": "Pas de CB requise",
+      "month": "mois",
+      "year": "an",
+      "get_started": "Commencer",
+      "subscribe": "S'abonner",
+      "processing": "En cours...",
+      "per_month": "/ mois",
+      "per_year": "/ an",
+      "currency": "€"
+    },
+    "plans": {
+      "explore": {
+        "name": "Explore",
+        "description": "Essayez notre technologie",
+        "features": [
+          "**200 crédits à l'inscription**",
+          "Priorité limitée dans la file d'attente",
+          "1 tâche en simultané",
+          "Les modèles sont sous licence publique"
+        ]
+      },
+      "automate": {
+        "name": "Automate",
+        "description": "Idéal pour les studios et les équipes",
+        "features": [
+          "**2 000 crédits par mois**",
+          "Priorité standard dans la file d'attente",
+          "5 tâches en simultané",
+          "Les modèles sont privés et appartiennent au client",
+          "Téléchargement des modèles communautaires",
+          "Édition de texture par IA",
+          "Accès API"
+        ]
+      },
+      "scale": {
+        "name": "Scale",
+        "description": "Tout le potentiel de psychoroid.com",
+        "features": [
+          "**6 000 crédits par mois**",
+          "Priorité maximale dans la file d'attente",
+          "20 tâches en simultané",
+          "Les modèles sont privés et appartiennent au client",
+          "Téléchargement des modèles communautaires",
+          "Édition de texture par IA",
+          "Accès API",
+          "Réessais gratuits",
+          "Animez vos créations"
+        ]
+      }
+    }
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "engine": "3D Engine",
+    "community": "Communauté",
+    "resources": "Ressources",
+    "pricing": "Tarifs",
+    "sign_in": "Connexion",
+    "sign_out": "Déconnexion"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025 — psychoroid.com",
+    "feedback": "Feedback",
+    "faq": "FAQ",
+    "privacy": "Confidentialité",
+    "terms": "Conditions"
+  },
+  "faq": {
+    "title": "FAQ",
+    "subtitle": "Questions fréquentes",
+    "sections": {
+      "what_is": {
+        "title": "Qu'est-ce que psychoroid.com ?",
+        "content": "psychoroid.com est une plateforme 3D alimentée par l'IA qui convertit du texte et/ou des images 2D en assets 3D de haute qualité. Conçue pour les créateurs, développeurs, entreprises et passionnés de 3D, notre plateforme rend la création 3D accessible à tous."
+      },
+      "credits": {
+        "title": "Comment fonctionnent les crédits ?",
+        "content": "Les crédits (ROIDS) sont notre monnaie virtuelle utilisée pour générer des assets 3D. Chaque conversion coûte un certain nombre de crédits. Les utilisateurs gratuits reçoivent 200 ROIDS à l'inscription, tandis que les abonnés reçoivent des ROIDS mensuels selon leur plan."
+      },
+      "formats": {
+        "title": "Quels formats de fichiers sont supportés ?",
+        "content": "Pour l'entrée, nous supportons les fichiers JPG et PNG jusqu'à 5MB. Les formats de sortie incluent GLB, GLTF, et USDZ, rendant nos modèles compatibles avec la plupart des logiciels et plateformes 3D."
+      },
+      "security": {
+        "title": "Mes assets sont-ils sécurisés ?",
+        "content": "Oui, nous prenons la sécurité des données au sérieux. Vos assets sont stockés de manière sécurisée, et nous ne partagerons jamais vos données ni ne les utiliserons pour l'entraînement sans votre consentement explicite."
+      },
+      "commercial": {
+        "title": "Puis-je utiliser les modèles commercialement ?",
+        "content": "Oui. Les abonnés payants possèdent tous les droits sur leurs modèles générés. Les utilisateurs gratuits reçoivent une licence CC BY 4.0, permettant une utilisation commerciale avec attribution à psychoroid.com."
+      },
+      "subscription": {
+        "title": "Comment gérer mon abonnement ?",
+        "content": "Vous pouvez gérer votre abonnement, y compris les mises à niveau et annulations, depuis les paramètres de votre compte dans votre Dashboard. Les modifications d'abonnement prennent effet immédiatement et les annulations sont traitées à la fin de la période de facturation en cours. Il n'y a pas de remboursement sauf en cas de fraude."
+      }
+    }
+  },
+  "privacy": {
+    "title": "Privacy",
+    "subtitle": "Politique de confidentialité",
+    "sections": {
+      "collection": {
+        "title": "Collecte des données",
+        "content": "Nous collectons les informations essentielles du compte (email, mot de passe), les détails de paiement pour les transactions, et le contenu que vous téléchargez pour générer des assets 3D. Ces données sont nécessaires pour fournir nos services et améliorer votre expérience."
+      },
+      "usage": {
+        "title": "Utilisation des données",
+        "content": "Vos données sont utilisées pour fournir nos services de génération 3D, traiter les paiements et maintenir votre compte. Nous analysons les modèles d'utilisation pour améliorer nos modèles d'IA et l'expérience utilisateur, en respectant toujours votre vie privée."
+      },
+      "security": {
+        "title": "Sécurité des données",
+        "content": "Nous utilisons des mesures de cryptage et de sécurité standard de l'industrie pour protéger vos données. Vos assets 3D et informations personnelles sont stockés de manière sécurisée, et l'accès est strictement contrôlé."
+      },
+      "rights": {
+        "title": "Vos droits",
+        "content": "Vous pouvez accéder, modifier ou supprimer vos données à tout moment via votre Dashboard. Vous pouvez également demander une copie de vos données ou vous désinscrire de la collecte de données non essentielle en contactant notre équipe support."
+      },
+      "contact": {
+        "title": "Contact",
+        "content": "Pour les questions de confidentialité ou les demandes de données, contactez-nous à dev@psychoroid.com. Nous répondons généralement sous 48 heures."
+      }
+    }
+  },
+  "terms": {
+    "title": "Terms",
+    "subtitle": "Conditions d'utilisation",
+    "sections": {
+      "service": {
+        "title": "Conditions de service",
+        "content": "En utilisant psychoroid.com, vous acceptez ces conditions et notre politique de confidentialité. Nos services sont disponibles pour les utilisateurs de 13 ans et plus, et vous devez fournir des informations de compte exactes."
+      },
+      "rights": {
+        "title": "Droits de contenu",
+        "content": "Les abonnés payants possèdent tous les droits sur leurs modèles 3D générés. Les utilisateurs gratuits reçoivent une licence CC BY 4.0, nécessitant une attribution à psychoroid.com pour une utilisation commerciale. Vous conservez les droits sur votre contenu original téléchargé."
+      },
+      "credits": {
+        "title": "Crédits & Paiements",
+        "content": "Les crédits ROIDS ne sont ni transférables ni remboursables. Les paiements d'abonnement sont traités au début de chaque période de facturation. Les annulations prennent effet à la fin de la période. Il n'y a pas de remboursement sauf en cas de fraude."
+      },
+      "rules": {
+        "title": "Règles d'utilisation",
+        "content": "Vous acceptez de ne pas utiliser nos services de manière abusive, de ne pas télécharger de contenu malveillant ou de tenter un accès non autorisé. Nous nous réservons le droit de suspendre les comptes qui violent ces conditions ou se livrent à une activité frauduleuse."
+      },
+      "changes": {
+        "title": "Modifications du service",
+        "content": "Nous pouvons modifier nos services ou conditions avec préavis. L'utilisation continue après les modifications constitue une acceptation. Pour toute question sur ces conditions, contactez dev@psychoroid.com."
+      }
+    }
+  }
+} 
