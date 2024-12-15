@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase/supabase'
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useRouter } from 'next/navigation'
+import { format } from 'date-fns'
 
 export default function AccountSettings() {
     const { user } = useUser()
@@ -21,7 +22,9 @@ export default function AccountSettings() {
         firstName: '',
         lastName: '',
         email: '',
-        company: ''
+        company: '',
+        birthdate: '',
+        username: ''
     })
 
     const [currentEmail] = useState(user?.email || '')
@@ -40,14 +43,30 @@ export default function AccountSettings() {
                 firstName: firstName || '',
                 lastName: lastName || '',
                 email: user.email || '',
-                company: user.user_metadata?.company || ''
+                company: user.user_metadata?.company || '',
+                birthdate: user.user_metadata?.birthdate || '',
+                username: user.user_metadata?.username || ''
             })
         }
     }, [user])
 
+    const validateBirthdate = (value: string) => {
+        const regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/
+        if (!regex.test(value)) return false
+
+        const [day, month, year] = value.split('/')
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+        return date <= new Date() && date.getFullYear() >= 1900
+    }
+
     const handleUpdateProfile = async () => {
         try {
             setIsLoading(true)
+
+            if (formData.birthdate && !validateBirthdate(formData.birthdate)) {
+                toast.error('Invalid birthdate format. Please use DD/MM/YYYY')
+                return
+            }
 
             // If email has changed and user is not OAuth
             if (formData.email !== currentEmail && !isOAuthUser) {
@@ -68,7 +87,9 @@ export default function AccountSettings() {
                     first_name: formData.firstName,
                     last_name: formData.lastName,
                     full_name: `${formData.firstName} ${formData.lastName}`.trim(),
-                    company: formData.company
+                    company: formData.company,
+                    birthdate: formData.birthdate,
+                    username: formData.username
                 }
             })
 
@@ -308,6 +329,34 @@ export default function AccountSettings() {
                         <p className="text-xs text-muted-foreground">
                             This will be used for billing purposes.
                         </p>
+                    </div>
+
+                    <div className="grid gap-2">
+                        <label className="text-sm font-medium">Username</label>
+                        <div className="relative max-w-md">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                @
+                            </span>
+                            <Input
+                                value={formData.username}
+                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                className="pl-8 rounded-none"
+                                placeholder="your-username"
+                            />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Your unique username on the platform.
+                        </p>
+                    </div>
+
+                    <div className="grid gap-2">
+                        <label className="text-sm font-medium">Birthdate</label>
+                        <Input
+                            value={formData.birthdate}
+                            onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })}
+                            className="max-w-md rounded-none"
+                            placeholder="DD/MM/YYYY"
+                        />
                     </div>
 
                     <Button

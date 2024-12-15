@@ -154,68 +154,71 @@ $$;
 
 -- Function to initialize user with free ROIDS on signup
 CREATE OR REPLACE FUNCTION initialize_user_roids()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
+RETURNS TRIGGER AS $$
 DECLARE
-    v_product_id UUID;
-    v_model_path TEXT;
+    v_username TEXT;
+    v_full_name TEXT;
 BEGIN
-    -- Set up storage path - reference the default-assets bucket
-    v_model_path := 'default-assets/default-model.glb';  -- Full path including bucket
+    -- Get or generate full name
+    v_full_name := COALESCE(
+        NEW.raw_user_meta_data->>'full_name',
+        NEW.raw_user_meta_data->>'name',
+        SPLIT_PART(NEW.email, '@', 1)
+    );
 
-    -- First, ensure we can insert into user_roids
-    BEGIN
-        INSERT INTO user_roids (
-            user_id,
-            balance,
-            subscription_type,
-            is_subscribed,
-            subscription_status
-        ) VALUES (
-            NEW.id,
-            200,
-            'free'::subscription_type_enum,
-            false,
-            'unpaid'::subscription_status_enum
-        );
-    EXCEPTION WHEN OTHERS THEN
-        RAISE NOTICE 'Error creating user_roids: %', SQLERRM;
-        RETURN NEW;
-    END;
+    -- Generate username
+    v_username := generate_random_username();
 
-    -- Create the initial product referencing the default model
-    BEGIN
-        INSERT INTO products (
-            user_id,
-            name,
-            description,
-            visibility,
-            likes_count,
-            downloads_count,
-            tags,
-            is_featured,
-            model_path
-        ) VALUES (
-            NEW.id,
-            'My first asset',
-            'Created on signup',
-            'private'::visibility_type_enum,
-            0,
-            0,
-            ARRAY['starter']::text[],
-            false,
-            v_model_path
-        ) RETURNING id INTO v_product_id;
-    EXCEPTION WHEN OTHERS THEN
-        RAISE NOTICE 'Error creating initial product: %', SQLERRM;
-    END;
+    -- First, create the profile
+    INSERT INTO public.profiles (
+        id,
+        full_name,
+        email,
+        username,
+        created_at,
+        updated_at
+    )
+    VALUES (
+        NEW.id,
+        v_full_name,
+        NEW.email,
+        v_username,
+        NEW.created_at,
+        NEW.created_at
+    );
+
+    -- Then, create user_roids entry
+    INSERT INTO user_roids (
+        user_id,
+        balance,
+        subscription_type,
+        is_subscribed,
+        subscription_status,
+        created_at,
+        updated_at
+    ) VALUES (
+        NEW.id,
+        200,
+        'free'::subscription_type_enum,
+        false,
+        'unpaid'::subscription_status_enum,
+        NEW.created_at,
+        NEW.created_at
+    );
+
+    -- Update user metadata
+    UPDATE auth.users 
+    SET raw_user_meta_data = 
+        COALESCE(raw_user_meta_data, '{}'::jsonb) || 
+        jsonb_build_object(
+            'username', v_username,
+            'full_name', v_full_name
+        )
+    WHERE id = NEW.id;
 
     RETURN NEW;
 END;
-$$;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- Drop and recreate the trigger
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
