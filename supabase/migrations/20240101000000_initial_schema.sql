@@ -96,6 +96,7 @@ CREATE TABLE user_roids (
     subscription_status subscription_status_enum,
     subscription_period_start timestamptz,
     subscription_period_end timestamptz,
+    stripe_customer_id text UNIQUE,
     organization text,
     created_at timestamptz default now(),
     updated_at timestamptz default now(),
@@ -203,16 +204,3 @@ CREATE TABLE product_views (
 CREATE INDEX idx_product_views_product_id ON product_views(product_id);
 CREATE INDEX idx_product_views_user_id ON product_views(user_id);
 CREATE INDEX idx_product_views_composite ON product_views(product_id, user_id);
-
--- Stripe Customers table
-CREATE TABLE customers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    stripe_customer_id TEXT UNIQUE NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
-    UNIQUE(user_id)
-);
-
-CREATE INDEX idx_customers_user_id ON customers(user_id);
-CREATE INDEX idx_customers_stripe_customer_id ON customers(stripe_customer_id);

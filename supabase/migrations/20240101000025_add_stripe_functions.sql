@@ -9,7 +9,7 @@ DECLARE
     v_customer_id TEXT;
 BEGIN
     SELECT stripe_customer_id INTO v_customer_id
-    FROM customers
+    FROM user_roids
     WHERE user_id = p_user_id;
     
     RETURN v_customer_id;
@@ -27,7 +27,7 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 BEGIN
-    INSERT INTO customers (user_id, stripe_customer_id)
+    INSERT INTO user_roids (user_id, stripe_customer_id)
     VALUES (p_user_id, p_stripe_customer_id)
     ON CONFLICT (user_id)
     DO UPDATE SET 
@@ -36,21 +36,6 @@ BEGIN
 END;
 $$;
 
--- Add RLS policies
-ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view their own customer record"
-    ON customers FOR SELECT
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Service role can manage customers"
-    ON customers
-    FOR ALL
-    TO service_role
-    USING (true)
-    WITH CHECK (true);
-
 -- Grant permissions
-GRANT SELECT ON customers TO authenticated;
 GRANT EXECUTE ON FUNCTION get_stripe_customer_id TO authenticated;
 GRANT EXECUTE ON FUNCTION upsert_stripe_customer TO service_role; 

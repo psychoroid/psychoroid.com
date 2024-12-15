@@ -20,33 +20,28 @@ export async function POST(req: Request) {
         
         const supabase = createRouteHandlerClient({ cookies })
         
-        // Get customer ID from your database
-        const { data: customer, error: customerError } = await supabase
-            .from('customers')
+        // Get customer ID from user_roids table
+        const { data: userRoid, error: userRoidError } = await supabase
+            .from('user_roids')
             .select('stripe_customer_id')
             .eq('user_id', userId)
             .single()
 
-        if (customerError) {
-            // If table doesn't exist or no customer found, redirect to pricing
-            if (customerError.code === '42P01' || customerError.code === 'PGRST116') {
-                return NextResponse.json({ url: '/pricing' })
-            }
-            
-            console.error('Database error:', customerError)
+        if (userRoidError) {
+            console.error('Database error:', userRoidError)
             return NextResponse.json(
                 { error: 'Failed to fetch customer data' },
                 { status: 500 }
             )
         }
 
-        if (!customer?.stripe_customer_id) {
+        if (!userRoid?.stripe_customer_id) {
             // If no customer exists, redirect to pricing page
             return NextResponse.json({ url: '/pricing' })
         }
 
         const session = await stripe.billingPortal.sessions.create({
-            customer: customer.stripe_customer_id,
+            customer: userRoid.stripe_customer_id,
             return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing`,
         })
 

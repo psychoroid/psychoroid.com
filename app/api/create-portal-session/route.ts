@@ -20,14 +20,14 @@ export async function POST(req: Request) {
         
         const supabase = createRouteHandlerClient({ cookies })
         
-        // Get customer ID from your database
-        const { data: customer, error: customerError } = await supabase
-            .from('customers')
+        // Get customer ID from user_roids table
+        const { data: userRoid, error: userRoidError } = await supabase
+            .from('user_roids')
             .select('stripe_customer_id')
             .eq('user_id', userId)
             .single()
 
-        if (customerError || !customer?.stripe_customer_id) {
+        if (userRoidError || !userRoid?.stripe_customer_id) {
             return NextResponse.json(
                 { error: 'No active subscription found' },
                 { status: 400 }
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
         // Create Stripe portal session
         const session = await stripe.billingPortal.sessions.create({
-            customer: customer.stripe_customer_id,
+            customer: userRoid.stripe_customer_id,
             return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing`,
         })
 
