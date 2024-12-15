@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
@@ -12,26 +11,30 @@ export async function POST(req: Request) {
         const { sessionId, userId } = await req.json();
         
         if (!sessionId || !userId) {
-            return NextResponse.json(
-                { error: 'Session ID and User ID are required' },
-                { status: 400 }
+            return new Response(
+                JSON.stringify({ error: 'Session ID and User ID are required' }),
+                { 
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' }
+                }
             );
         }
 
-        // First, retrieve the session to verify it exists and is cancellable
         const session = await stripe.checkout.sessions.retrieve(sessionId);
         
         if (!session) {
-            return NextResponse.json(
-                { error: 'Session not found' },
-                { status: 404 }
+            return new Response(
+                JSON.stringify({ error: 'Session not found' }),
+                { 
+                    status: 404,
+                    headers: { 'Content-Type': 'application/json' }
+                }
             );
         }
 
         const supabase = createRouteHandlerClient({ cookies });
 
         try {
-            // Record the cancelled session
             await supabase.from('roids_transactions').insert({
                 user_id: userId,
                 amount: 0,
@@ -41,30 +44,43 @@ export async function POST(req: Request) {
                 status: 'cancelled'
             });
 
-            // Expire the checkout session if it's not already expired
             if (session.status !== 'expired') {
                 await stripe.checkout.sessions.expire(sessionId);
             }
 
-            return NextResponse.json({ 
-                success: true,
-                message: 'Session cancelled successfully'
-            });
+            return new Response(
+                JSON.stringify({ 
+                    success: true,
+                    message: 'Session cancelled successfully'
+                }),
+                { 
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            );
         } catch (dbError) {
-            console.error('Database error:', dbError);
-            return NextResponse.json(
-                { error: 'Failed to record cancellation' },
-                { status: 500 }
+            console.error('❌ Database error:', dbError);
+            return new Response(
+                JSON.stringify({ error: 'Failed to record cancellation' }),
+                { 
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' }
+                }
             );
         }
     } catch (error) {
-        console.error('Error cancelling session:', error);
-        return NextResponse.json(
-            { 
+        console.error('❌ Error cancelling session:', error);
+        return new Response(
+            JSON.stringify({ 
                 error: 'Failed to cancel session',
                 details: error instanceof Error ? error.message : 'Unknown error'
-            },
-            { status: 500 }
+            }),
+            { 
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            }
         );
     }
-} 
+}
+
+export const runtime = 'edge';

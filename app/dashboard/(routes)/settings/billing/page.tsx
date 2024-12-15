@@ -9,6 +9,10 @@ import { supabase } from '@/lib/supabase/supabase'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
+const baseUrl = process.env.NODE_ENV === 'production'
+    ? 'https://psychoroid.com'
+    : process.env.NEXT_PUBLIC_APP_URL;
+
 interface SubscriptionDetails {
     type: string | null
     status: string | null
@@ -30,25 +34,33 @@ export default function BillingSettings() {
     useEffect(() => {
         const checkSubscription = async () => {
             if (user?.id) {
-                const { data: isActive } = await supabase.rpc('is_active_subscriber', {
-                    p_user_id: user.id
-                })
-                setIsSubscribed(isActive)
-
-                // Get detailed subscription info using the new RPC
-                const { data: subDetails, error } = await supabase.rpc('get_user_subscription_details', {
-                    p_user_id: user.id
-                })
-
-                if (!error && subDetails) {
-                    setSubscriptionDetails({
-                        type: subDetails.subscription_type,
-                        status: subDetails.subscription_status,
-                        periodEnd: subDetails.subscription_period_end,
-                        nextBilling: subDetails.subscription_period_end
-                            ? new Date(subDetails.subscription_period_end).getTime()
-                            : null
+                try {
+                    const { data: isActive, error: activeError } = await supabase.rpc('is_active_subscriber', {
+                        p_user_id: user.id
                     })
+
+                    if (activeError) throw activeError;
+                    setIsSubscribed(isActive)
+
+                    const { data: subDetails, error: detailsError } = await supabase.rpc('get_user_subscription_details', {
+                        p_user_id: user.id
+                    })
+
+                    if (detailsError) throw detailsError;
+
+                    if (subDetails) {
+                        setSubscriptionDetails({
+                            type: subDetails.subscription_type,
+                            status: subDetails.subscription_status,
+                            periodEnd: subDetails.subscription_period_end,
+                            nextBilling: subDetails.subscription_period_end
+                                ? new Date(subDetails.subscription_period_end).getTime()
+                                : null
+                        })
+                    }
+                } catch (error) {
+                    console.error('❌ Error checking subscription:', error)
+                    toast.error('Failed to load subscription details')
                 }
             }
         }
@@ -59,7 +71,7 @@ export default function BillingSettings() {
     const handleManageSubscription = async () => {
         setIsLoading(true)
         try {
-            const response = await fetch('/api/stripe/portal', {
+            const response = await fetch(`${baseUrl}/api/stripe/portal`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,10 +81,19 @@ export default function BillingSettings() {
                 }),
             })
 
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || 'Failed to access billing portal')
+            }
+
             const { url } = await response.json()
+            if (!url) {
+                throw new Error('No URL returned from billing portal')
+            }
+
             window.location.href = url
         } catch (error) {
-            console.error('Error accessing billing portal:', error)
+            console.error('❌ Error accessing billing portal:', error)
             toast.error('Failed to access billing portal')
         } finally {
             setIsLoading(false)
@@ -88,7 +109,7 @@ export default function BillingSettings() {
 
         setIsLoading(true);
         try {
-            const response = await fetch('/api/stripe/portal', {
+            const response = await fetch(`${baseUrl}/api/stripe/portal`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -98,19 +119,19 @@ export default function BillingSettings() {
                 }),
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to access billing portal');
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to access billing portal');
             }
 
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
+            const { url } = await response.json();
+            if (!url) {
                 throw new Error('No URL returned from billing portal');
             }
+
+            window.location.href = url;
         } catch (error) {
-            console.error('Error accessing billing portal:', error);
+            console.error('❌ Error accessing billing portal:', error);
             toast.error('Failed to access billing portal');
         } finally {
             setIsLoading(false);

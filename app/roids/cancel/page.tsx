@@ -6,6 +6,10 @@ import { XCircle } from 'lucide-react';
 import { useUser } from '@/lib/contexts/UserContext';
 import { useEffect, useRef } from 'react';
 
+const baseUrl = process.env.NODE_ENV === 'production'
+    ? 'https://psychoroid.com'
+    : process.env.NEXT_PUBLIC_APP_URL;
+
 export default function CancelPage() {
     const router = useRouter();
     const { user } = useUser();
@@ -17,7 +21,7 @@ export default function CancelPage() {
         const cancelSession = async () => {
             if (sessionId && user) {
                 try {
-                    const response = await fetch('/api/stripe/cancel-session', {
+                    const response = await fetch(`${baseUrl}/api/stripe/cancel-session`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -28,15 +32,14 @@ export default function CancelPage() {
                         }),
                     });
 
-                    const data = await response.json();
-
                     if (!response.ok) {
-                        throw new Error(data.error || 'Failed to cancel session');
+                        const error = await response.json();
+                        throw new Error(error.error || 'Failed to cancel session');
                     }
 
-                    console.log('Payment cancelled successfully');
+                    console.log('✅ Payment cancelled successfully');
                 } catch (error) {
-                    console.error('Error cancelling session:', error);
+                    console.error('❌ Error cancelling session:', error);
                 }
             }
         };

@@ -31,6 +31,10 @@ const isSubscriber = async (userId: string) => {
     }
 };
 
+const baseUrl = process.env.NODE_ENV === 'production'
+    ? 'https://psychoroid.com'
+    : process.env.NEXT_PUBLIC_APP_URL;
+
 export default function PricingPage() {
     const { user } = useUser();
     const [showAuthModal, setShowAuthModal] = useState(false);
@@ -143,9 +147,7 @@ export default function PricingPage() {
                 ? `sub_${plan.name.toLowerCase()}`
                 : plan.name.toLowerCase();
 
-            console.log('Package name:', packageName);
-
-            const response = await fetch('/api/stripe/checkout', {
+            const response = await fetch(`${baseUrl}/api/stripe/checkout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -156,26 +158,26 @@ export default function PricingPage() {
                 }),
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to create checkout session');
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to create checkout session');
             }
 
-            console.log('Got session ID:', data.sessionId);
+            const { sessionId } = await response.json();
+            console.log('Got session ID:', sessionId);
 
             const stripe = await getStripe();
             if (!stripe) {
                 throw new Error('Failed to load Stripe');
             }
 
-            const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+            const { error } = await stripe.redirectToCheckout({ sessionId });
             if (error) {
-                console.error('Stripe checkout error:', error);
+                console.error('❌ Stripe checkout error:', error);
                 throw error;
             }
         } catch (error) {
-            console.error('Error initiating checkout:', error);
+            console.error('❌ Error initiating checkout:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to start checkout');
         } finally {
             setLoadingPlan(null);
@@ -190,7 +192,7 @@ export default function PricingPage() {
 
         try {
             setLoadingPlan('custom');
-            const response = await fetch('/api/stripe/checkout', {
+            const response = await fetch(`${baseUrl}/api/stripe/checkout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -203,24 +205,25 @@ export default function PricingPage() {
                 }),
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to create checkout session');
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to create checkout session');
             }
+
+            const { sessionId } = await response.json();
 
             const stripe = await getStripe();
             if (!stripe) {
                 throw new Error('Failed to load Stripe');
             }
 
-            const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+            const { error } = await stripe.redirectToCheckout({ sessionId });
             if (error) {
-                console.error('Stripe checkout error:', error);
+                console.error('❌ Stripe checkout error:', error);
                 throw error;
             }
         } catch (error) {
-            console.error('Error initiating checkout:', error);
+            console.error('❌ Error initiating checkout:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to start checkout');
         } finally {
             setLoadingPlan(null);

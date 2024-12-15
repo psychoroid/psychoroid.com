@@ -1,6 +1,5 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -12,15 +11,17 @@ export async function POST(req: Request) {
         const { userId } = await req.json()
         
         if (!userId) {
-            return NextResponse.json(
-                { error: 'User ID is required' },
-                { status: 400 }
+            return new Response(
+                JSON.stringify({ error: 'User ID is required' }),
+                { 
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' }
+                }
             )
         }
         
         const supabase = createRouteHandlerClient({ cookies })
         
-        // Get customer ID from user_roids table
         const { data: userRoid, error: userRoidError } = await supabase
             .from('user_roids')
             .select('stripe_customer_id')
@@ -28,16 +29,24 @@ export async function POST(req: Request) {
             .single()
 
         if (userRoidError) {
-            console.error('Database error:', userRoidError)
-            return NextResponse.json(
-                { error: 'Failed to fetch customer data' },
-                { status: 500 }
+            console.error('❌ Database error:', userRoidError)
+            return new Response(
+                JSON.stringify({ error: 'Failed to fetch customer data' }),
+                { 
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' }
+                }
             )
         }
 
         if (!userRoid?.stripe_customer_id) {
-            // If no customer exists, redirect to pricing page
-            return NextResponse.json({ url: '/pricing' })
+            return new Response(
+                JSON.stringify({ url: '/pricing' }),
+                { 
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            )
         }
 
         const session = await stripe.billingPortal.sessions.create({
@@ -45,12 +54,23 @@ export async function POST(req: Request) {
             return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing`,
         })
 
-        return NextResponse.json({ url: session.url })
+        return new Response(
+            JSON.stringify({ url: session.url }),
+            { 
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            }
+        )
     } catch (error) {
-        console.error('Error creating billing portal session:', error)
-        return NextResponse.json(
-            { error: 'Failed to create billing portal session' },
-            { status: 500 }
+        console.error('❌ Error creating billing portal session:', error)
+        return new Response(
+            JSON.stringify({ error: 'Failed to create billing portal session' }),
+            { 
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            }
         )
     }
-} 
+}
+
+export const runtime = 'edge'

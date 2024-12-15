@@ -8,6 +8,9 @@ import { getStripe } from '@/lib/stripe/stripe'
 import { toast } from 'sonner'
 
 const CREDIT_PRICE = 0.01 // $0.01 per credit
+const baseUrl = process.env.NODE_ENV === 'production'
+    ? 'https://psychoroid.com'
+    : process.env.NEXT_PUBLIC_APP_URL
 
 export default function RoidsPurchase() {
     const { user } = useUser()
@@ -26,7 +29,7 @@ export default function RoidsPurchase() {
 
         try {
             setIsLoading(true)
-            const response = await fetch('/api/stripe/checkout', {
+            const response = await fetch(`${baseUrl}/api/stripe/checkout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -39,23 +42,24 @@ export default function RoidsPurchase() {
                 }),
             })
 
-            const data = await response.json()
-
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to create checkout session')
+                const error = await response.json()
+                throw new Error(error.message || 'Failed to create checkout session')
             }
+
+            const { sessionId } = await response.json()
 
             const stripe = await getStripe()
             if (!stripe) {
                 throw new Error('Failed to load Stripe')
             }
 
-            const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId })
+            const { error } = await stripe.redirectToCheckout({ sessionId })
             if (error) {
                 throw error
             }
         } catch (error) {
-            console.error('Error initiating checkout:', error)
+            console.error('❌ Error initiating checkout:', error)
             toast.error(error instanceof Error ? error.message : 'Failed to start checkout')
         } finally {
             setIsLoading(false)

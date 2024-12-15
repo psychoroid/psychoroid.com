@@ -10,6 +10,10 @@ const SUBSCRIPTION_PRICES = {
   scale: process.env.STRIPE_SCALE_PRICE_ID,
 };
 
+const baseUrl = process.env.NODE_ENV === 'production' 
+  ? 'https://psychoroid.com'
+  : process.env.NEXT_PUBLIC_APP_URL;
+
 export async function POST(req: Request) {
   try {
     const clonedReq = req.clone();
@@ -50,8 +54,8 @@ export async function POST(req: Request) {
               quantity: 1,
             },
           ],
-          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/cancel?session_id={CHECKOUT_SESSION_ID}`,
+          success_url: `${baseUrl}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/roids/cancel?session_id={CHECKOUT_SESSION_ID}`,
           metadata: {
             userId,
             type: 'subscription',
@@ -92,8 +96,8 @@ export async function POST(req: Request) {
             quantity: 1,
           },
         ],
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/cancel?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${baseUrl}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/roids/cancel?session_id={CHECKOUT_SESSION_ID}`,
         metadata: {
           userId,
           type: 'custom_purchase',

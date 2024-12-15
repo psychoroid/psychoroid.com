@@ -3,151 +3,81 @@ import { headers } from 'next/headers';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import type { StripeEvent } from '@/types/stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-11-20.acacia'
 });
 
+// Disable body parsing, we need the raw body for signature verification
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
+
 export async function POST(req: Request) {
     try {
-        if (req.method === 'OPTIONS') {
-            return new Response(null, {
-                headers: {
-                    'Allow': 'POST',
-                    'Access-Control-Allow-Methods': 'POST',
-                    'Access-Control-Allow-Headers': 'Content-Type, Stripe-Signature',
-                }
-            });
-        }
-
         const body = await req.text();
         const signature = headers().get('stripe-signature');
 
         if (!signature) {
-            return NextResponse.json(
-                { error: 'No signature found' },
-                { status: 400 }
-            );
+            console.log('⚠️ No signature found in webhook request');
+            return new Response('No signature found', { status: 400 });
         }
 
-        let event: StripeEvent;
+        // Verify the event with Stripe
+        let event: Stripe.Event;
         try {
             event = stripe.webhooks.constructEvent(
                 body,
                 signature,
                 process.env.STRIPE_WEBHOOK_SECRET!
-            ) as StripeEvent;
-        } catch (err) {
-            console.error('Webhook signature verification failed:', err);
-            return NextResponse.json(
-                { error: 'Invalid signature' },
-                { status: 400 }
             );
+        } catch (err) {
+            const error = err as Error;
+            console.log(`⚠️ Webhook signature verification failed:`, error.message);
+            return new Response(`Webhook Error: ${error.message}`, { status: 400 });
         }
 
         const supabase = createRouteHandlerClient({ cookies });
-        const { object } = event.data;
 
-        console.log('Processing webhook event:', {
-            type: event.type,
-            id: event.id,
-            metadata: object.metadata,
-            sessionId: object.id
-        });
-
+        // Handle the event
         switch (event.type) {
             case 'checkout.session.completed': {
-                const userId = object.metadata.userId;
+                const session = event.data.object as Stripe.Checkout.Session;
+                const userId = session.metadata?.userId;
+
                 if (!userId) {
-                    throw new Error('Invalid or missing userId in session metadata');
+                    console.log('⚠️ No userId found in session metadata');
+                    break;
                 }
 
-                if (object.metadata.type === 'subscription') {
+                if (session.metadata?.type === 'subscription') {
                     await supabase.rpc('add_subscription_credits', {
                         p_user_id: userId,
-                        p_subscription_type: object.metadata.plan
+                        p_subscription_type: session.metadata.plan
                     });
 
                     await supabase.from('roids_transactions').insert({
                         user_id: userId,
                         amount: 0,
                         transaction_type: 'subscription',
-                        stripe_session_id: object.id,
-                        description: `Subscription started: ${object.metadata.plan}`
-                    });
-                } else if (object.metadata.type === 'custom_purchase' && object.metadata.credits) {
-                    const amount = parseInt(object.metadata.credits);
-                    
-                    await supabase.rpc('add_roids', {
-                        p_user_id: userId,
-                        p_amount: amount
+                        stripe_session_id: session.id,
+                        description: `Subscription started: ${session.metadata.plan}`
                     });
 
-                    await supabase.from('roids_transactions').insert({
-                        user_id: userId,
-                        amount,
-                        transaction_type: 'purchase',
-                        stripe_session_id: object.id,
-                        description: `Purchased ${amount} ROIDS`
-                    });
-                }
-                break;
-            }
-
-            case 'checkout.session.expired': {
-                const userId = object.metadata.userId;
-                console.log('Session expired:', {
-                    sessionId: object.id,
-                    userId,
-                    metadata: object.metadata
-                });
-                
-                if (userId) {
-                    try {
-                        await supabase.from('roids_transactions').insert({
-                            user_id: userId,
-                            amount: 0,
-                            transaction_type: 'purchase',
-                            stripe_session_id: object.id,
-                            description: 'Checkout session expired',
-                            status: 'expired'
-                        });
-                        console.log('Recorded expired session:', object.id);
-                    } catch (error) {
-                        console.error('Failed to record expired session:', error);
-                    }
+                    console.log(`✅ Subscription credits added for user ${userId}`);
                 }
                 break;
             }
 
             case 'customer.subscription.deleted': {
-                const userId = object.metadata.user_id;
+                const subscription = event.data.object as Stripe.Subscription;
+                const userId = subscription.metadata?.user_id;
+
                 if (!userId) {
-                    console.error('No user_id in subscription metadata:', object.id);
+                    console.log('⚠️ No user_id found in subscription metadata');
                     break;
-                }
-
-                // Handle prorated refund if needed
-                if (object.canceled_at && 
-                    object.current_period_end && 
-                    object.current_period_start && 
-                    object.items?.data?.[0]?.price?.unit_amount && 
-                    object.current_period_end > object.canceled_at) {
-                    
-                    const totalPeriod = object.current_period_end - object.current_period_start;
-                    const unusedPeriod = object.current_period_end - object.canceled_at;
-                    const refundAmount = Math.round(
-                        object.items.data[0].price.unit_amount * (unusedPeriod / totalPeriod)
-                    );
-
-                    if (refundAmount > 0 && object.latest_invoice) {
-                        await stripe.refunds.create({
-                            payment_intent: object.latest_invoice,
-                            amount: refundAmount,
-                            reason: 'requested_by_customer'
-                        });
-                    }
                 }
 
                 await supabase.rpc('update_subscription_status', {
@@ -157,41 +87,59 @@ export async function POST(req: Request) {
                     p_period_start: null,
                     p_period_end: null
                 });
+
+                console.log(`✅ Subscription canceled for user ${userId}`);
                 break;
             }
 
             case 'customer.subscription.updated': {
-                const userId = object.metadata.user_id;
-                if (!userId) break;
+                const subscription = event.data.object as Stripe.Subscription;
+                const userId = subscription.metadata?.user_id;
 
-                if (!object.current_period_start || !object.current_period_end || !object.status) {
-                    console.error('Missing required subscription data:', object.id);
+                if (!userId || !subscription.current_period_start || !subscription.current_period_end) {
+                    console.log('⚠️ Missing required subscription data');
                     break;
                 }
 
                 await supabase.rpc('update_subscription_status', {
                     p_user_id: userId,
-                    p_subscription_id: object.id,
-                    p_status: object.status,
-                    p_period_start: new Date(object.current_period_start * 1000),
-                    p_period_end: new Date(object.current_period_end * 1000)
+                    p_subscription_id: subscription.id,
+                    p_status: subscription.status,
+                    p_period_start: new Date(subscription.current_period_start * 1000),
+                    p_period_end: new Date(subscription.current_period_end * 1000)
                 });
+
+                console.log(`✅ Subscription updated for user ${userId}`);
                 break;
             }
 
             default:
-                console.log(`Unhandled event type: ${event.type}`);
+                console.log(`⚠️ Unhandled event type: ${event.type}`);
         }
 
-        return NextResponse.json({ received: true });
+        // Return a response to acknowledge receipt of the event
+        return new Response(JSON.stringify({ received: true }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
     } catch (error) {
-        console.error('Webhook error:', error);
-        return NextResponse.json(
-            { 
+        console.error('❌ Webhook error:', error);
+        return new Response(
+            JSON.stringify({ 
                 error: 'Webhook handler failed',
                 message: error instanceof Error ? error.message : 'Unknown error'
-            },
-            { status: 500 }
+            }),
+            { 
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
         );
     }
-} 
+}
+
+// Use edge runtime for better performance
+export const runtime = 'edge';
