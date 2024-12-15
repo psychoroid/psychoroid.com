@@ -5,21 +5,20 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { StripeEvent } from '@/types/stripe';
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
-export const preferredRegion = 'auto';
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-11-20.acacia'
 });
 
 export async function POST(req: Request) {
     try {
-        if (req.method !== 'POST') {
-            return NextResponse.json(
-                { error: 'Method not allowed' },
-                { status: 405 }
-            );
+        if (req.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: {
+                    'Allow': 'POST',
+                    'Access-Control-Allow-Methods': 'POST',
+                    'Access-Control-Allow-Headers': 'Content-Type, Stripe-Signature',
+                }
+            });
         }
 
         const body = await req.text();
@@ -32,11 +31,20 @@ export async function POST(req: Request) {
             );
         }
 
-        const event = stripe.webhooks.constructEvent(
-            body,
-            signature,
-            process.env.STRIPE_WEBHOOK_SECRET!
-        ) as StripeEvent;
+        let event: StripeEvent;
+        try {
+            event = stripe.webhooks.constructEvent(
+                body,
+                signature,
+                process.env.STRIPE_WEBHOOK_SECRET!
+            ) as StripeEvent;
+        } catch (err) {
+            console.error('Webhook signature verification failed:', err);
+            return NextResponse.json(
+                { error: 'Invalid signature' },
+                { status: 400 }
+            );
+        }
 
         const supabase = createRouteHandlerClient({ cookies });
         const { object } = event.data;
@@ -44,7 +52,8 @@ export async function POST(req: Request) {
         console.log('Processing webhook event:', {
             type: event.type,
             id: event.id,
-            metadata: object.metadata
+            metadata: object.metadata,
+            sessionId: object.id
         });
 
         switch (event.type) {

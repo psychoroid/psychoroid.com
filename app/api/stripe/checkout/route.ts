@@ -51,14 +51,13 @@ export async function POST(req: Request) {
             },
           ],
           success_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/cancel`,
+          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/cancel?session_id={CHECKOUT_SESSION_ID}`,
           metadata: {
             userId,
             type: 'subscription',
             plan: planName
           },
           expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-          customer_creation: 'always',
           allow_promotion_codes: true,
           automatic_tax: { enabled: false },
           payment_method_types: ['card'],
@@ -94,7 +93,7 @@ export async function POST(req: Request) {
           },
         ],
         success_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/cancel`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/roids/cancel?session_id={CHECKOUT_SESSION_ID}`,
         metadata: {
           userId,
           type: 'custom_purchase',

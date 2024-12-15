@@ -3,6 +3,11 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+    // Skip middleware for Stripe webhook requests
+    if (request.nextUrl.pathname === '/api/stripe/webhook') {
+        return NextResponse.next();
+    }
+
     const response = NextResponse.next()
     const supabase = createMiddlewareClient({ req: request, res: response })
 
@@ -14,7 +19,8 @@ export async function middleware(request: NextRequest) {
             "img-src 'self' https://peyzpnmmgsxjydvpussg.supabase.co data: blob:",
             "script-src 'self' 'unsafe-inline' https://js.stripe.com",
             "connect-src 'self' https://peyzpnmmgsxjydvpussg.supabase.co https://api.stripe.com",
-            "frame-src 'self' https://js.stripe.com",
+            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+            "form-action 'self' https://hooks.stripe.com",
         ].join('; ')
     )
 
@@ -39,7 +45,7 @@ export async function middleware(request: NextRequest) {
     return response
 }
 
-// Apply middleware to all routes except static files and API routes
+// Update matcher to include Stripe webhook path
 export const config = {
     matcher: [
         '/((?!_next/static|_next/image|favicon.ico).*)',

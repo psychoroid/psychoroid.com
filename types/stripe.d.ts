@@ -30,11 +30,19 @@ export interface StripeEvent {
     };
 }
 
+export interface StripeSessionMetadata {
+    userId: string;
+    type: 'subscription' | 'custom_purchase';
+    plan?: string;
+    credits?: string;
+}
+
 export interface StripeCheckoutData {
     package: string;
     userId: string;
     credits?: number;
     price?: string;
+    metadata: StripeSessionMetadata;
 }
 
 export interface StripeSubscriptionPrices {

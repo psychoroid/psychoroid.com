@@ -1,13 +1,51 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
 import { useUser } from '@/lib/contexts/UserContext';
+import { useEffect, useRef } from 'react';
 
 export default function CancelPage() {
     const router = useRouter();
     const { user } = useUser();
+    const searchParams = useSearchParams();
+    const sessionId = searchParams.get('session_id');
+    const hasCancelAttempted = useRef(false);
+
+    useEffect(() => {
+        const cancelSession = async () => {
+            if (sessionId && user) {
+                try {
+                    const response = await fetch('/api/stripe/cancel-session', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sessionId,
+                            userId: user.id
+                        }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to cancel session');
+                    }
+
+                    console.log('Payment cancelled successfully');
+                } catch (error) {
+                    console.error('Error cancelling session:', error);
+                }
+            }
+        };
+
+        if (sessionId && user && !hasCancelAttempted.current) {
+            hasCancelAttempted.current = true;
+            cancelSession();
+        }
+    }, [sessionId, user]);
 
     return (
         <div className="h-svh bg-background flex items-center justify-center px-4">
