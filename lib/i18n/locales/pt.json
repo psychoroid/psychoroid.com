@@ -180,5 +180,133 @@
     "loading": {
       "message": "Carregando..."
     }
+  },
+  "auth": {
+    "sign_in": {
+      "title": "Bem-vindo de volta",
+      "subtitle": "Entre para explorar psychoroid.com",
+      "email_placeholder": "E-mail**",
+      "password_placeholder": "Senha**",
+      "forgot_password": "Esqueceu sua senha?",
+      "connect_button": "Conectar",
+      "processing": "Processando...",
+      "or_continue": "Ou continuar com",
+      "google": "Google",
+      "github": "GitHub",
+      "no_account": "Não tem uma conta?",
+      "sign_up_link": "Cadastre-se",
+      "success": "Sucesso",
+      "success_message": "Login realizado com sucesso.",
+      "error": {
+        "default": "Ocorreu um erro ao fazer login. Por favor, tente novamente.",
+        "invalid_credentials": "E-mail ou senha inválidos. Por favor, tente novamente ou cadastre-se se não tiver uma conta.",
+        "email_not_confirmed": "Por favor, confirme seu e-mail antes de fazer login.",
+        "unexpected": "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.",
+        "oauth": "Houve um problema ao fazer login com {provider}. Por favor, tente novamente."
+      }
+    },
+    "sign_up": {
+      "title": "Criar conta",
+      "full_name_placeholder": "Nome completo**",
+      "email_placeholder": "E-mail**",
+      "password_placeholder": "Senha**",
+      "submit_button": "Criar conta",
+      "processing": "Criando conta...",
+      "continue_with": "Ou continuar com",
+      "google": "Google",
+      "github": "GitHub",
+      "error": {
+        "default": "Ocorreu um erro ao criar sua conta. Por favor, tente novamente.",
+        "email_in_use": "Este e-mail já está em uso. Por favor, use outro ou faça login.",
+        "invalid_email": "Por favor, insira um e-mail válido.",
+        "invalid_password": "A senha deve ter pelo menos 8 caracteres.",
+        "invalid_name": "Por favor, insira seu nome e sobrenome."
+      }
+    },
+    "forgot_password": {
+      "title": "Redefinir senha",
+      "email_placeholder": "E-mail**",
+      "submit_button": "Enviar link",
+      "sending": "Enviando...",
+      "success": "Sucesso",
+      "success_message": "E-mail de redefinição enviado. Por favor, verifique sua caixa de entrada.",
+      "error": "Houve um problema ao enviar o e-mail. Por favor, tente novamente."
+    },
+    "check_email": {
+      "title": "Verifique seu e-mail",
+      "message": "Enviamos um e-mail de confirmação para <email>. Por favor, verifique sua caixa de entrada e siga as instruções para completar seu registro.",
+      "resend": "Não recebeu o e-mail? Verifique sua pasta de spam ou",
+      "resend_link": "reenviar e-mail"
+    },
+    "modal": {
+      "title": "Entrar no psychoroid.com",
+      "description": "Entre para continuar no psychoroid.com e acessar sua conta"
+    },
+    "otp": {
+      "title": "Digite o código de verificação",
+      "submit_button": "Verificar e-mail",
+      "processing": "Verificando...",
+      "success": "Sucesso",
+      "success_message": "OTP verificado com sucesso.",
+      "error": {
+        "default": "OTP inválido. Por favor, tente novamente.",
+        "unexpected": "Ocorreu um erro durante a verificação do OTP. Por favor, tente novamente."
+      }
+    },
+    "pages": {
+      "sign_in": {
+        "title": "Bem-vindo de volta",
+        "subtitle": "Digite seu e-mail para entrar em sua conta.",
+        "home_link": "Início",
+        "quote": "Soluções 3D de ponta para artistas e empresas.",
+        "company": "psychoroid.com"
+      },
+      "sign_up": {
+        "title": "Criar conta",
+        "terms_text": "Ao criar uma conta, você concorda com nossos",
+        "terms_link": "Termos de Serviço",
+        "and": "e",
+        "privacy_link": "Política de Privacidade",
+        "period": "."
+      },
+      "forgot_password": {
+        "title": "Redefinir senha",
+        "no_account": "Não tem uma conta?",
+        "sign_up_link": "Cadastre-se",
+        "email_resent": {
+          "title": "E-mail reenviado",
+          "description": "Um novo e-mail de verificação foi enviado para sua caixa de entrada."
+        },
+        "error": {
+          "title": "Erro",
+          "description": "Houve um problema ao reenviar o e-mail. Por favor, tente novamente."
+        }
+      },
+      "reset_password": {
+        "title": "Redefinir senha",
+        "new_password": "Nova senha",
+        "confirm_password": "Confirmar senha",
+        "placeholder": {
+          "new": "Nova senha**",
+          "confirm": "Confirmar senha**"
+        },
+        "validation": {
+          "min_length": "A senha deve ter pelo menos 8 caracteres",
+          "match": "As senhas não coincidem"
+        },
+        "button": {
+          "submit": "Redefinir senha",
+          "processing": "Redefinindo..."
+        },
+        "success": {
+          "title": "Sucesso",
+          "description": "Sua senha foi redefinida com sucesso."
+        },
+        "error": {
+          "title": "Erro",
+          "description": "Houve um problema ao redefinir sua senha. Por favor, tente novamente."
+        }
+      }
+    }
   }
 }

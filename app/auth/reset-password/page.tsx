@@ -12,18 +12,23 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { cn } from '@/lib/actions/utils'
-
-const formSchema = z.object({
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-})
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 export default function ResetPassword() {
+    const { currentLanguage } = useTranslation();
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
+
+    const formSchema = z.object({
+        password: z.string().min(8, {
+            message: t(currentLanguage, 'auth.pages.reset_password.validation.min_length')
+        }),
+        confirmPassword: z.string(),
+    }).refine((data) => data.password === data.confirmPassword, {
+        message: t(currentLanguage, 'auth.pages.reset_password.validation.match'),
+        path: ["confirmPassword"],
+    })
 
     const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -39,16 +44,16 @@ export default function ResetPassword() {
             if (error) throw error
 
             toast({
-                title: "Success",
-                description: "Your password has been reset successfully.",
+                title: t(currentLanguage, 'auth.pages.reset_password.success.title'),
+                description: t(currentLanguage, 'auth.pages.reset_password.success.description'),
             })
 
             router.push('/auth/sign-in')
         } catch (error) {
             console.error('Error resetting password:', error)
             toast({
-                title: "Error",
-                description: "There was a problem resetting your password. Please try again.",
+                title: t(currentLanguage, 'auth.pages.reset_password.error.title'),
+                description: t(currentLanguage, 'auth.pages.reset_password.error.description'),
                 variant: "destructive",
             })
         } finally {
@@ -62,7 +67,7 @@ export default function ResetPassword() {
                 <Card className='p-6 rounded-none'>
                     <div className='mb-2 flex flex-col space-y-2 text-left'>
                         <h1 className='text-2xl font-semibold tracking-tight'>
-                            Reset your password
+                            {t(currentLanguage, 'auth.pages.reset_password.title')}
                         </h1>
                     </div>
                     <div className='mb-4'></div>
@@ -70,11 +75,11 @@ export default function ResetPassword() {
                         <div className='grid gap-4'>
                             <div className='grid gap-2'>
                                 <Label className='sr-only' htmlFor='password'>
-                                    New Password
+                                    {t(currentLanguage, 'auth.pages.reset_password.new_password')}
                                 </Label>
                                 <Input
                                     id='password'
-                                    placeholder='New Password**'
+                                    placeholder={t(currentLanguage, 'auth.pages.reset_password.placeholder.new')}
                                     type='password'
                                     {...register('password')}
                                     className={cn(
@@ -91,11 +96,11 @@ export default function ResetPassword() {
                             </div>
                             <div className='grid gap-2'>
                                 <Label className='sr-only' htmlFor='confirmPassword'>
-                                    Confirm Password
+                                    {t(currentLanguage, 'auth.pages.reset_password.confirm_password')}
                                 </Label>
                                 <Input
                                     id='confirmPassword'
-                                    placeholder='Confirm Password**'
+                                    placeholder={t(currentLanguage, 'auth.pages.reset_password.placeholder.confirm')}
                                     type='password'
                                     {...register('confirmPassword')}
                                     className={cn(
@@ -115,7 +120,10 @@ export default function ResetPassword() {
                                 className='w-full h-12 rounded-none bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
                                 disabled={isLoading}
                             >
-                                {isLoading ? 'Resetting...' : 'Reset Password'}
+                                {isLoading ?
+                                    t(currentLanguage, 'auth.pages.reset_password.button.processing') :
+                                    t(currentLanguage, 'auth.pages.reset_password.button.submit')
+                                }
                             </Button>
                         </div>
                     </form>

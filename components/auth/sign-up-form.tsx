@@ -6,6 +6,8 @@ import { cn } from '@/lib/actions/utils'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { supabase } from '@/lib/supabase/supabase';
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 interface SignUpFormProps {
   className?: string
@@ -23,6 +25,7 @@ const formSchema = z.object({
 })
 
 export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent, onResendEmail, errorMessage, ...props }: SignUpFormProps) {
+  const { currentLanguage } = useTranslation();
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -72,15 +75,15 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
   if (isConfirmationSent) {
     return (
       <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-all duration-300 hover:scale-105">
-        <h2 className="text-2xl font-semibold mb-4">Check your email</h2>
-        <p className="mb-4">We&apos;ve sent you a confirmation email. Please check your inbox and follow the instructions to complete your registration.</p>
+        <h2 className="text-2xl font-semibold mb-4">{t(currentLanguage, 'auth.sign_up.confirmation.title')}</h2>
+        <p className="mb-4">{t(currentLanguage, 'auth.sign_up.confirmation.message')}</p>
         <p className="text-sm text-muted-foreground">
-          Didn&apos;t receive the email? Check your spam folder or{' '}
+          {t(currentLanguage, 'auth.sign_up.confirmation.resend')}{' '}
           <button
             className="text-primary hover:underline"
             onClick={onResendEmail}
           >
-            resend the email
+            {t(currentLanguage, 'auth.sign_up.confirmation.resend_link')}
           </button>
         </p>
       </div>
@@ -94,7 +97,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
           <Input
             id="fullName"
             type="text"
-            placeholder='Full Name**'
+            placeholder={t(currentLanguage, 'auth.sign_up.full_name_placeholder')}
             value={fullName}
             onChange={handleFullNameChange}
             autoComplete="name"
@@ -110,7 +113,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
           <Input
             id="email"
             type="email"
-            placeholder='Email address**'
+            placeholder={t(currentLanguage, 'auth.sign_up.email_placeholder')}
             value={email}
             onChange={handleEmailChange}
             autoComplete="username"
@@ -125,7 +128,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
           />
           <PasswordInput
             id="password"
-            placeholder='Password**'
+            placeholder={t(currentLanguage, 'auth.sign_up.password_placeholder')}
             value={password}
             onChange={handlePasswordChange}
             autoComplete="new-password"
@@ -144,7 +147,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
             disabled={isLoading || !isValidEmail || !isValidPassword || !isValidFullName}
           >
             <span className="text-base font-semibold">
-              {isLoading ? 'Creating account...' : 'Create account'}
+              {isLoading ? t(currentLanguage, 'auth.sign_up.creating') : t(currentLanguage, 'auth.sign_up.submit_button')}
             </span>
           </Button>
           {errorMessage && (
@@ -158,7 +161,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
         </div>
         <div className='relative flex justify-center text-xs uppercase'>
           <span className='bg-background px-2 text-gray-500'>
-            Or continue with
+            {t(currentLanguage, 'auth.sign_up.continue_with')}
           </span>
         </div>
       </div>

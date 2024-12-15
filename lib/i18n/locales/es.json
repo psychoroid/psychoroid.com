@@ -179,5 +179,133 @@
     "loading": {
       "message": "Cargando..."
     }
+  },
+  "auth": {
+    "sign_in": {
+      "title": "Bienvenido de nuevo",
+      "subtitle": "Inicia sesión para explorar psychoroid.com",
+      "email_placeholder": "Correo electrónico**",
+      "password_placeholder": "Contraseña**",
+      "forgot_password": "¿Olvidaste tu contraseña?",
+      "connect_button": "Conectar",
+      "processing": "Procesando...",
+      "or_continue": "O continuar con",
+      "google": "Google",
+      "github": "GitHub",
+      "no_account": "¿No tienes una cuenta?",
+      "sign_up_link": "Regístrate",
+      "success": "Éxito",
+      "success_message": "Has iniciado sesión correctamente.",
+      "error": {
+        "default": "Ocurrió un error al iniciar sesión. Por favor, inténtalo de nuevo.",
+        "invalid_credentials": "Correo o contraseña inválidos. Por favor, inténtalo de nuevo o regístrate si no tienes una cuenta.",
+        "email_not_confirmed": "Por favor, confirma tu correo electrónico antes de iniciar sesión.",
+        "unexpected": "Ocurrió un error inesperado. Por favor, inténtalo más tarde.",
+        "oauth": "Hubo un problema al iniciar sesión con {provider}. Por favor, inténtalo de nuevo."
+      }
+    },
+    "sign_up": {
+      "title": "Crear cuenta",
+      "full_name_placeholder": "Nombre completo**",
+      "email_placeholder": "Correo electrónico**",
+      "password_placeholder": "Contraseña**",
+      "submit_button": "Crear cuenta",
+      "processing": "Creando cuenta...",
+      "continue_with": "O continuar con",
+      "google": "Google",
+      "github": "GitHub",
+      "error": {
+        "default": "Ocurrió un error al crear tu cuenta. Por favor, inténtalo de nuevo.",
+        "email_in_use": "Este correo ya está en uso. Por favor, usa otro o inicia sesión.",
+        "invalid_email": "Por favor, ingresa un correo electrónico válido.",
+        "invalid_password": "La contraseña debe tener al menos 8 caracteres.",
+        "invalid_name": "Por favor, ingresa tu nombre y apellido."
+      }
+    },
+    "forgot_password": {
+      "title": "Restablecer contraseña",
+      "email_placeholder": "Correo electrónico**",
+      "submit_button": "Enviar enlace",
+      "sending": "Enviando...",
+      "success": "Éxito",
+      "success_message": "Se ha enviado el correo de restablecimiento. Por favor, revisa tu bandeja de entrada.",
+      "error": "Hubo un problema al enviar el correo. Por favor, inténtalo de nuevo."
+    },
+    "check_email": {
+      "title": "Revisa tu correo",
+      "message": "Hemos enviado un correo de confirmación a <email>. Por favor, revisa tu bandeja de entrada y sigue las instrucciones para completar tu registro.",
+      "resend": "¿No recibiste el correo? Revisa tu carpeta de spam o",
+      "resend_link": "reenviar correo"
+    },
+    "modal": {
+      "title": "Iniciar sesión en psychoroid.com",
+      "description": "Inicia sesión para continuar en psychoroid.com y acceder a tu cuenta"
+    },
+    "otp": {
+      "title": "Ingresa el código de verificación",
+      "submit_button": "Verificar correo",
+      "processing": "Verificando...",
+      "success": "Éxito",
+      "success_message": "OTP verificado correctamente.",
+      "error": {
+        "default": "OTP inválido. Por favor, inténtalo de nuevo.",
+        "unexpected": "Ocurrió un error durante la verificación del OTP. Por favor, inténtalo de nuevo."
+      }
+    },
+    "pages": {
+      "sign_in": {
+        "title": "Bienvenido de nuevo",
+        "subtitle": "Ingresa tu correo electrónico para iniciar sesión en tu cuenta.",
+        "home_link": "Inicio",
+        "quote": "Soluciones 3D de vanguardia para artistas y empresas.",
+        "company": "psychoroid.com"
+      },
+      "sign_up": {
+        "title": "Crear cuenta",
+        "terms_text": "Al crear una cuenta, aceptas nuestros",
+        "terms_link": "Términos de servicio",
+        "and": "y",
+        "privacy_link": "Política de privacidad",
+        "period": "."
+      },
+      "forgot_password": {
+        "title": "Restablecer contraseña",
+        "no_account": "¿No tienes una cuenta?",
+        "sign_up_link": "Regístrate",
+        "email_resent": {
+          "title": "Correo reenviado",
+          "description": "Se ha enviado un nuevo correo de verificación a tu bandeja de entrada."
+        },
+        "error": {
+          "title": "Error",
+          "description": "Hubo un problema al reenviar el correo. Por favor, inténtalo de nuevo."
+        }
+      },
+      "reset_password": {
+        "title": "Restablecer contraseña",
+        "new_password": "Nueva contraseña",
+        "confirm_password": "Confirmar contraseña",
+        "placeholder": {
+          "new": "Nueva contraseña**",
+          "confirm": "Confirmar contraseña**"
+        },
+        "validation": {
+          "min_length": "La contraseña debe tener al menos 8 caracteres",
+          "match": "Las contraseñas no coinciden"
+        },
+        "button": {
+          "submit": "Restablecer contraseña",
+          "processing": "Restableciendo..."
+        },
+        "success": {
+          "title": "Éxito",
+          "description": "Tu contraseña se ha restablecido correctamente."
+        },
+        "error": {
+          "title": "Error",
+          "description": "Hubo un problema al restablecer tu contraseña. Por favor, inténtalo de nuevo."
+        }
+      }
+    }
   }
 }

@@ -180,5 +180,133 @@
     "loading": {
       "message": "Chargement..."
     }
+  },
+  "auth": {
+    "sign_in": {
+      "title": "Bienvenue",
+      "subtitle": "Connectez-vous pour utiliser psychoroid.com",
+      "email_placeholder": "Adresse e-mail**",
+      "password_placeholder": "Mot de passe**",
+      "forgot_password": "Mot de passe oublié ?",
+      "connect_button": "Se connecter",
+      "processing": "Traitement...",
+      "or_continue": "Ou continuer avec",
+      "google": "Google",
+      "github": "GitHub",
+      "no_account": "Vous n'avez pas de compte ?",
+      "sign_up_link": "S'inscrire",
+      "success": "Succès",
+      "success_message": "Vous êtes maintenant connecté.",
+      "error": {
+        "default": "Une erreur s'est produite lors de votre connexion. Veuillez réessayer.",
+        "invalid_credentials": "E-mail ou mot de passe invalide. Veuillez réessayer ou créer un compte si vous n'en avez pas.",
+        "email_not_confirmed": "Veuillez confirmer votre adresse e-mail avant de vous connecter.",
+        "unexpected": "Une erreur inattendue s'est produite. Veuillez réessayer plus tard.",
+        "oauth": "Un problème est survenu lors de la connexion avec {provider}. Veuillez réessayer."
+      }
+    },
+    "sign_up": {
+      "title": "Créer un compte",
+      "full_name_placeholder": "Nom complet**",
+      "email_placeholder": "Adresse e-mail**",
+      "password_placeholder": "Mot de passe**",
+      "submit_button": "Créer un compte",
+      "processing": "Création du compte...",
+      "continue_with": "Ou continuer avec",
+      "google": "Google",
+      "github": "GitHub",
+      "error": {
+        "default": "Une erreur s'est produite lors de la création de votre compte. Veuillez réessayer.",
+        "email_in_use": "Cette adresse e-mail est déjà utilisée. Veuillez en essayer une autre ou vous connecter.",
+        "invalid_email": "Veuillez entrer une adresse e-mail valide.",
+        "invalid_password": "Le mot de passe doit contenir au moins 8 caractères.",
+        "invalid_name": "Veuillez entrer votre nom et prénom."
+      }
+    },
+    "forgot_password": {
+      "title": "Réinitialiser le mot de passe",
+      "email_placeholder": "Adresse e-mail**",
+      "submit_button": "Envoyer le lien",
+      "sending": "Envoi...",
+      "success": "Succès",
+      "success_message": "E-mail de réinitialisation envoyé. Veuillez vérifier votre boîte de réception.",
+      "error": "Un problème est survenu lors de l'envoi de l'e-mail. Veuillez réessayer."
+    },
+    "check_email": {
+      "title": "Vérifiez votre e-mail",
+      "message": "Nous vous avons envoyé un e-mail de confirmation à <email>. Veuillez vérifier votre boîte de réception et suivre les instructions pour compléter votre inscription.",
+      "resend": "Vous n'avez pas reçu l'e-mail ? Vérifiez vos spams ou",
+      "resend_link": "renvoyer l'e-mail"
+    },
+    "modal": {
+      "title": "Se connecter à psychoroid.com",
+      "description": "Connectez-vous pour continuer sur psychoroid.com et accéder à votre compte"
+    },
+    "otp": {
+      "title": "Entrez le code de vérification",
+      "submit_button": "Vérifier l'e-mail",
+      "processing": "Vérification...",
+      "success": "Succès",
+      "success_message": "Code OTP vérifié avec succès.",
+      "error": {
+        "default": "Code OTP invalide. Veuillez réessayer.",
+        "unexpected": "Une erreur s'est produite lors de la vérification du code OTP. Veuillez réessayer."
+      }
+    },
+    "pages": {
+      "sign_in": {
+        "title": "Bienvenue",
+        "subtitle": "Entrez votre e-mail ci-dessous pour vous connecter à votre compte.",
+        "home_link": "Accueil",
+        "quote": "Solutions 3D de pointe pour artistes et entreprises.",
+        "company": "psychoroid.com"
+      },
+      "sign_up": {
+        "title": "Créer un compte",
+        "terms_text": "En créant un compte, vous acceptez nos",
+        "terms_link": "Conditions d'utilisation",
+        "and": "et",
+        "privacy_link": "Politique de confidentialité",
+        "period": "."
+      },
+      "forgot_password": {
+        "title": "Réinitialiser votre mot de passe",
+        "no_account": "Vous n'avez pas de compte ?",
+        "sign_up_link": "S'inscrire",
+        "email_resent": {
+          "title": "E-mail renvoyé",
+          "description": "Un nouvel e-mail de vérification a été envoyé à votre boîte de réception."
+        },
+        "error": {
+          "title": "Erreur",
+          "description": "Un problème est survenu lors du renvoi de l'e-mail. Veuillez réessayer."
+        }
+      },
+      "reset_password": {
+        "title": "Réinitialiser votre mot de passe",
+        "new_password": "Nouveau mot de passe",
+        "confirm_password": "Confirmer le mot de passe",
+        "placeholder": {
+          "new": "Nouveau mot de passe**",
+          "confirm": "Confirmer le mot de passe**"
+        },
+        "validation": {
+          "min_length": "Le mot de passe doit contenir au moins 8 caractères",
+          "match": "Les mots de passe ne correspondent pas"
+        },
+        "button": {
+          "submit": "Réinitialiser le mot de passe",
+          "processing": "Réinitialisation..."
+        },
+        "success": {
+          "title": "Succès",
+          "description": "Votre mot de passe a été réinitialisé avec succès."
+        },
+        "error": {
+          "title": "Erreur",
+          "description": "Un problème est survenu lors de la réinitialisation de votre mot de passe. Veuillez réessayer."
+        }
+      }
+    }
   }
 } 

@@ -30,7 +30,7 @@
         "description": "体验我们的技术",
         "features": [
           "**注册即赠200积分**",
-          "有限���先级",
+          "有限优先级",
           "1个任务同时进行",
           "资产使用公共许可"
         ]
@@ -76,7 +76,7 @@
   },
   "footer": {
     "copyright": "Copyright © 2025 — psychoroid.com",
-    "faq": "常见问���",
+    "faq": "常见问题",
     "privacy": "隐私政策",
     "terms": "使用条款"
   },
@@ -101,7 +101,7 @@
         "content": "是的，我们非常重视数据安全。您的资产被安全存储，未经您明确同意，我们绝不会分享您的数据或将其用于训练。"
       },
       "commercial": {
-        "title": "可以商业��用模型吗？",
+        "title": "可以商业使用模型吗？",
         "content": "可以。付费订阅者拥有其生成模型的完整权利。免费用户获得CC BY 4.0许可，允许在注明psychoroid.com来源的情况下进行商业使用。"
       },
       "subscription": {
@@ -124,7 +124,7 @@
       },
       "security": {
         "title": "数据安全",
-        "content": "我们使用行业标准的加密和安全措施保护您的数据。您的3D资产和个人���息被安全存储，访��受到严格控制。"
+        "content": "我们使用行业标准的加密和安全措施保护您的数据。您的3D资产和个人信息被安全存储，访问受到严格控制。"
       },
       "rights": {
         "title": "您的权利",
@@ -150,7 +150,7 @@
       },
       "credits": {
         "title": "积分和支付",
-        "content": "ROIDS积分不可转让且不可退款。订阅付款在每个计费期开始时处理。取消在期末生效。除欺诈情况外，不予退款���"
+        "content": "ROIDS积分不可转让且不可退款。订阅付款在每个计费期开始时处理。取消在期末生效。除欺诈情况外，不予退款。"
       },
       "rules": {
         "title": "使用规则",
@@ -178,6 +178,134 @@
     },
     "loading": {
       "message": "加载中..."
+    }
+  },
+  "auth": {
+    "sign_in": {
+      "title": "欢迎回来",
+      "subtitle": "登录以探索 psychoroid.com",
+      "email_placeholder": "电子邮箱**",
+      "password_placeholder": "密码**",
+      "forgot_password": "忘记密码？",
+      "connect_button": "登录",
+      "processing": "处理中...",
+      "or_continue": "或继续使用",
+      "google": "Google",
+      "github": "GitHub",
+      "no_account": "还没有账号？",
+      "sign_up_link": "注册",
+      "success": "成功",
+      "success_message": "登录成功。",
+      "error": {
+        "default": "登录时出现错误。请重试。",
+        "invalid_credentials": "邮箱或密码无效。请重试或注册新账号。",
+        "email_not_confirmed": "请在登录前确认您的邮箱。",
+        "unexpected": "发生意外错误。请稍后重试。",
+        "oauth": "使用 {provider} 登录时出现问题。请重试。"
+      }
+    },
+    "sign_up": {
+      "title": "创建账号",
+      "full_name_placeholder": "姓名**",
+      "email_placeholder": "电子邮箱**",
+      "password_placeholder": "密码**",
+      "submit_button": "创建账号",
+      "processing": "创建中...",
+      "continue_with": "或继续使用",
+      "google": "Google",
+      "github": "GitHub",
+      "error": {
+        "default": "创建账号时出现错误。请重试。",
+        "email_in_use": "该邮箱已被使用。请使用其他邮箱或登录。",
+        "invalid_email": "请输入有效的邮箱地址。",
+        "invalid_password": "密码必须至少包含8个字符。",
+        "invalid_name": "请输入您的姓名。"
+      }
+    },
+    "forgot_password": {
+      "title": "重置密码",
+      "email_placeholder": "电子邮箱**",
+      "submit_button": "发送重置链接",
+      "sending": "发送中...",
+      "success": "成功",
+      "success_message": "重置密码邮件已发送。请检查您的收件箱。",
+      "error": "发送邮件时出现问题。请重试。"
+    },
+    "check_email": {
+      "title": "检查您的邮箱",
+      "message": "我们已向 <email> 发送确认邮件。请检查您的收件箱并按照说明完成注册。",
+      "resend": "没有收到邮件？检查垃圾邮件文件夹或",
+      "resend_link": "重新发送邮件"
+    },
+    "modal": {
+      "title": "登录 psychoroid.com",
+      "description": "登录以继续使用 psychoroid.com 并访问您的账号"
+    },
+    "otp": {
+      "title": "输入验证码",
+      "submit_button": "验证邮箱",
+      "processing": "验证中...",
+      "success": "成功",
+      "success_message": "OTP 验证成功。",
+      "error": {
+        "default": "OTP 无效。请重试。",
+        "unexpected": "验证 OTP 时出现错误。请重试。"
+      }
+    },
+    "pages": {
+      "sign_in": {
+        "title": "欢迎回来",
+        "subtitle": "输入您的邮箱以登录账号。",
+        "home_link": "首页",
+        "quote": "为艺术家和企业提供领先的3D解决方案。",
+        "company": "psychoroid.com"
+      },
+      "sign_up": {
+        "title": "创建账号",
+        "terms_text": "创建账号即表示您同意我们的",
+        "terms_link": "服务条款",
+        "and": "和",
+        "privacy_link": "隐私政策",
+        "period": "。"
+      },
+      "forgot_password": {
+        "title": "重置密码",
+        "no_account": "还没有账号？",
+        "sign_up_link": "注册",
+        "email_resent": {
+          "title": "邮件已重发",
+          "description": "新的验证邮件已发送到您的收件箱。"
+        },
+        "error": {
+          "title": "错误",
+          "description": "重发邮件时出现问题。请重试。"
+        }
+      },
+      "reset_password": {
+        "title": "重置密码",
+        "new_password": "新密码",
+        "confirm_password": "确认密码",
+        "placeholder": {
+          "new": "新密码**",
+          "confirm": "确认密码**"
+        },
+        "validation": {
+          "min_length": "密码必须至少包含8个字符",
+          "match": "密码不匹配"
+        },
+        "button": {
+          "submit": "重置密码",
+          "processing": "重置中..."
+        },
+        "success": {
+          "title": "成功",
+          "description": "您的密码已成功重置。"
+        },
+        "error": {
+          "title": "错误",
+          "description": "重置密码时出现问题。请重试。"
+        }
+      }
     }
   }
 } 

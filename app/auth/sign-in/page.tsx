@@ -8,8 +8,10 @@ import { ArrowLeft } from 'lucide-react'
 import Grid from '@/components/design/grid'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase/supabase';
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
-// Dynamically import LandingViewer with no SSR to avoid Three.js server-side issues
+// Dynamically import LandingViewer with no SSR
 const LandingViewer = dynamic(
     () => import('@/components/3D/LandingViewer').then(mod => mod.LandingViewer),
     { ssr: false }
@@ -17,6 +19,7 @@ const LandingViewer = dynamic(
 
 export default function SignIn() {
     const router = useRouter();
+    const { currentLanguage } = useTranslation();
 
     useEffect(() => {
         const checkSession = async () => {
@@ -42,17 +45,17 @@ export default function SignIn() {
                     className="relative z-20 inline-flex items-center text-cyan-100 hover:text-cyan-200 transition-colors bg-black/50 px-4 py-2 rounded-none border border-cyan-500/30 w-fit"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    <span className="text-sm font-medium">Home</span>
+                    <span className="text-sm font-medium">{t(currentLanguage, 'auth.pages.sign_in.home_link')}</span>
                 </Link>
 
                 <div className='relative z-20 mt-auto'>
                     <blockquote className='space-y-2'>
                         <p className='text-lg text-cyan-100'>
-                            Industry-leading 3D solutions for artists and enterprises.
+                            {t(currentLanguage, 'auth.pages.sign_in.quote')}
                         </p>
                         <div className="my-2 w-[calc(100%-12rem)] border-t border-cyan-500/30"></div>
                         <footer className='text-sm text-cyan-200'>
-                            <span className="block">psychoroid.com</span>
+                            <span className="block">{t(currentLanguage, 'auth.pages.sign_in.company')}</span>
                         </footer>
                     </blockquote>
                 </div>
@@ -60,9 +63,11 @@ export default function SignIn() {
             <div className='lg:p-8'>
                 <div className='mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[480px] lg:p-8'>
                     <div className='flex flex-col space-y-2 text-left'>
-                        <h1 className='text-2xl font-semibold tracking-tight'>Welcome back</h1>
+                        <h1 className='text-2xl font-semibold tracking-tight'>
+                            {t(currentLanguage, 'auth.pages.sign_in.title')}
+                        </h1>
                         <p className='text-sm text-muted-foreground'>
-                            Enter your email below to sign in to your account.
+                            {t(currentLanguage, 'auth.pages.sign_in.subtitle')}
                         </p>
                     </div>
                     <UserAuthForm />

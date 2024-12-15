@@ -7,8 +7,11 @@ import { CheckEmailMessage } from '@/components/auth/check-email-message'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/supabase';
 import { toast } from '@/components/ui/use-toast'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 export default function ForgotPassword() {
+  const { currentLanguage } = useTranslation();
   const [isEmailSent, setIsEmailSent] = useState(false)
   const [email, setEmail] = useState('')
 
@@ -19,14 +22,14 @@ export default function ForgotPassword() {
       })
       if (error) throw error
       toast({
-        title: "Success",
-        description: "Password reset email resent. Please check your inbox.",
+        title: t(currentLanguage, 'auth.pages.forgot_password.email_resent.title'),
+        description: t(currentLanguage, 'auth.pages.forgot_password.email_resent.description'),
       })
     } catch (error) {
       console.error('Error resending password reset email:', error)
       toast({
-        title: "Error",
-        description: "There was a problem resending the email. Please try again.",
+        title: t(currentLanguage, 'auth.pages.forgot_password.error.title'),
+        description: t(currentLanguage, 'auth.pages.forgot_password.error.description'),
         variant: "destructive",
       })
     }
@@ -42,7 +45,7 @@ export default function ForgotPassword() {
             <>
               <div className='mb-2 flex flex-col space-y-2 text-left'>
                 <h1 className='text-2xl font-semibold tracking-tight'>
-                  Reset your password
+                  {t(currentLanguage, 'auth.pages.forgot_password.title')}
                 </h1>
               </div>
               <div className='mb-4'></div>
@@ -51,12 +54,12 @@ export default function ForgotPassword() {
                 setIsEmailSent(true)
               }} />
               <p className='mt-4 px-8 text-center text-sm text-muted-foreground'>
-                Don&apos;t have an account?{' '}
+                {t(currentLanguage, 'auth.pages.forgot_password.no_account')}{' '}
                 <Link
-                  href='/sign-up'
+                  href='/auth/sign-up'
                   className='underline underline-offset-4 hover:text-primary'
                 >
-                  Sign up
+                  {t(currentLanguage, 'auth.pages.forgot_password.sign_up_link')}
                 </Link>
               </p>
             </>

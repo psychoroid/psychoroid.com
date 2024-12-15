@@ -154,7 +154,7 @@
       },
       "rules": {
         "title": "이용 규칙",
-        "content": "서비스 오용, 악성 콘텐츠 업로드, 무단 접근 시도를 하지 않을 것에 동의합니다. 이 약관을 위반하는 나 사기 활동에 관여하는 계정을 정지할 권리가 있습니다."
+        "content": "서비스 오용, 악성 콘텐츠 업로드, 무단 접근 시도를 하지 않을 것에 동의합니다. 이 약관을 위반하는 나 사기 활동에 관여하는 계정��� 정지할 권리가 있습니다."
       },
       "changes": {
         "title": "서비스 변경",
@@ -178,6 +178,134 @@
     },
     "loading": {
       "message": "로딩 중..."
+    }
+  },
+  "auth": {
+    "sign_in": {
+      "title": "환영합니다",
+      "subtitle": "psychoroid.com을 이용하려면 로그인하세요",
+      "email_placeholder": "이메일 주소**",
+      "password_placeholder": "비밀번호**",
+      "forgot_password": "비밀번호를 잊으셨나요?",
+      "connect_button": "로그인",
+      "processing": "처리 중...",
+      "or_continue": "또는 다음으로 계속",
+      "google": "Google",
+      "github": "GitHub",
+      "no_account": "계정이 없으신가요?",
+      "sign_up_link": "회원가입",
+      "success": "성공",
+      "success_message": "로그인되었습니다.",
+      "error": {
+        "default": "로그인 중 오류가 발생했습니다. 다시 시도해 주세요.",
+        "invalid_credentials": "이메일 또는 비밀번호가 올바르지 않습니다. 다시 시도하거나 계정이 없는 경우 회원가입을 해주세요.",
+        "email_not_confirmed": "로그인하기 전에 이메일 인증을 완료해 주세요.",
+        "unexpected": "예기치 않은 오류가 발생했습니다. 나중에 다시 시도해 주세요.",
+        "oauth": "{provider} 로그인 중 문제가 발생했습니다. 다시 시도해 주세요."
+      }
+    },
+    "sign_up": {
+      "title": "계정 만들기",
+      "full_name_placeholder": "이름**",
+      "email_placeholder": "이메일 주소**",
+      "password_placeholder": "비밀번호**",
+      "submit_button": "계정 만들기",
+      "processing": "생성 중...",
+      "continue_with": "또는 다음으로 계속",
+      "google": "Google",
+      "github": "GitHub",
+      "error": {
+        "default": "계정 생성 중 오류가 발생했습니다. 다시 시도해 주세요.",
+        "email_in_use": "이미 사용 중인 이메일입니다. 다른 이메일을 사용하거나 로그인해 주세요.",
+        "invalid_email": "유효한 이메일 주소를 입력해 주세요.",
+        "invalid_password": "비밀번호는 8자 이상이어야 합니다.",
+        "invalid_name": "이름을 입력해 주세요."
+      }
+    },
+    "forgot_password": {
+      "title": "비밀번호 재설정",
+      "email_placeholder": "이메일 주소**",
+      "submit_button": "재설정 링크 전송",
+      "sending": "전송 중...",
+      "success": "성공",
+      "success_message": "비밀번호 재설정 이메일을 전송했습니다. 받은편지함을 확인해 주세요.",
+      "error": "이메일 전송 중 문제가 발생했습니다. 다시 시도해 주세요."
+    },
+    "check_email": {
+      "title": "이메일을 확인해 주세요",
+      "message": "확인 이메일을 <email>로 전송했습니다. 받은편지함을 확인하고 등록을 완료하기 위한 안내를 따라주세요.",
+      "resend": "이메일을 받지 못하셨나요? 스팸 폴더를 확인하거나",
+      "resend_link": "이메일 재전송"
+    },
+    "modal": {
+      "title": "psychoroid.com 로그인",
+      "description": "psychoroid.com을 계속 이용하고 계정에 접근하려면 로그인하세요"
+    },
+    "otp": {
+      "title": "인증 코드 입력",
+      "submit_button": "이메일 확인",
+      "processing": "확인 중...",
+      "success": "성공",
+      "success_message": "OTP 확인이 완료되었습니다.",
+      "error": {
+        "default": "잘못된 OTP입니다. 다시 시도해 주세요.",
+        "unexpected": "OTP 확인 중 오류가 발생했습니다. 다시 시도해 주세요."
+      }
+    },
+    "pages": {
+      "sign_in": {
+        "title": "환영합니다",
+        "subtitle": "계정에 로그인하려면 이메일을 입력하세요.",
+        "home_link": "홈",
+        "quote": "아티스트와 기업을 위한 최첨단 3D 솔루션.",
+        "company": "psychoroid.com"
+      },
+      "sign_up": {
+        "title": "계정 만들기",
+        "terms_text": "계정을 만들면 다음에 동의하게 됩니다:",
+        "terms_link": "이용약관",
+        "and": "및",
+        "privacy_link": "개인정보 처리방침",
+        "period": "."
+      },
+      "forgot_password": {
+        "title": "비밀번호 재설정",
+        "no_account": "계정이 없으신가요?",
+        "sign_up_link": "회원가입",
+        "email_resent": {
+          "title": "이메일 재전송됨",
+          "description": "새로운 확인 이메일을 받은편지함으로 전송했습니다."
+        },
+        "error": {
+          "title": "오류",
+          "description": "이메일 재전송 중 문제가 발생했습니다. 다시 시도해 주세요."
+        }
+      },
+      "reset_password": {
+        "title": "비밀번호 재설정",
+        "new_password": "새 비밀번호",
+        "confirm_password": "비밀번호 확인",
+        "placeholder": {
+          "new": "새 비밀번호**",
+          "confirm": "비밀번호 확인**"
+        },
+        "validation": {
+          "min_length": "비밀번호는 8자 이상이어야 합니다",
+          "match": "비밀번호가 일치하지 않습니다"
+        },
+        "button": {
+          "submit": "비밀번호 재설정",
+          "processing": "재설정 중..."
+        },
+        "success": {
+          "title": "성공",
+          "description": "비밀번호가 성공적으로 재설정되었습니다."
+        },
+        "error": {
+          "title": "오류",
+          "description": "비밀번호 재설정 중 문제가 발생했습니다. 다시 시도해 주세요."
+        }
+      }
     }
   }
 }

@@ -179,5 +179,133 @@
     "loading": {
       "message": "Loading..."
     }
+  },
+  "auth": {
+    "sign_in": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to explore psychoroid.com",
+      "email_placeholder": "Email address**",
+      "password_placeholder": "Password**",
+      "forgot_password": "Forgot password?",
+      "connect_button": "Connect",
+      "processing": "Processing...",
+      "or_continue": "Or continue with",
+      "google": "Google",
+      "github": "GitHub",
+      "no_account": "Don't have an account?",
+      "sign_up_link": "Sign up",
+      "success": "Success",
+      "success_message": "You have successfully signed in.",
+      "error": {
+        "default": "An error occurred while signing in. Please try again.",
+        "invalid_credentials": "Invalid email or password. Please try again or sign up if you don't have an account.",
+        "email_not_confirmed": "Please confirm your email address before signing in.",
+        "unexpected": "An unexpected error occurred. Please try again later.",
+        "oauth": "There was a problem signing in with {provider}. Please try again."
+      }
+    },
+    "sign_up": {
+      "title": "Create account",
+      "full_name_placeholder": "Full Name**",
+      "email_placeholder": "Email address**",
+      "password_placeholder": "Password**",
+      "submit_button": "Create account",
+      "processing": "Creating account...",
+      "continue_with": "Or continue with",
+      "google": "Google",
+      "github": "GitHub",
+      "error": {
+        "default": "An error occurred while creating your account. Please try again.",
+        "email_in_use": "This email is already in use. Please try another or sign in.",
+        "invalid_email": "Please enter a valid email address.",
+        "invalid_password": "Password must be at least 8 characters long.",
+        "invalid_name": "Please enter both first and last name."
+      }
+    },
+    "forgot_password": {
+      "title": "Reset password",
+      "email_placeholder": "Email address**",
+      "submit_button": "Send reset link",
+      "sending": "Sending...",
+      "success": "Success",
+      "success_message": "Password reset email sent. Please check your inbox.",
+      "error": "There was a problem sending the password reset email. Please try again."
+    },
+    "check_email": {
+      "title": "Check your email",
+      "message": "We've sent a confirmation email to <email>. Please check your inbox and follow the instructions to complete your registration.",
+      "resend": "Didn't receive the email? Check your spam folder or",
+      "resend_link": "resend the email"
+    },
+    "modal": {
+      "title": "Sign in to psychoroid.com",
+      "description": "Sign in to continue to psychoroid.com and access your account"
+    },
+    "otp": {
+      "title": "Enter verification code",
+      "submit_button": "Verify Email",
+      "processing": "Verifying...",
+      "success": "Success",
+      "success_message": "OTP verified successfully.",
+      "error": {
+        "default": "Invalid OTP. Please try again.",
+        "unexpected": "An error occurred during OTP verification. Please try again."
+      }
+    },
+    "pages": {
+      "sign_in": {
+        "title": "Welcome back",
+        "subtitle": "Enter your email below to sign in to your account.",
+        "home_link": "Home",
+        "quote": "Industry-leading 3D solutions for artists and enterprises.",
+        "company": "psychoroid.com"
+      },
+      "sign_up": {
+        "title": "Create an account",
+        "terms_text": "By creating an account, you agree to our",
+        "terms_link": "Terms of Service",
+        "and": "and",
+        "privacy_link": "Privacy Policy",
+        "period": "."
+      },
+      "forgot_password": {
+        "title": "Reset your password",
+        "no_account": "Don't have an account?",
+        "sign_up_link": "Sign up",
+        "email_resent": {
+          "title": "Email Resent",
+          "description": "A new verification email has been sent to your inbox."
+        },
+        "error": {
+          "title": "Error",
+          "description": "There was a problem resending the verification email. Please try again."
+        }
+      },
+      "reset_password": {
+        "title": "Reset your password",
+        "new_password": "New Password",
+        "confirm_password": "Confirm Password",
+        "placeholder": {
+          "new": "New Password**",
+          "confirm": "Confirm Password**"
+        },
+        "validation": {
+          "min_length": "Password must be at least 8 characters",
+          "match": "Passwords don't match"
+        },
+        "button": {
+          "submit": "Reset Password",
+          "processing": "Resetting..."
+        },
+        "success": {
+          "title": "Success",
+          "description": "Your password has been reset successfully."
+        },
+        "error": {
+          "title": "Error",
+          "description": "There was a problem resetting your password. Please try again."
+        }
+      }
+    }
   }
 } 

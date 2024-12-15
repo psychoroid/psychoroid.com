@@ -10,6 +10,8 @@ import { supabase } from '@/lib/supabase/supabase';
 import { toast } from '@/components/ui/use-toast'
 import { AlertCircle } from "lucide-react"
 import Spinner from '@/components/ui/spinner'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 type UserAuthFormProps = HTMLAttributes<HTMLDivElement>
 
@@ -19,6 +21,7 @@ const formSchema = z.object({
 })
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+  const { currentLanguage } = useTranslation();
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isGithubLoading, setIsGithubLoading] = useState(false)
@@ -114,7 +117,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           <Input
             id="email"
             type="email"
-            placeholder='Email address**'
+            placeholder={t(currentLanguage, 'auth.sign_in.email_placeholder')}
             value={email}
             onChange={handleEmailChange}
             className={cn(
@@ -132,12 +135,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               href='/auth/forgot-password'
               className='text-sm font-medium text-blue-600 hover:text-blue-600 whitespace-nowrap'
             >
-              Forgot password?
+              {t(currentLanguage, 'auth.sign_in.forgot_password')}
             </Link>
           </div>
           <PasswordInput
             id="password"
-            placeholder='Password**'
+            placeholder={t(currentLanguage, 'auth.sign_in.password_placeholder')}
             value={password}
             onChange={handlePasswordChange}
             className={cn(
@@ -162,9 +165,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             disabled={isLoading || !isValidEmail || !isValidPassword}
           >
             {isLoading ? (
-              <span className="text-sm">Processing...</span>
+              <span className="text-sm">{t(currentLanguage, 'auth.sign_in.processing')}</span>
             ) : (
-              <span className="text-base font-semibold">Connect</span>
+              <span className="text-base font-semibold">{t(currentLanguage, 'auth.sign_in.connect_button')}</span>
             )}
           </Button>
         </div>
@@ -175,7 +178,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         </div>
         <div className='relative flex justify-center text-xs uppercase'>
           <span className='bg-background px-2 text-gray-500'>
-            Or continue with
+            {t(currentLanguage, 'auth.sign_in.or_continue')}
           </span>
         </div>
       </div>
@@ -213,7 +216,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 />
               </svg>
             )}
-            <span>&nbsp;{isGoogleLoading ? 'Google' : 'Google'}</span>
+            <span>&nbsp;{t(currentLanguage, 'auth.sign_in.google')}</span>
           </div>
         </Button>
 
@@ -229,17 +232,17 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             ) : (
               <IconBrandGithub className='h-6 w-6 mr-2' />
             )}
-            <span>&nbsp;{isGithubLoading ? 'Github' : 'GitHub'}</span>
+            <span>&nbsp;{t(currentLanguage, 'auth.sign_in.github')}</span>
           </div>
         </Button>
 
         <p className='px-8 text-center text-sm text-muted-foreground'>
-          Don&apos;t have an account?{' '}
+          {t(currentLanguage, 'auth.sign_in.no_account')}{' '}
           <Link
             href='/auth/sign-up'
             className='underline underline-offset-4 text-blue-600 hover:text-blue-600'
           >
-            Sign up
+            {t(currentLanguage, 'auth.sign_in.sign_up_link')}
           </Link>
         </p>
       </div>

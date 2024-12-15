@@ -6,8 +6,11 @@ import { SignUpForm } from '@/components/auth/sign-up-form'
 import { supabase } from '@/lib/supabase/supabase';
 import { toast } from '@/components/ui/use-toast'
 import Link from 'next/link'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 export default function SignUp() {
+    const { currentLanguage } = useTranslation();
     const [isLoading, setIsLoading] = useState(false)
     const [isConfirmationSent, setIsConfirmationSent] = useState(false)
     const [email, setEmail] = useState('')
@@ -84,7 +87,7 @@ export default function SignUp() {
                 <Card className='p-6 rounded-none'>
                     <div className='mb-2 flex flex-col space-y-2 text-left'>
                         <h1 className='text-2xl font-semibold tracking-tight'>
-                            Create an account
+                            {t(currentLanguage, 'auth.pages.sign_up.title')}
                         </h1>
                     </div>
                     <div className='mb-4'></div>
@@ -96,21 +99,21 @@ export default function SignUp() {
                         errorMessage={errorMessage}
                     />
                     <p className='mt-4 px-8 text-center text-sm text-muted-foreground'>
-                        By creating an account, you agree to our{' '}
+                        {t(currentLanguage, 'auth.pages.sign_up.terms_text')}{' '}
                         <Link
                             href='/terms'
                             className='text-blue-600 hover:underline'
                         >
-                            Terms of Service
+                            {t(currentLanguage, 'auth.pages.sign_up.terms_link')}
                         </Link>{' '}
-                        and{' '}
+                        {t(currentLanguage, 'auth.pages.sign_up.and')}{' '}
                         <Link
                             href='/privacy'
                             className='text-blue-600 hover:underline'
                         >
-                            Privacy Policy
+                            {t(currentLanguage, 'auth.pages.sign_up.privacy_link')}
                         </Link>
-                        .
+                        {t(currentLanguage, 'auth.pages.sign_up.period')}
                     </p>
                 </Card>
             </div>

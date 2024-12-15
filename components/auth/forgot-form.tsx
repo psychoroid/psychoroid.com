@@ -14,6 +14,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase/supabase'
 import { toast } from '@/components/ui/use-toast'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 interface ForgotFormProps extends HTMLAttributes<HTMLDivElement> {
   onSuccess: (email: string) => void;
@@ -27,6 +29,7 @@ const formSchema = z.object({
 })
 
 export function ForgotForm({ className, onSuccess, ...props }: ForgotFormProps) {
+  const { currentLanguage } = useTranslation();
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,15 +45,15 @@ export function ForgotForm({ className, onSuccess, ...props }: ForgotFormProps) 
       })
       if (error) throw error
       toast({
-        title: "Success",
-        description: "Password reset email sent. Please check your inbox.",
+        title: t(currentLanguage, 'auth.forgot_password.success'),
+        description: t(currentLanguage, 'auth.forgot_password.success_message'),
       })
       onSuccess(data.email)
     } catch (error) {
       console.error('Error during password reset:', error)
       toast({
-        title: "Error",
-        description: "There was a problem sending the password reset email. Please try again.",
+        title: t(currentLanguage, 'auth.forgot_password.error'),
+        description: t(currentLanguage, 'auth.forgot_password.error'),
         variant: "destructive",
       })
     } finally {
@@ -70,7 +73,7 @@ export function ForgotForm({ className, onSuccess, ...props }: ForgotFormProps) 
                 <FormItem>
                   <FormControl>
                     <Input
-                      placeholder='Email address**'
+                      placeholder={t(currentLanguage, 'auth.forgot_password.email_placeholder')}
                       {...field}
                       className='h-12 border border-gray-300 rounded-none focus:border-blue-500 focus:ring-blue-500 bg-white text-black dark:bg-gray-800 dark:text-white dark:border-gray-600'
                     />
@@ -84,7 +87,7 @@ export function ForgotForm({ className, onSuccess, ...props }: ForgotFormProps) 
               className='w-full h-12 mt-2 rounded-none bg-white text-black hover:bg-gray-100 focus:bg-gray-100 active:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-500'
               disabled={isLoading}
             >
-              {isLoading ? 'Sending...' : 'Send reset link'}
+              {isLoading ? t(currentLanguage, 'auth.forgot_password.sending') : t(currentLanguage, 'auth.forgot_password.submit_button')}
             </Button>
           </div>
         </form>
