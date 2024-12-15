@@ -5,17 +5,13 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { StripeEvent } from '@/types/stripe';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+export const preferredRegion = 'auto';
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-11-20.acacia'
 });
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-export const runtime = 'edge';
 
 export async function POST(req: Request) {
     try {

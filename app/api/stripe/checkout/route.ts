@@ -61,6 +61,13 @@ export async function POST(req: Request) {
           customer_creation: 'always',
           allow_promotion_codes: true,
           automatic_tax: { enabled: false },
+          payment_method_types: ['card'],
+          after_expiration: {
+            recovery: {
+              enabled: true,
+              allow_promotion_codes: true
+            }
+          }
         });
       } catch (stripeError) {
         console.error('Stripe session creation error:', stripeError);
@@ -93,6 +100,17 @@ export async function POST(req: Request) {
           type: 'custom_purchase',
           credits: credits.toString()
         },
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+        customer_creation: 'always',
+        allow_promotion_codes: true,
+        automatic_tax: { enabled: false },
+        payment_method_types: ['card'],
+        after_expiration: {
+          recovery: {
+            enabled: true,
+            allow_promotion_codes: true
+          }
+        }
       });
     }
 
