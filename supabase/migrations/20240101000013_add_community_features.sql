@@ -17,7 +17,8 @@ RETURNS TABLE (
     tags TEXT[],
     is_featured BOOLEAN,
     created_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ
+    updated_at TIMESTAMPTZ,
+    username TEXT
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -39,8 +40,10 @@ BEGIN
         p.tags,
         p.is_featured,
         p.created_at,
-        p.updated_at
+        p.updated_at,
+        pr.username
     FROM products p
+    LEFT JOIN profiles pr ON p.user_id = pr.id
     WHERE p.visibility = 'public'
     ORDER BY (p.likes_count + p.downloads_count + p.views_count) DESC, p.created_at DESC
     LIMIT p_limit

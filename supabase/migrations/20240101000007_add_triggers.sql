@@ -126,8 +126,7 @@ BEGIN
 
     -- Random style (matching TypeScript version probabilities)
     v_style := CASE 
-        WHEN random() < 0.5 THEN 1  -- Basic style (50% chance)
-        WHEN random() < 0.7 THEN 2  -- Underscore style (20% chance)
+        WHEN random() < 0.7 THEN 1  -- Basic style (70% chance)
         WHEN random() < 0.8 AND v_use_prefix THEN 3  -- Prefix style (10% chance)
         WHEN random() < 0.9 AND v_use_suffix THEN 4  -- Suffix style (10% chance)
         ELSE 5  -- Complex style (10% chance)
@@ -135,12 +134,8 @@ BEGIN
 
     -- Generate username based on style
     v_result := CASE v_style
-        WHEN 1 THEN  -- Basic style (camelCase with underscore)
+        WHEN 1 THEN  -- Basic style (single underscore)
             LOWER(v_adjective) || '_' || LOWER(v_noun) || 
-            CASE WHEN v_number != '' THEN '_' || v_number ELSE '' END
-            
-        WHEN 2 THEN  -- Double underscore style
-            LOWER(v_adjective) || '__' || LOWER(v_noun) || 
             CASE WHEN v_number != '' THEN '_' || v_number ELSE '' END
             
         WHEN 3 THEN  -- Prefix style with underscore
@@ -162,13 +157,13 @@ BEGIN
     -- Ensure final length is within limits
     IF LENGTH(v_result) > 35 THEN
         -- Fallback to simpler style if too long
-        v_result := LOWER(v_adjective) || INITCAP(v_noun) || 
+        v_result := LOWER(v_adjective) || '_' || LOWER(v_noun) || 
             CASE WHEN random() > 0.5 THEN floor(random() * 99 + 1)::TEXT ELSE '' END;
     END IF;
 
     RETURN v_result;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public, pg_temp;
 
 -- Modify generate_unique_username to use the random generator
 CREATE OR REPLACE FUNCTION generate_unique_username(base_username TEXT)

@@ -7,6 +7,7 @@ import { XIcon } from '@/components/icons/XIcon';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
+import { PHIcon } from '@/components/icons/PHIcon';
 
 export function Footer() {
     const { currentLanguage } = useTranslation();
@@ -30,6 +31,15 @@ export function Footer() {
                             className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <Github className="h-3 w-3" />
+                        </Link>
+                        <div className="h-4 w-px bg-border"></div>
+                        <Link
+                            href="https://producthunt.com/@psychoroid"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <PHIcon className="h-4 w-4 fill-current -translate-y-[1px]" />
                         </Link>
                         <div className="h-4 w-px bg-border"></div>
                         <Link

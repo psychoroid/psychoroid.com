@@ -137,8 +137,8 @@ export function CommunityItem({
                     >
                         {product.name}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                        {product.description}
+                    <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                        @{product.username}
                     </p>
 
                     {/* Tags */}

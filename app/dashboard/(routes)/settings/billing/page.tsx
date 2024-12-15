@@ -186,7 +186,7 @@ export default function BillingSettings() {
                                     <Button
                                         onClick={isSubscribed ? handleManageSubscription : handleSubscribe}
                                         disabled={isLoading}
-                                        className="rounded-none bg-blue-500 hover:bg-blue-600 text-white"
+                                        className="rounded-none bg-emerald-500 hover:bg-emerald-600 text-white"
                                     >
                                         {isLoading
                                             ? 'Processing...'

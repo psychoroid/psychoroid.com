@@ -9,17 +9,9 @@ export default function CancelPage() {
     const router = useRouter();
     const { user } = useUser();
 
-    const handleContactSupport = () => {
-        const subject = user
-            ? `[Support inquiry] - User ${user.id}`
-            : '[Support inquiry] - Payment cancelled';
-
-        window.location.href = `mailto:dev@psychoroid.com?subject=${encodeURIComponent(subject)}`;
-    };
-
     return (
         <div className="h-svh bg-background flex items-center justify-center px-4">
-            <div className="w-full max-w-md p-6 border border-border rounded-lg bg-background/50">
+            <div className="w-full max-w-md p-6 border border-border rounded-none bg-background/50">
                 <div className="flex flex-col items-center space-y-4">
                     <XCircle className="h-12 w-12 text-red-500" />
 
@@ -36,15 +28,15 @@ export default function CancelPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => router.push('/pricing')}
-                            className="min-w-[120px] border-green-500 dark:border-green-600 text-green-600 dark:text-green-500 hover:bg-green-500/10 dark:hover:bg-green-500/10"
+                            className="min-w-[120px] rounded-none border-green-500 dark:border-green-600 text-green-600 dark:text-green-500 hover:bg-green-500/10 dark:hover:bg-green-500/10"
                         >
                             Return to Pricing
                         </Button>
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={handleContactSupport}
-                            className="min-w-[120px] border-blue-500 dark:border-blue-600 text-blue-600 dark:text-blue-500 hover:bg-blue-500/10 dark:hover:bg-blue-500/10"
+                            onClick={() => router.push('/dashboard/settings/support')}
+                            className="min-w-[120px] rounded-none border-blue-500 dark:border-blue-600 text-blue-600 dark:text-blue-500 hover:bg-blue-500/10 dark:hover:bg-blue-500/10"
                         >
                             Contact support
                         </Button>

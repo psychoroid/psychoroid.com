@@ -70,7 +70,7 @@ export default function FeedbackForm() {
                 {t(currentLanguage, 'feedback_form.button')}
             </button>
             {isOpen && (
-                <div className="absolute bottom-8 right-0 w-80 bg-background border border-border shadow-lg">
+                <div className="absolute bottom-8 right-0 w-80 bg-background border border-border shadow-lg translate-x-12">
                     <div className="p-4">
                         <Textarea
                             placeholder={t(currentLanguage, 'feedback_form.placeholder')}
@@ -95,7 +95,7 @@ export default function FeedbackForm() {
                             <Button
                                 size="sm"
                                 onClick={handleSubmit}
-                                className="rounded-none"
+                                className="rounded-none bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white"
                                 disabled={!feedback.trim() || sentiment === 'null'}
                             >
                                 {t(currentLanguage, 'feedback_form.submit')}

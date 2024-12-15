@@ -9,9 +9,9 @@ import { supabase } from '@/lib/supabase/supabase'
 import { toast } from 'sonner'
 
 const categories = [
-    { value: 'account', label: 'Account Issues' },
-    { value: 'billing', label: 'Billing Questions' },
-    { value: 'technical', label: 'Technical Support' },
+    { value: 'account', label: 'Account issues' },
+    { value: 'billing', label: 'Billing questions' },
+    { value: 'technical', label: 'Technical support' },
     { value: 'other', label: 'Other' }
 ]
 
@@ -31,9 +31,9 @@ const CustomSelect = ({ value, onChange, options }: CustomSelectProps) => {
     const selectRef = useRef<HTMLDivElement>(null)
 
     return (
-        <div ref={selectRef} className="relative">
+        <div ref={selectRef} className="relative w-fit">
             <div
-                className="bg-background text-foreground p-2 cursor-pointer border border-input rounded-none text-sm"
+                className="bg-background text-foreground p-2 cursor-pointer border border-input rounded-none text-sm min-w-[160px]"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {value ? options.find((opt: SelectOption) => opt.value === value)?.label : 'Select a category'}
@@ -43,7 +43,7 @@ const CustomSelect = ({ value, onChange, options }: CustomSelectProps) => {
                     {options.map((option: SelectOption) => (
                         <div
                             key={option.value}
-                            className="p-2 hover:bg-accent cursor-pointer"
+                            className="p-2 hover:bg-accent cursor-pointer whitespace-nowrap"
                             onClick={() => {
                                 onChange(option.value)
                                 setIsOpen(false)
@@ -226,7 +226,7 @@ export default function SupportForm() {
             <Button
                 type="submit"
                 disabled={isLoading}
-                className="rounded-none bg-blue-500 hover:bg-blue-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
+                className="rounded-none bg-emerald-500 hover:bg-emerald-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
             >
                 {isLoading ? 'Submitting...' : 'Submit a support ticket'}
             </Button>

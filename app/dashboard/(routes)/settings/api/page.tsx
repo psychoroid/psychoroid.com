@@ -141,7 +141,7 @@ export default function ApiSettings() {
                             <label className="text-sm font-medium">Your keys</label>
                             <Button
                                 onClick={() => setIsLoading(true)}
-                                className="rounded-none bg-blue-500 hover:bg-blue-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
+                                className="rounded-none bg-emerald-500 hover:bg-emerald-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
                                 disabled={apiKeys.filter(key => key.status === 'active').length >= MAX_API_KEYS}
                             >
                                 <Plus className="h-4 w-4 mr-2" />

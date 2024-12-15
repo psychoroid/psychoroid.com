@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/actions/utils";
 
-const GLOBE_CONFIG: COBEOptions = {
+export const GLOBE_CONFIG: COBEOptions = {
   width: 800,
   height: 800,
   onRender: () => { },
@@ -65,7 +65,7 @@ export default function Globe({
   const onRender = useCallback(
     (state: Record<string, any>) => {
       if (!pointerInteracting.current) {
-        phiRef.current += 0.005;
+        phiRef.current += 0.002;
       }
       state.phi = phiRef.current + r;
       state.width = widthRef.current * 2;

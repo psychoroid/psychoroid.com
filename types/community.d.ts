@@ -13,6 +13,7 @@ export interface CommunityProduct {
     user_id: string;
     tags: string[];
     is_featured?: boolean;
+    username: string;
 }
 
 export interface CommunityGridProps {

@@ -16,6 +16,7 @@ import { EngineDropdown } from './dropdowns/EngineDropdown';
 import { getLocalStorageItem, setLocalStorageItem, clearAuthState } from '@/lib/utils/localStorage';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
+import { ResourcesDropdown } from './dropdowns/ResourcesDropdown';
 
 export function Navbar() {
     const router = useRouter();
@@ -29,6 +30,10 @@ export function Navbar() {
     const [engineMenuOpen, setEngineMenuOpen] = useState(false);
     const [localRoidsBalance, setLocalRoidsBalance] = useState<number | null>(null);
     const { currentLanguage } = useTranslation();
+    const companyTimeoutRef = useRef<NodeJS.Timeout>();
+    const engineTimeoutRef = useRef<NodeJS.Timeout>();
+    const [resourcesMenuOpen, setResourcesMenuOpen] = useState(false);
+    const resourcesTimeoutRef = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -116,6 +121,45 @@ export function Navbar() {
         setTheme(theme === 'dark' ? 'light' : 'dark');
     };
 
+    const handleCompanyMenuEnter = () => {
+        if (companyTimeoutRef.current) {
+            clearTimeout(companyTimeoutRef.current);
+        }
+        setCompanyMenuOpen(true);
+    };
+
+    const handleCompanyMenuLeave = () => {
+        companyTimeoutRef.current = setTimeout(() => {
+            setCompanyMenuOpen(false);
+        }, 300); // 300ms delay before closing
+    };
+
+    const handleEngineMenuEnter = () => {
+        if (engineTimeoutRef.current) {
+            clearTimeout(engineTimeoutRef.current);
+        }
+        setEngineMenuOpen(true);
+    };
+
+    const handleEngineMenuLeave = () => {
+        engineTimeoutRef.current = setTimeout(() => {
+            setEngineMenuOpen(false);
+        }, 300); // 300ms delay before closing
+    };
+
+    const handleResourcesMenuEnter = () => {
+        if (resourcesTimeoutRef.current) {
+            clearTimeout(resourcesTimeoutRef.current);
+        }
+        setResourcesMenuOpen(true);
+    };
+
+    const handleResourcesMenuLeave = () => {
+        resourcesTimeoutRef.current = setTimeout(() => {
+            setResourcesMenuOpen(false);
+        }, 300);
+    };
+
     return (
         <Dock>
             <nav className="bg-background">
@@ -137,8 +181,8 @@ export function Navbar() {
                                     />
                                 </button>
                                 <div
-                                    onMouseEnter={() => setCompanyMenuOpen(true)}
-                                    onMouseLeave={() => setCompanyMenuOpen(false)}
+                                    onMouseEnter={handleCompanyMenuEnter}
+                                    onMouseLeave={handleCompanyMenuLeave}
                                 >
                                     <Link
                                         href="/"
@@ -178,8 +222,8 @@ export function Navbar() {
 
                         <div className="hidden md:flex items-center space-x-6">
                             <div
-                                onMouseEnter={() => setEngineMenuOpen(true)}
-                                onMouseLeave={() => setEngineMenuOpen(false)}
+                                onMouseEnter={handleEngineMenuEnter}
+                                onMouseLeave={handleEngineMenuLeave}
                             >
                                 <Link
                                     href="/"
@@ -194,14 +238,19 @@ export function Navbar() {
                             >
                                 {t(currentLanguage, 'navbar.community')}
                             </Link>
-                            <Link
-                                href="https://developers.psychoroid.com"
-                                className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <div
+                                onMouseEnter={handleResourcesMenuEnter}
+                                onMouseLeave={handleResourcesMenuLeave}
                             >
-                                {t(currentLanguage, 'navbar.resources')}
-                            </Link>
+                                <Link
+                                    href="https://developers.psychoroid.com"
+                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {t(currentLanguage, 'navbar.resources')}
+                                </Link>
+                            </div>
                             <Link
                                 href="/pricing"
                                 className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
@@ -229,17 +278,40 @@ export function Navbar() {
 
                     <AnimatePresence>
                         {companyMenuOpen && (
-                            <DockDropdown isOpen={companyMenuOpen}>
-                                <CompanyDropdown />
-                            </DockDropdown>
+                            <div
+                                onMouseEnter={handleCompanyMenuEnter}
+                                onMouseLeave={handleCompanyMenuLeave}
+                            >
+                                <DockDropdown isOpen={companyMenuOpen}>
+                                    <CompanyDropdown />
+                                </DockDropdown>
+                            </div>
                         )}
                     </AnimatePresence>
 
                     <AnimatePresence>
                         {engineMenuOpen && (
-                            <DockDropdown isOpen={engineMenuOpen}>
-                                <EngineDropdown />
-                            </DockDropdown>
+                            <div
+                                onMouseEnter={handleEngineMenuEnter}
+                                onMouseLeave={handleEngineMenuLeave}
+                            >
+                                <DockDropdown isOpen={engineMenuOpen}>
+                                    <EngineDropdown />
+                                </DockDropdown>
+                            </div>
+                        )}
+                    </AnimatePresence>
+
+                    <AnimatePresence>
+                        {resourcesMenuOpen && (
+                            <div
+                                onMouseEnter={handleResourcesMenuEnter}
+                                onMouseLeave={handleResourcesMenuLeave}
+                            >
+                                <DockDropdown isOpen={resourcesMenuOpen}>
+                                    <ResourcesDropdown />
+                                </DockDropdown>
+                            </div>
                         )}
                     </AnimatePresence>
 
@@ -280,14 +352,19 @@ export function Navbar() {
                             >
                                 {t(currentLanguage, 'navbar.community')}
                             </Link>
-                            <Link
-                                href="https://developers.psychoroid.com"
-                                className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <div
+                                onMouseEnter={handleResourcesMenuEnter}
+                                onMouseLeave={handleResourcesMenuLeave}
                             >
-                                {t(currentLanguage, 'navbar.resources')}
-                            </Link>
+                                <Link
+                                    href="https://developers.psychoroid.com"
+                                    className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {t(currentLanguage, 'navbar.resources')}
+                                </Link>
+                            </div>
                             <Link
                                 href="/pricing"
                                 className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"

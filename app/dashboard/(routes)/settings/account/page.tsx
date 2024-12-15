@@ -10,6 +10,8 @@ import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
+import { HelpCircle } from 'lucide-react'
+import Link from 'next/link'
 
 export default function AccountSettings() {
     const { user } = useUser()
@@ -228,7 +230,7 @@ export default function AccountSettings() {
                 <div className="p-6">
                     <div className="flex flex-col gap-4">
                         <div>
-                            <h3 className="text-lg font-semibold text-red-500">Danger Zone</h3>
+                            <h3 className="text-lg font-semibold text-red-500">Danger zone</h3>
                             <p className="text-sm text-muted-foreground mt-1">
                                 Once you delete your account, there is no going back as we can&apos;t recover your data. Please be sure you want to do this.
                             </p>
@@ -243,7 +245,7 @@ export default function AccountSettings() {
                                     className="rounded-none bg-red-500 hover:bg-red-600"
                                     onClick={() => setIsDialogOpen(true)}
                                 >
-                                    Delete account
+                                    I want to delete my account
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent className="rounded-none">
@@ -254,10 +256,10 @@ export default function AccountSettings() {
                                             This action cannot be undone. This will:
                                         </AlertDialogDescription>
                                         <ul className="list-disc list-inside space-y-1">
-                                            <li>Permanently delete your account</li>
-                                            <li>Delete all your products and assets</li>
-                                            <li>Cancel any active subscriptions</li>
-                                            <li>Remove all your data from our servers</li>
+                                            <li>Permanently delete your account.</li>
+                                            <li>Delete all your products and assets.</li>
+                                            <li>Cancel any active subscriptions.</li>
+                                            <li>Remove all your data from our servers.</li>
                                         </ul>
                                         {showConfirmInput && (
                                             <div className="mt-4 space-y-2">
@@ -329,7 +331,7 @@ export default function AccountSettings() {
             <Card className="border border-border rounded-none bg-card">
                 <div className="p-6 space-y-6">
                     <div className="grid gap-2 max-w-md">
-                        <div className="space-y-2">
+                        <div className="space-y-2 mb-4">
                             <div className="flex gap-4">
                                 <div className="grid gap-2 w-1/2">
                                     <label className="text-sm font-medium">First name</label>
@@ -353,12 +355,12 @@ export default function AccountSettings() {
 
                             {isOAuthUser && (
                                 <p className="text-xs text-muted-foreground">
-                                    Name managed by {user?.app_metadata?.provider === 'github' ? 'Github' : 'Google'}
+                                    Name managed by {user?.app_metadata?.provider === 'github' ? 'Github' : 'Google'}. Cannot be changed.
                                 </p>
                             )}
                         </div>
 
-                        <div className="grid gap-2">
+                        <div className="grid gap-2 mb-4">
                             <label className="text-sm font-medium">Email</label>
                             <Input
                                 type="email"
@@ -374,7 +376,7 @@ export default function AccountSettings() {
                             </p>
                         </div>
 
-                        <div className="grid gap-2">
+                        <div className="grid gap-2 mb-4">
                             <label className="text-sm font-medium">Organization</label>
                             <Input
                                 value={formData.company}
@@ -387,7 +389,7 @@ export default function AccountSettings() {
                             </p>
                         </div>
 
-                        <div className="grid gap-2">
+                        <div className="grid gap-2 mb-4">
                             <label className="text-sm font-medium">Username</label>
                             <div className="relative max-w-md">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -411,7 +413,7 @@ export default function AccountSettings() {
                                 value={formData.birthdate}
                                 onChange={(e) => {
                                     const formatted = formatDateInput(e.target.value)
-                                    if (formatted.length <= 10) { // Prevent input longer than DD/MM/YYYY
+                                    if (formatted.length <= 10) {
                                         setFormData({ ...formData, birthdate: formatted })
                                     }
                                 }}
@@ -421,10 +423,30 @@ export default function AccountSettings() {
                             />
                         </div>
 
+                        <div className="flex items-start gap-2 mt-6 pb-6 border-b border-border">
+                            <HelpCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
+                            <p className="text-xs text-muted-foreground">
+                                If you need assistance to update these information you can{' '}
+                                <a
+                                    href="mailto:dev@psychoroid.com"
+                                    className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-500"
+                                >
+                                    contact us
+                                </a>
+                                {' '}or{' '}
+                                <Link
+                                    href="/dashboard/settings/support"
+                                    className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-500"
+                                >
+                                    submit a ticket.
+                                </Link>
+                            </p>
+                        </div>
+
                         <Button
                             onClick={handleUpdateProfile}
                             disabled={isLoading}
-                            className="rounded-none bg-blue-500 hover:bg-blue-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
+                            className="rounded-none bg-emerald-500 hover:bg-emerald-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
                         >
                             {isLoading ? 'Updating...' : 'Update'}
                         </Button>
