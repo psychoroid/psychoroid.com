@@ -33,7 +33,7 @@ const CustomSelect = ({ value, onChange, options }: CustomSelectProps) => {
     return (
         <div ref={selectRef} className="relative w-fit">
             <div
-                className="bg-background text-foreground p-2 cursor-pointer border border-input rounded-none text-sm min-w-[160px]"
+                className="bg-background text-foreground p-2 cursor-pointer border border-input rounded-none text-sm min-w-[140px]"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {value ? options.find((opt: SelectOption) => opt.value === value)?.label : 'Select a category'}

@@ -32,14 +32,14 @@ export function QuickActions() {
             description: 'Learn how to leverage our API',
             icon: BookOpen,
             onClick: () => window.open('https://developers.psychoroid.com', '_blank'),
-            color: 'text-teal-500 dark:text-teal-400'
+            color: 'text-[#D73D57]'
         },
         {
             label: 'Support',
             description: 'Get fast assistance on any issues',
             icon: HelpCircle,
             onClick: () => router.push('/dashboard/settings/support'),
-            color: 'text-amber-500 dark:text-amber-400'
+            color: 'text-cyan-500 dark:text-cyan-400'
         }
     ]
 

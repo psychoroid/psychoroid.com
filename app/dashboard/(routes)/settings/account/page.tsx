@@ -426,17 +426,14 @@ export default function AccountSettings() {
                         <div className="flex items-start gap-2 mt-6 pb-6 border-b border-border">
                             <HelpCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
                             <p className="text-xs text-muted-foreground">
-                                If you need assistance to update these information you can{' '}
-                                <a
-                                    href="mailto:dev@psychoroid.com"
-                                    className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-500"
-                                >
-                                    contact us
-                                </a>
+                                If you need assistance to update these information you can contact{' '}
+                                <span className="text-[#D73D57]">
+                                    dev@psychoroid.com
+                                </span>
                                 {' '}or{' '}
                                 <Link
                                     href="/dashboard/settings/support"
-                                    className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-500"
+                                    className="text-[#D73D57] hover:text-[#D73D57]/80"
                                 >
                                     submit a ticket.
                                 </Link>

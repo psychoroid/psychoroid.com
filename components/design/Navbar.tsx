@@ -203,7 +203,7 @@ export function Navbar() {
                                     </div>
                                     <Link
                                         href="/dashboard"
-                                        className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium ml-3 translate-y-[2px]"
+                                        className="text-zinc-400 hover:text-zinc-200 transition-colors text-xs font-medium ml-3 translate-y-[2px]"
                                     >
                                         {t(currentLanguage, 'navbar.dashboard')}
                                     </Link>
@@ -241,10 +241,11 @@ export function Navbar() {
                             <div
                                 onMouseEnter={handleResourcesMenuEnter}
                                 onMouseLeave={handleResourcesMenuLeave}
+                                className="translate-y-[1px]"
                             >
                                 <Link
                                     href="https://developers.psychoroid.com"
-                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
+                                    className="text-zinc-400 hover:text-zinc-200 transition-colors text-xs font-medium"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -253,7 +254,7 @@ export function Navbar() {
                             </div>
                             <Link
                                 href="/pricing"
-                                className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
+                                className="text-orange-400 hover:text-orange-300 transition-colors text-xs font-medium translate-y-[2px]"
                             >
                                 {t(currentLanguage, 'navbar.pricing')}
                             </Link>
@@ -261,14 +262,14 @@ export function Navbar() {
                             {session ? (
                                 <button
                                     onClick={handleSignOut}
-                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
+                                    className="text-zinc-400 hover:text-zinc-200 transition-colors text-xs font-medium translate-y-[2px]"
                                 >
                                     {t(currentLanguage, 'navbar.sign_out')}
                                 </button>
                             ) : (
                                 <Link
                                     href="/auth/sign-in"
-                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
+                                    className="text-zinc-400 hover:text-zinc-200 transition-colors text-xs font-medium translate-y-[2px]"
                                 >
                                     {t(currentLanguage, 'navbar.sign_in')}
                                 </Link>

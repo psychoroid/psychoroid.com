@@ -11,28 +11,28 @@ const settingsNavItems = [
         href: '/dashboard/settings/account',
         description: 'Manage your personal data',
         icon: UserCircle,
-        color: 'text-rose-500 dark:text-rose-400'
+        color: 'text-foreground'
     },
     {
         title: 'Billing',
         href: '/dashboard/settings/billing',
         description: 'Manage your subscription and payments',
         icon: CreditCard,
-        color: 'text-indigo-500 dark:text-indigo-400'
+        color: 'text-purple-500 dark:text-purple-400'
     },
     {
         title: 'API',
         href: '/dashboard/settings/api',
         description: 'Integration settings',
         icon: Key,
-        color: 'text-emerald-500 dark:text-emerald-400'
+        color: 'text-[#D73D57]'
     },
     {
         title: 'Support',
         href: '/dashboard/settings/support',
         description: 'Get help and contact us',
         icon: HelpCircle,
-        color: 'text-amber-500 dark:text-amber-400'
+        color: 'text-cyan-500 dark:text-cyan-400'
     }
 ]
 
