@@ -1,3 +1,5 @@
+import { useTranslation } from '@/lib/contexts/TranslationContext';
+import { t } from '@/lib/i18n/translations';
 import Link from 'next/link';
 import {
     FileText,
@@ -10,6 +12,8 @@ import {
 import Globe, { GLOBE_CONFIG } from '@/components/ui/magic/globe';
 
 export function ResourcesDropdown() {
+    const { currentLanguage } = useTranslation();
+
     return (
         <div className="w-fit min-w-[220px] py-2 relative">
             <div className="flex items-start">
@@ -19,42 +23,42 @@ export function ResourcesDropdown() {
                         className="text-xs text-muted-foreground hover:text-[#D73D57] transition-colors flex items-center gap-2 px-4 py-1.5"
                     >
                         <Github className="h-4 w-4 text-foreground" />
-                        Open Source
+                        {t(currentLanguage, 'dropdowns.resources.open_source')}
                     </Link>
                     <Link
                         href="https://developers.psychoroid.com/docs"
                         className="text-xs text-muted-foreground hover:text-[#D73D57] transition-colors flex items-center gap-2 px-4 py-1.5"
                     >
                         <FileText className="h-4 w-4 text-[#D73D57]" />
-                        Documentation
+                        {t(currentLanguage, 'dropdowns.resources.documentation')}
                     </Link>
                     <Link
                         href="https://developers.psychoroid.com/engine"
                         className="text-xs text-muted-foreground hover:text-[#D73D57] transition-colors flex items-center gap-2 px-4 py-1.5"
                     >
                         <Cpu className="h-4 w-4 text-purple-500" />
-                        Engine
+                        {t(currentLanguage, 'dropdowns.resources.engine')}
                     </Link>
                     <Link
                         href="https://developers.psychoroid.com/community"
                         className="text-xs text-muted-foreground hover:text-[#D73D57] transition-colors flex items-center gap-2 px-4 py-1.5"
                     >
                         <Users className="h-4 w-4 text-cyan-500" />
-                        Join the community
+                        {t(currentLanguage, 'dropdowns.resources.join_community')}
                     </Link>
                     <Link
                         href="https://developers.psychoroid.com/integrations"
                         className="text-xs text-muted-foreground hover:text-[#D73D57] transition-colors flex items-center gap-2 px-4 py-1.5"
                     >
                         <AppWindow className="h-4 w-4 text-blue-500 dark:text-blue-400" />
-                        Integrations [Coming soon]
+                        {t(currentLanguage, 'dropdowns.resources.integrations')}
                     </Link>
                     <Link
                         href="https://developers.psychoroid.com/components"
                         className="text-xs text-muted-foreground hover:text-[#D73D57] transition-colors flex items-center gap-2 px-4 py-1.5"
                     >
                         <Boxes className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-                        Boilerplates [Coming soon]
+                        {t(currentLanguage, 'dropdowns.resources.boilerplates')}
                     </Link>
                 </div>
 

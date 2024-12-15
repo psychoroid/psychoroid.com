@@ -307,5 +307,25 @@
         }
       }
     }
+  },
+  "dropdowns": {
+    "psychoroid": {
+      "description": "psychoroid.com es un programa de inteligencia artificial avanzado que crea modelos 3D a partir de texto e imágenes en ~20 segundos. Las mallas generadas están completamente optimizadas para su uso inmediato en desarrollo de juegos, comercio electrónico y flujos de trabajo de fabricación.",
+      "overview": "Descripción general",
+      "features": "Características"
+    },
+    "engine": {
+      "instant_conversion": "Conversión instantánea de 2D a 3D de alta calidad",
+      "processing_power": "Potencia de procesamiento empresarial",
+      "export": "Exportación y optimización multiformato"
+    },
+    "resources": {
+      "open_source": "Código abierto",
+      "documentation": "Documentación",
+      "engine": "Motor",
+      "join_community": "Unirse a la comunidad",
+      "integrations": "Integraciones [Próximamente]",
+      "boilerplates": "Plantillas [Próximamente]"
+    }
   }
 }

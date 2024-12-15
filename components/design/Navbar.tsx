@@ -11,12 +11,12 @@ import { useUser } from '@/lib/contexts/UserContext';
 import { Coins, Menu } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { DockDropdown } from './DockDropdown';
-import { CompanyDropdown } from './dropdowns/CompanyDropdown';
+import { CompanyDropdown } from './dropdowns/PsychoroidDropdown';
 import { EngineDropdown } from './dropdowns/EngineDropdown';
 import { getLocalStorageItem, setLocalStorageItem, clearAuthState } from '@/lib/utils/localStorage';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
-import { ResourcesDropdown } from './dropdowns/ResourcesDropdown';
+import { ResourcesDropdown } from './dropdowns/DevelopersDropdown';
 
 export function Navbar() {
     const router = useRouter();

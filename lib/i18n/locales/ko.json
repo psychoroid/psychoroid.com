@@ -154,7 +154,7 @@
       },
       "rules": {
         "title": "이용 규칙",
-        "content": "서비스 오용, 악성 콘텐츠 업로드, 무단 접근 시도를 하지 않을 것에 동의합니다. 이 약관을 위반하는 나 사기 활동에 관여하는 계정��� 정지할 권리가 있습니다."
+        "content": "서비스 오용, 악성 콘텐츠 업로드, 무단 접근 시도를 하지 않을 것에 동의합니다. 이 약관을 위반하는 나 사기 활동에 관여하는 계정 정지할 권리가 있습니다."
       },
       "changes": {
         "title": "서비스 변경",
@@ -188,7 +188,7 @@
       "password_placeholder": "비밀번호**",
       "forgot_password": "비밀번호를 잊으셨나요?",
       "connect_button": "로그인",
-      "processing": "처리 중...",
+      "processing": "처리 ��...",
       "or_continue": "또는 다음으로 계속",
       "google": "Google",
       "github": "GitHub",
@@ -306,6 +306,26 @@
           "description": "비밀번호 재설정 중 문제가 발생했습니다. 다시 시도해 주세요."
         }
       }
+    }
+  },
+  "dropdowns": {
+    "psychoroid": {
+      "description": "psychoroid.com은 텍스트와 이미지 프롬프트에서 약 20초 만에 3D 모델을 만드는 고급 인공지능 프로그램입니다. 생성된 메시는 게임 개발, 전자상거래 및 제조 워크플로우에서 즉시 사용할 수 있도록 완전히 최적화되어 있습니다.",
+      "overview": "개요",
+      "features": "기능"
+    },
+    "engine": {
+      "instant_conversion": "고품질 2D에서 3D로 즉시 변환",
+      "processing_power": "기업급 처리 능력",
+      "export": "다중 형식 내보내기 및 최적화"
+    },
+    "resources": {
+      "open_source": "오픈 소스",
+      "documentation": "문서",
+      "engine": "엔진",
+      "join_community": "커뮤니티 참여",
+      "integrations": "통합 [출시 예정]",
+      "boilerplates": "보일러플레이트 [출시 예정]"
     }
   }
 }
