@@ -59,7 +59,7 @@ export default function BillingSettings() {
     const handleManageSubscription = async () => {
         setIsLoading(true)
         try {
-            const response = await fetch('/api/create-portal-session', {
+            const response = await fetch('/api/stripe/portal', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export default function BillingSettings() {
 
         setIsLoading(true);
         try {
-            const response = await fetch('/api/create-portal-session', {
+            const response = await fetch('/api/stripe/portal', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

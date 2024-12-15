@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     icons: {
         icon: [
             { url: '/favicon.ico' },
-            { url: '/main.png' },
+            { url: '/psychoroid.png' },
         ],
         apple: [
             { url: '/psychoroid.png' },

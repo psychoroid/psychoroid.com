@@ -26,7 +26,7 @@ export default function RoidsPurchase() {
 
         try {
             setIsLoading(true)
-            const response = await fetch('/api/create-checkout-session', {
+            const response = await fetch('/api/stripe/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

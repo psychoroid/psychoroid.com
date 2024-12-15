@@ -145,7 +145,7 @@ export default function PricingPage() {
 
             console.log('Package name:', packageName);
 
-            const response = await fetch('/api/create-checkout-session', {
+            const response = await fetch('/api/stripe/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -190,7 +190,7 @@ export default function PricingPage() {
 
         try {
             setLoadingPlan('custom');
-            const response = await fetch('/api/create-checkout-session', {
+            const response = await fetch('/api/stripe/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

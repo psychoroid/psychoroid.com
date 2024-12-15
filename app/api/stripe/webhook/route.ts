@@ -11,9 +11,9 @@ type MetadataFields = {
     type: 'subscription' | 'roids_purchase';
     subscription_type?: string;
     roids_amount?: string;
+    plan?: string;
 };
 
-// Type guard function to validate metadata
 function hasValidMetadata(metadata: Stripe.Metadata | null): metadata is Stripe.Metadata & MetadataFields {
     if (!metadata) return false;
     
@@ -36,6 +36,8 @@ export async function POST(req: Request) {
             process.env.STRIPE_WEBHOOK_SECRET!
         );
 
+        console.log(`Processing webhook event: ${event.type}`);
+
         switch (event.type) {
             case 'checkout.session.completed': {
                 const session = event.data.object as Stripe.Checkout.Session;
@@ -47,22 +49,69 @@ export async function POST(req: Request) {
                 const metadata = session.metadata;
 
                 if (metadata.type === 'subscription') {
+                    // Add subscription credits
                     await supabase.rpc('add_subscription_credits', {
                         p_user_id: metadata.userId,
-                        p_subscription_type: metadata.subscription_type
+                        p_subscription_type: metadata.plan || metadata.subscription_type
+                    });
+
+                    // Record the transaction
+                    await supabase.from('roids_transactions').insert({
+                        user_id: metadata.userId,
+                        amount: 0, // Or calculate based on subscription type
+                        transaction_type: 'subscription',
+                        stripe_session_id: session.id,
+                        description: `Subscription started: ${metadata.plan || metadata.subscription_type}`
                     });
                 } else if (metadata.type === 'roids_purchase' && metadata.roids_amount) {
+                    const amount = parseInt(metadata.roids_amount);
+                    
+                    // Add ROIDS
                     await supabase.rpc('add_roids', {
                         p_user_id: metadata.userId,
-                        p_amount: parseInt(metadata.roids_amount)
+                        p_amount: amount
+                    });
+
+                    // Record the transaction
+                    await supabase.from('roids_transactions').insert({
+                        user_id: metadata.userId,
+                        amount: amount,
+                        transaction_type: 'purchase',
+                        stripe_session_id: session.id,
+                        description: `Purchased ${amount} ROIDS`
                     });
                 }
+                break;
+            }
+
+            case 'checkout.session.expired': {
+                const session = event.data.object as Stripe.Checkout.Session;
+                console.log('Handling expired session:', session.id);
+                
+                if (!session.metadata?.userId) {
+                    console.log('No userId in expired session metadata');
+                    break;
+                }
+
+                // Record the expired transaction
+                await supabase.from('roids_transactions').insert({
+                    user_id: session.metadata.userId,
+                    amount: 0,
+                    transaction_type: 'purchase',
+                    stripe_session_id: session.id,
+                    description: 'Checkout session expired'
+                });
                 break;
             }
 
             case 'customer.subscription.deleted': {
                 const subscription = event.data.object as Stripe.Subscription;
                 
+                if (!subscription.metadata.user_id) {
+                    console.error('No user_id in subscription metadata:', subscription.id);
+                    break;
+                }
+
                 // Handle prorated refund
                 const canceledAt = subscription.canceled_at;
                 const currentPeriodEnd = subscription.current_period_end;
@@ -84,7 +133,6 @@ export async function POST(req: Request) {
                     }
                 }
 
-                // Update user subscription status
                 await supabase.rpc('update_subscription_status', {
                     p_user_id: subscription.metadata.user_id,
                     p_subscription_id: null,
@@ -108,21 +156,29 @@ export async function POST(req: Request) {
                 break;
             }
 
-            case 'charge.refunded': {
-                // Handle refunds if implemented
-                break;
-            }
-
             default:
                 console.log(`Unhandled event type: ${event.type}`);
         }
 
-        return new Response(JSON.stringify({ received: true }));
+        return new Response(JSON.stringify({ received: true }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     } catch (error) {
         console.error('Webhook error:', error);
         return new Response(
-            JSON.stringify({ error: 'Webhook handler failed' }), 
-            { status: 400 }
+            JSON.stringify({ 
+                error: 'Webhook handler failed',
+                message: error instanceof Error ? error.message : 'Unknown error'
+            }), 
+            { 
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
         );
     }
 } 
