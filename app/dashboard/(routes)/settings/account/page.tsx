@@ -377,19 +377,6 @@ export default function AccountSettings() {
                         </div>
 
                         <div className="grid gap-2 mb-4">
-                            <label className="text-sm font-medium">Organization</label>
-                            <Input
-                                value={formData.company}
-                                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                                className="max-w-md rounded-none"
-                                placeholder="Your organization name"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                This will be used for billing purposes.
-                            </p>
-                        </div>
-
-                        <div className="grid gap-2 mb-4">
                             <label className="text-sm font-medium">Username</label>
                             <div className="relative max-w-md">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -404,6 +391,19 @@ export default function AccountSettings() {
                             </div>
                             <p className="text-xs text-muted-foreground">
                                 Your unique username on the platform.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-2 mb-4">
+                            <label className="text-sm font-medium">Organization</label>
+                            <Input
+                                value={formData.company}
+                                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                className="max-w-md rounded-none"
+                                placeholder="Your organization name"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                This will be used for billing purposes.
                             </p>
                         </div>
 
@@ -427,13 +427,13 @@ export default function AccountSettings() {
                             <HelpCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
                             <p className="text-xs text-muted-foreground">
                                 If you need assistance to update these information you can contact{' '}
-                                <span className="text-[#D73D57]">
+                                <span className="text-blue-500 hover:text-blue-600">
                                     dev@psychoroid.com
                                 </span>
                                 {' '}or{' '}
                                 <Link
                                     href="/dashboard/settings/support"
-                                    className="text-[#D73D57] hover:text-[#D73D57]/80"
+                                    className="text-blue-500 hover:text-blue-600"
                                 >
                                     submit a ticket.
                                 </Link>

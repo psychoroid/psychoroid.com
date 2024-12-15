@@ -58,7 +58,7 @@ DECLARE
         'magnificent', 'distinguished', 'awesome', 'brilliant', 'cosmic',
         'legendary', 'mysterious', 'noble', 'radiant', 'spectacular',
         'majestic', 'fantastic', 'incredible', 'supreme', 'stellar',
-        'mighty', 'epic', 'grand', 'heroic', 'phenomenal',
+        'mighty', 'epic', 'grand', 'heroic', 'phenomenal', 'space',
         'esteemed', 'exceptional', 'preferred', 'honored', 'respected',
         'prestigious', 'elite', 'premium', 'distinguished',
         'glorious', 'illustrious', 'eminent', 'notable', 'venerable',
@@ -72,7 +72,7 @@ DECLARE
     ];
     nouns TEXT[] := ARRAY[
         'user', 'master', 'phoenix', 'dragon', 'sage', 'pioneer',
-        'titan', 'explorer', 'genius',
+        'titan', 'explorer', 'genius', 'adventurer',
         'goat', 'boss', 'chief', 'captain', 'hero',
         'bigdawg', 'broski', 'client', 'patron', 'anon',
         'member', 'customer', 'vip', 'ace', 'maestro', 'A-player',
@@ -93,7 +93,7 @@ DECLARE
     ];
     suffixes TEXT[] := ARRAY[
         'oftheuniverse', 'supreme', 'prime', 'elite', 'pro',
-        'master', 'expert', 'guru', 'wizard', 'sage',
+        'master', 'expert', 'guru', 'wizard', 'sage', 'cobra',
         'legend', 'goat', 'boss', 'king', 'queen', 'of-the-world', 
         'of-the-universe', 'of-the-galaxy', 'of-the-multiverse', '-san'
     ];

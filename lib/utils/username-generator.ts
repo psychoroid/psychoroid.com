@@ -1,7 +1,7 @@
 const adjectives = [
     'magnificent', 'distinguished', 'awesome', 'brilliant', 'cosmic',
     'legendary', 'mysterious', 'noble', 'radiant', 'spectacular',
-    'majestic', 'fantastic', 'incredible', 'supreme', 'stellar',
+    'majestic', 'fantastic', 'incredible', 'supreme', 'space','stellar',
     'mighty', 'epic', 'grand', 'heroic', 'phenomenal',
     'esteemed', 'exceptional', 'preferred', 'honored', 'respected',
     'prestigious', 'elite', 'premium', 'distinguished',
@@ -15,7 +15,7 @@ const adjectives = [
 
 const nouns = [
     'user', 'master','phoenix', 'dragon', 'sage', 'pioneer',
-    'titan', 'explorer', 'genius',
+    'titan', 'explorer', 'genius', 'adventurer',
     'goat', 'boss', 'chief', 'captain', 'hero',
     'bigdawg', 'broski', 'client', 'patron', 'anon',
     'member', 'customer', 'vip', 'ace', 'maestro', 'A-player',
@@ -38,7 +38,7 @@ const prefixes = [
 
 const suffixes = [
     'oftheuniverse', 'supreme', 'prime', 'elite', 'pro',
-    'master', 'expert', 'guru', 'wizard', 'sage',
+    'master', 'expert', 'guru', 'wizard', 'sage', 'cobra',
     'legend', 'goat', 'boss', 'king', 'queen', 'of-the-world', 'of-the-universe', 'of-the-galaxy', 'of-the-multiverse', 'of-the-multiverse', '-san'
 ]
 

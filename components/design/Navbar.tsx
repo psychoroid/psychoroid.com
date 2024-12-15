@@ -291,19 +291,6 @@ export function Navbar() {
                     </AnimatePresence>
 
                     <AnimatePresence>
-                        {engineMenuOpen && (
-                            <div
-                                onMouseEnter={handleEngineMenuEnter}
-                                onMouseLeave={handleEngineMenuLeave}
-                            >
-                                <DockDropdown isOpen={engineMenuOpen}>
-                                    <EngineDropdown />
-                                </DockDropdown>
-                            </div>
-                        )}
-                    </AnimatePresence>
-
-                    <AnimatePresence>
                         {resourcesMenuOpen && (
                             <div
                                 onMouseEnter={handleResourcesMenuEnter}
@@ -318,7 +305,7 @@ export function Navbar() {
 
                     <div
                         ref={menuRef}
-                        className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} pt-6 pb-4 border-t border-border mt-3`}
+                        className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} pt-6 pb-4 border-t border-border mt-0`}
                     >
                         <div className="flex flex-col space-y-5">
                             {session && (

@@ -289,7 +289,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
           />
         </label>
         <div className="mt-2 mb-4 flex justify-end">
-          <p className="text-xs text-gray-500">
+          <p className="text-gray-300 text-xs mb-2 py-1">
             Supported formats: JPG, PNG [max 5MB each]
           </p>
         </div>
