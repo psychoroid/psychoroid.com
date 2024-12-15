@@ -7,7 +7,7 @@ import { useUser } from '@/lib/contexts/UserContext';
 import { useEffect, useRef } from 'react';
 
 const baseUrl = process.env.NODE_ENV === 'production'
-    ? 'https://psychoroid.com'
+    ? 'https://www.psychoroid.com'
     : process.env.NEXT_PUBLIC_APP_URL;
 
 export default function CancelPage() {

@@ -11,7 +11,7 @@ const SUBSCRIPTION_PRICES = {
 };
 
 const baseUrl = process.env.NODE_ENV === 'production' 
-  ? 'https://psychoroid.com'
+  ? 'https://www.psychoroid.com'
   : process.env.NEXT_PUBLIC_APP_URL;
 
 export async function POST(req: Request) {
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
           }
         });
       } catch (stripeError) {
-        console.error('Stripe session creation error:', stripeError);
+        console.error('❌ Stripe session creation error:', stripeError);
         throw stripeError;
       }
     }
@@ -132,4 +132,6 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-} 
+}
+
+export const runtime = 'edge';

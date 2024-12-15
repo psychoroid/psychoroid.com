@@ -32,7 +32,7 @@ const isSubscriber = async (userId: string) => {
 };
 
 const baseUrl = process.env.NODE_ENV === 'production'
-    ? 'https://psychoroid.com'
+    ? 'https://www.psychoroid.com'
     : process.env.NEXT_PUBLIC_APP_URL;
 
 export default function PricingPage() {

@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 
 const CREDIT_PRICE = 0.01 // $0.01 per credit
 const baseUrl = process.env.NODE_ENV === 'production'
-    ? 'https://psychoroid.com'
+    ? 'https://www.psychoroid.com'
     : process.env.NEXT_PUBLIC_APP_URL
 
 export default function RoidsPurchase() {

@@ -71,6 +71,34 @@ export async function POST(req: Request) {
                 break;
             }
 
+            case 'checkout.session.expired': {
+                const session = event.data.object as Stripe.Checkout.Session;
+                const userId = session.metadata?.userId;
+                
+                console.log('Session expired:', {
+                    sessionId: session.id,
+                    userId,
+                    metadata: session.metadata
+                });
+                
+                if (userId) {
+                    try {
+                        await supabase.from('roids_transactions').insert({
+                            user_id: userId,
+                            amount: 0,
+                            transaction_type: 'expired',
+                            stripe_session_id: session.id,
+                            description: 'Checkout session expired',
+                            status: 'expired'
+                        });
+                        console.log('✅ Recorded expired session:', session.id);
+                    } catch (error) {
+                        console.error('❌ Failed to record expired session:', error);
+                    }
+                }
+                break;
+            }
+
             case 'customer.subscription.deleted': {
                 const subscription = event.data.object as Stripe.Subscription;
                 const userId = subscription.metadata?.user_id;

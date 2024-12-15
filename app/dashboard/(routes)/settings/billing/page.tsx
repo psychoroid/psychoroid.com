@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 
 const baseUrl = process.env.NODE_ENV === 'production'
-    ? 'https://psychoroid.com'
+    ? 'https://www.psychoroid.com'
     : process.env.NEXT_PUBLIC_APP_URL;
 
 interface SubscriptionDetails {
