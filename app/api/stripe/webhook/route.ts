@@ -9,6 +9,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-11-20.acacia'
 });
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+export const runtime = 'edge';
+
 export async function POST(req: Request) {
     try {
         if (req.method !== 'POST') {
@@ -84,14 +92,26 @@ export async function POST(req: Request) {
 
             case 'checkout.session.expired': {
                 const userId = object.metadata.userId;
+                console.log('Session expired:', {
+                    sessionId: object.id,
+                    userId,
+                    metadata: object.metadata
+                });
+                
                 if (userId) {
-                    await supabase.from('roids_transactions').insert({
-                        user_id: userId,
-                        amount: 0,
-                        transaction_type: 'purchase',
-                        stripe_session_id: object.id,
-                        description: 'Checkout session expired'
-                    });
+                    try {
+                        await supabase.from('roids_transactions').insert({
+                            user_id: userId,
+                            amount: 0,
+                            transaction_type: 'purchase',
+                            stripe_session_id: object.id,
+                            description: 'Checkout session expired',
+                            status: 'expired'
+                        });
+                        console.log('Recorded expired session:', object.id);
+                    } catch (error) {
+                        console.error('Failed to record expired session:', error);
+                    }
                 }
                 break;
             }

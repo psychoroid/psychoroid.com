@@ -57,6 +57,10 @@ export async function POST(req: Request) {
             type: 'subscription',
             plan: planName
           },
+          expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+          customer_creation: 'always',
+          allow_promotion_codes: true,
+          automatic_tax: { enabled: false },
         });
       } catch (stripeError) {
         console.error('Stripe session creation error:', stripeError);
