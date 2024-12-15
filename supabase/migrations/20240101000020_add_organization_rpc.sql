@@ -9,10 +9,11 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 BEGIN
-    -- Update the organization in user_roids table
-    UPDATE user_roids
-    SET organization = p_organization
-    WHERE user_id = p_user_id;
+    -- Update the organization in profiles table
+    UPDATE profiles
+    SET organization = p_organization,
+        updated_at = NOW()
+    WHERE id = p_user_id;
 
     -- Update the organization in auth.users metadata
     UPDATE auth.users
@@ -38,7 +39,7 @@ GRANT EXECUTE ON FUNCTION update_user_organization TO authenticated;
 
 -- Add RLS policy for organization updates
 CREATE POLICY "Users can update their own organization"
-    ON user_roids
+    ON profiles
     FOR UPDATE
-    USING (auth.uid() = user_id)
-    WITH CHECK (auth.uid() = user_id); 
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id); 

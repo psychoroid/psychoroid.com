@@ -29,6 +29,7 @@ CREATE TABLE public.profiles (
     email text,
     username text UNIQUE NOT NULL,
     birthdate date,
+    organization text,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
     CONSTRAINT profiles_email_key UNIQUE (email),
@@ -97,7 +98,6 @@ CREATE TABLE user_roids (
     subscription_period_start timestamptz,
     subscription_period_end timestamptz,
     stripe_customer_id text UNIQUE,
-    organization text,
     created_at timestamptz default now(),
     updated_at timestamptz default now(),
     constraint positive_balance check (balance >= 0)

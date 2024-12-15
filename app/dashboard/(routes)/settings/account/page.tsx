@@ -35,7 +35,18 @@ export default function AccountSettings() {
             let firstName = user.user_metadata?.first_name
             let lastName = user.user_metadata?.last_name
 
-            if (!firstName && !lastName && user.user_metadata?.full_name) {
+            // For OAuth users, get name from provider data
+            if (isOAuthUser) {
+                if (user.app_metadata?.provider === 'google') {
+                    firstName = user.user_metadata?.full_name?.split(' ')[0] || firstName
+                    lastName = user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || lastName
+                } else if (user.app_metadata?.provider === 'github') {
+                    firstName = user.user_metadata?.name?.split(' ')[0] || firstName
+                    lastName = user.user_metadata?.name?.split(' ').slice(1).join(' ') || lastName
+                }
+            }
+            // For regular users, try to split full_name if first/last name not available
+            else if (!firstName && !lastName && user.user_metadata?.full_name) {
                 [firstName, lastName] = user.user_metadata.full_name.split(' ')
             }
 
@@ -43,12 +54,37 @@ export default function AccountSettings() {
                 firstName: firstName || '',
                 lastName: lastName || '',
                 email: user.email || '',
-                company: user.user_metadata?.company || '',
+                company: user.user_metadata?.organization || user.user_metadata?.company || '',
                 birthdate: user.user_metadata?.birthdate || '',
                 username: user.user_metadata?.username || ''
             })
+
+            // Fetch additional data from profiles table
+            const fetchProfileData = async () => {
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('organization, birthdate, full_name')
+                    .eq('id', user.id)
+                    .single()
+
+                if (!error && profile) {
+                    // Only update if not OAuth user or fields are empty
+                    if (!isOAuthUser || (!firstName && !lastName && profile.full_name)) {
+                        const [profileFirstName, ...profileLastName] = (profile.full_name || '').split(' ')
+                        setFormData(prev => ({
+                            ...prev,
+                            firstName: prev.firstName || profileFirstName || '',
+                            lastName: prev.lastName || profileLastName.join(' ') || '',
+                            company: profile.organization || prev.company,
+                            birthdate: profile.birthdate ? format(new Date(profile.birthdate), 'dd/MM/yyyy') : prev.birthdate
+                        }))
+                    }
+                }
+            }
+
+            fetchProfileData()
         }
-    }, [user])
+    }, [user, isOAuthUser])
 
     const validateBirthdate = (value: string) => {
         const regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/
@@ -57,6 +93,16 @@ export default function AccountSettings() {
         const [day, month, year] = value.split('/')
         const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
         return date <= new Date() && date.getFullYear() >= 1900
+    }
+
+    const formatDateInput = (value: string) => {
+        // Remove any non-digit characters
+        const numbers = value.replace(/\D/g, '')
+
+        // Format as DD/MM/YYYY
+        if (numbers.length <= 2) return numbers
+        if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`
+        return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`
     }
 
     const handleUpdateProfile = async () => {
@@ -81,19 +127,20 @@ export default function AccountSettings() {
                 })
             }
 
-            // Update user metadata
-            const { error: updateError } = await supabase.auth.updateUser({
-                data: {
-                    first_name: formData.firstName,
-                    last_name: formData.lastName,
-                    full_name: `${formData.firstName} ${formData.lastName}`.trim(),
-                    company: formData.company,
-                    birthdate: formData.birthdate,
-                    username: formData.username
-                }
+            // Update profile details using the new RPC
+            const { error: profileError } = await supabase.rpc('update_user_profile_details', {
+                p_first_name: formData.firstName,
+                p_last_name: formData.lastName,
+                p_birthdate: formData.birthdate,
+                p_organization: formData.company,
+                p_username: formData.username
             })
 
-            if (updateError) throw updateError
+            if (profileError) throw profileError
+
+            // Refresh the session to get updated user data
+            const { data: { session }, error: refreshError } = await supabase.auth.refreshSession()
+            if (refreshError) throw refreshError
 
             if (!isOAuthUser || formData.email === currentEmail) {
                 toast.success('Profile updated successfully')
@@ -282,90 +329,106 @@ export default function AccountSettings() {
             <Card className="border border-border rounded-none bg-card">
                 <div className="p-6 space-y-6">
                     <div className="grid gap-2 max-w-md">
-                        <div className="flex gap-4">
-                            <div className="grid gap-2 w-1/2">
-                                <label className="text-sm font-medium">First name</label>
-                                <Input
-                                    value={formData.firstName}
-                                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                    className="rounded-none"
-                                />
+                        <div className="space-y-2">
+                            <div className="flex gap-4">
+                                <div className="grid gap-2 w-1/2">
+                                    <label className="text-sm font-medium">First name</label>
+                                    <Input
+                                        value={formData.firstName}
+                                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                        className="rounded-none"
+                                        disabled={isOAuthUser}
+                                    />
+                                </div>
+                                <div className="grid gap-2 w-1/2">
+                                    <label className="text-sm font-medium">Last name</label>
+                                    <Input
+                                        value={formData.lastName}
+                                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                        className="rounded-none"
+                                        disabled={isOAuthUser}
+                                    />
+                                </div>
                             </div>
-                            <div className="grid gap-2 w-1/2">
-                                <label className="text-sm font-medium">Last name</label>
-                                <Input
-                                    value={formData.lastName}
-                                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                    className="rounded-none"
-                                />
-                            </div>
+
+                            {isOAuthUser && (
+                                <p className="text-xs text-muted-foreground">
+                                    Name managed by {user?.app_metadata?.provider === 'github' ? 'Github' : 'Google'}
+                                </p>
+                            )}
                         </div>
-                    </div>
 
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">Email</label>
-                        <Input
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="max-w-md rounded-none"
-                            disabled={isOAuthUser}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            {isOAuthUser
-                                ? `Email managed by ${user?.app_metadata?.provider === 'github' ? 'Github' : 'Google'}. Cannot be changed.`
-                                : 'This will be used for notifications and login.'}
-                        </p>
-                    </div>
-
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">Organization</label>
-                        <Input
-                            value={formData.company}
-                            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                            className="max-w-md rounded-none"
-                            placeholder="Your organization name"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            This will be used for billing purposes.
-                        </p>
-                    </div>
-
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">Username</label>
-                        <div className="relative max-w-md">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                @
-                            </span>
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Email</label>
                             <Input
-                                value={formData.username}
-                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                                className="pl-8 rounded-none"
-                                placeholder="your-username"
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="max-w-md rounded-none"
+                                disabled={isOAuthUser}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                {isOAuthUser
+                                    ? `Email managed by ${user?.app_metadata?.provider === 'github' ? 'Github' : 'Google'}. Cannot be changed.`
+                                    : 'This will be used for notifications and login.'}
+                            </p>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Organization</label>
+                            <Input
+                                value={formData.company}
+                                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                className="max-w-md rounded-none"
+                                placeholder="Your organization name"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                This will be used for billing purposes.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Username</label>
+                            <div className="relative max-w-md">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                    @
+                                </span>
+                                <Input
+                                    value={formData.username}
+                                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                    className="pl-8 rounded-none"
+                                    placeholder="your-username"
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Your unique username on the platform.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Birthdate</label>
+                            <Input
+                                value={formData.birthdate}
+                                onChange={(e) => {
+                                    const formatted = formatDateInput(e.target.value)
+                                    if (formatted.length <= 10) { // Prevent input longer than DD/MM/YYYY
+                                        setFormData({ ...formData, birthdate: formatted })
+                                    }
+                                }}
+                                className="max-w-md rounded-none"
+                                placeholder="DD/MM/YYYY"
+                                maxLength={10}
                             />
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                            Your unique username on the platform.
-                        </p>
-                    </div>
 
-                    <div className="grid gap-2">
-                        <label className="text-sm font-medium">Birthdate</label>
-                        <Input
-                            value={formData.birthdate}
-                            onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })}
-                            className="max-w-md rounded-none"
-                            placeholder="DD/MM/YYYY"
-                        />
+                        <Button
+                            onClick={handleUpdateProfile}
+                            disabled={isLoading}
+                            className="rounded-none bg-blue-500 hover:bg-blue-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
+                        >
+                            {isLoading ? 'Updating...' : 'Update'}
+                        </Button>
                     </div>
-
-                    <Button
-                        onClick={handleUpdateProfile}
-                        disabled={isLoading}
-                        className="rounded-none bg-blue-500 hover:bg-blue-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
-                    >
-                        {isLoading ? 'Updating...' : 'Update'}
-                    </Button>
                 </div>
             </Card>
 

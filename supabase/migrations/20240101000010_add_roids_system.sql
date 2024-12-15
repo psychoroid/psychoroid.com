@@ -158,6 +158,8 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_username TEXT;
     v_full_name TEXT;
+    v_product_id UUID;
+    v_model_path TEXT;
 BEGIN
     -- Get or generate full name
     v_full_name := COALESCE(
@@ -169,52 +171,100 @@ BEGIN
     -- Generate username
     v_username := generate_random_username();
 
-    -- First, create the profile
-    INSERT INTO public.profiles (
-        id,
-        full_name,
-        email,
-        username,
-        created_at,
-        updated_at
-    )
-    VALUES (
-        NEW.id,
-        v_full_name,
-        NEW.email,
-        v_username,
-        NEW.created_at,
-        NEW.created_at
-    );
+    -- Set up storage path - reference the default-assets bucket
+    v_model_path := 'default-assets/default-model.glb';
 
-    -- Then, create user_roids entry
-    INSERT INTO user_roids (
-        user_id,
-        balance,
-        subscription_type,
-        is_subscribed,
-        subscription_status,
-        created_at,
-        updated_at
-    ) VALUES (
-        NEW.id,
-        200,
-        'free'::subscription_type_enum,
-        false,
-        'unpaid'::subscription_status_enum,
-        NEW.created_at,
-        NEW.created_at
-    );
-
-    -- Update user metadata
-    UPDATE auth.users 
-    SET raw_user_meta_data = 
-        COALESCE(raw_user_meta_data, '{}'::jsonb) || 
-        jsonb_build_object(
-            'username', v_username,
-            'full_name', v_full_name
+    -- First, create the profile with error handling
+    BEGIN
+        INSERT INTO public.profiles (
+            id,
+            full_name,
+            email,
+            username,
+            created_at,
+            updated_at
         )
-    WHERE id = NEW.id;
+        VALUES (
+            NEW.id,
+            v_full_name,
+            NEW.email,
+            v_username,
+            NEW.created_at,
+            NEW.created_at
+        );
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Error creating profile: %', SQLERRM;
+        RETURN NEW;
+    END;
+
+    -- Then, create user_roids entry with error handling
+    BEGIN
+        INSERT INTO user_roids (
+            user_id,
+            balance,
+            subscription_type,
+            is_subscribed,
+            subscription_status,
+            created_at,
+            updated_at
+        ) VALUES (
+            NEW.id,
+            200,
+            'free'::subscription_type_enum,
+            false,
+            'unpaid'::subscription_status_enum,
+            NEW.created_at,
+            NEW.created_at
+        );
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Error creating user_roids: %', SQLERRM;
+        RETURN NEW;
+    END;
+
+    -- Create default asset with error handling
+    BEGIN
+        INSERT INTO products (
+            user_id,
+            name,
+            description,
+            visibility,
+            likes_count,
+            downloads_count,
+            tags,
+            is_featured,
+            model_path,
+            created_at,
+            updated_at
+        ) VALUES (
+            NEW.id,
+            'My First Asset',
+            'Welcome to psychoroid.com! This is your first asset.',
+            'private'::visibility_type_enum,
+            0,
+            0,
+            ARRAY['starter']::text[],
+            false,
+            v_model_path,
+            NEW.created_at,
+            NEW.created_at
+        ) RETURNING id INTO v_product_id;
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Error creating initial product: %', SQLERRM;
+    END;
+
+    -- Update user metadata with error handling
+    BEGIN
+        UPDATE auth.users 
+        SET raw_user_meta_data = 
+            COALESCE(raw_user_meta_data, '{}'::jsonb) || 
+            jsonb_build_object(
+                'username', v_username,
+                'full_name', v_full_name
+            )
+        WHERE id = NEW.id;
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Error updating user metadata: %', SQLERRM;
+    END;
 
     RETURN NEW;
 END;
