@@ -62,7 +62,7 @@ export function ResourcesDropdown() {
                     </Link>
                 </div>
 
-                <div className="absolute -right-[550px] -top-[85px] w-[380px] h-[380px] select-none pointer-events-none">
+                <div className="absolute -right-[550px] -top-[65px] w-[350px] h-[350px] select-none pointer-events-none">
                     <Globe
                         className="scale-[0.8] opacity-84"
                         config={{

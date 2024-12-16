@@ -50,7 +50,9 @@ export interface ProductControlsProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onExpand?: () => void;
+  onDownload?: () => void;
   hideExpand?: boolean;
+  hideDownload?: boolean;
 }
 
 export interface PricingCardProps {

@@ -1,3 +1,5 @@
+import { ModelState, ProductProps as BaseProductProps, ProductViewerProps as BaseProductViewerProps } from './components';
+
 export interface CommunityProduct {
     id: string;
     name: string;
@@ -14,6 +16,23 @@ export interface CommunityProduct {
     tags: string[];
     is_featured?: boolean;
     username: string;
+}
+
+export interface DownloadModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    product: CommunityProduct;
+    onDownload: (productId: string) => void;
+}
+
+// Extend the base ProductProps
+export interface ProductProps extends BaseProductProps {
+    showGrid?: boolean;
+}
+
+// Extend the base ProductViewerProps
+export interface ProductViewerProps extends BaseProductViewerProps {
+    modelUrl: string; // Make modelUrl required
 }
 
 export interface CommunityGridProps {

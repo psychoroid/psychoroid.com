@@ -16,7 +16,7 @@ DECLARE
     v_view_count integer;
 BEGIN
     -- Get current view count first
-    SELECT views_count INTO v_view_count
+    SELECT products.views_count INTO v_view_count
     FROM products 
     WHERE id = p_product_id;
 
@@ -38,10 +38,10 @@ BEGIN
                 VALUES (p_product_id, auth.uid(), p_view_type);
                 
                 UPDATE products
-                SET views_count = COALESCE(v_view_count, 0) + 1,
+                SET views_count = COALESCE(products.views_count, 0) + 1,
                     updated_at = NOW()
                 WHERE id = p_product_id
-                RETURNING views_count INTO v_view_count;
+                RETURNING products.views_count INTO v_view_count;
                 
                 RETURN QUERY SELECT true, v_view_count;
                 RETURN;
@@ -54,9 +54,10 @@ BEGIN
                 VALUES (p_product_id, auth.uid(), p_view_type);
                 
                 UPDATE products
-                SET views_count = COALESCE(v_view_count, 0) + 1,
+                SET views_count = COALESCE(products.views_count, 0) + 1,
                     updated_at = NOW()
-                WHERE id = p_product_id;
+                WHERE id = p_product_id
+                RETURNING products.views_count INTO v_view_count;
                 
                 RETURN QUERY SELECT true, v_view_count;
                 RETURN;
@@ -69,9 +70,10 @@ BEGIN
                 VALUES (p_product_id, auth.uid(), p_view_type);
                 
                 UPDATE products
-                SET views_count = COALESCE(v_view_count, 0) + 1,
+                SET views_count = COALESCE(products.views_count, 0) + 1,
                     updated_at = NOW()
-                WHERE id = p_product_id;
+                WHERE id = p_product_id
+                RETURNING products.views_count INTO v_view_count;
                 
                 RETURN QUERY SELECT true, v_view_count;
                 RETURN;

@@ -5,7 +5,7 @@ import { Navbar } from '@/components/design/Navbar';
 import { Footer } from '@/components/design/Footer';
 import { Input } from "@/components/ui/input";
 import { supabase } from '@/lib/supabase/supabase';
-import { ProductViewer } from '@/components/3D/ProductViewer';
+import { CommunityProductViewer } from '@/components/community/CommunityProductViewer';
 import { ProductControls } from '@/components/3D/ProductControls';
 import { CommunityGrid } from '@/components/community/CommunityGrid';
 import { Search } from 'lucide-react';
@@ -228,42 +228,16 @@ export default function CommunityPage() {
                         )}
                     </div>
 
-                    {/* Preview Modal */}
+                    {/* Product Viewer */}
                     {selectedProduct && (
-                        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-                            <div className="fixed inset-2 md:inset-4 bg-background border rounded-lg shadow-lg p-4 md:p-6">
-                                <div className="h-full flex flex-col">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h2 className="text-sm font-medium text-foreground">{selectedProduct.name}</h2>
-                                        <button
-                                            onClick={() => setSelectedProduct(null)}
-                                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                                        >
-                                            {t(currentLanguage, 'community.preview.close')}
-                                        </button>
-                                    </div>
-                                    <div className="flex-grow relative">
-                                        <ProductViewer
-                                            imagePath={selectedProduct.image_path}
-                                            modelUrl={selectedProduct.model_path}
-                                            isRotating={isRotating}
-                                            zoom={zoom}
-                                            isExpanded={isExpanded}
-                                            onClose={() => setIsExpanded(false)}
-                                        />
-                                        <div className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2">
-                                            <ProductControls
-                                                isRotating={isRotating}
-                                                onRotateToggle={() => setIsRotating(!isRotating)}
-                                                onZoomIn={() => setZoom(z => z + 0.1)}
-                                                onZoomOut={() => setZoom(z => Math.max(z - 0.1, 0.1))}
-                                                onExpand={() => setIsExpanded(true)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <CommunityProductViewer
+                            imagePath={selectedProduct.image_path}
+                            modelUrl={selectedProduct.model_path}
+                            isRotating={isRotating}
+                            zoom={zoom}
+                            isExpanded={true}
+                            onClose={() => setSelectedProduct(null)}
+                        />
                     )}
                 </div>
             </main>

@@ -46,10 +46,18 @@ export function CommunityItem({
     // Record initial view on mount
     useEffect(() => {
         const recordInitialView = async () => {
-            await supabase.rpc('record_product_view', {
-                p_product_id: product.id,
-                p_view_type: 'page_load'
-            });
+            try {
+                const { data, error } = await supabase.rpc('record_product_view', {
+                    p_product_id: product.id,
+                    p_view_type: 'page_load'
+                });
+
+                if (error) {
+                    console.error('Error recording view:', error.message);
+                }
+            } catch (error) {
+                console.error('Error recording view:', error);
+            }
         };
 
         recordInitialView();
@@ -57,14 +65,15 @@ export function CommunityItem({
 
     const handleSelect = async () => {
         try {
-            const { error } = await supabase.rpc('record_product_view', {
+            const { data, error } = await supabase.rpc('record_product_view', {
                 p_product_id: product.id,
                 p_view_type: 'click'
             });
 
-            if (!error) {
-                setLikeCount(prev => prev + 1);
+            if (error) {
+                console.error('Error recording view:', error.message);
             }
+
             onSelect(product);
         } catch (error) {
             console.error('Error recording view:', error);
