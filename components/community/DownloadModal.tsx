@@ -2,16 +2,14 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Download } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { saveAs } from 'file-saver';
 import { supabase } from '@/lib/supabase/supabase';
 import toast from 'react-hot-toast';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { USDZExporter } from 'three/examples/jsm/exporters/USDZExporter';
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter';
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import * as THREE from 'three';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type {
     ModelFormat,
     FormatCategories,
@@ -25,7 +23,6 @@ const EXPORT_FORMATS: FormatCategories = {
     '3D & Gaming': [
         { name: 'GLB', ext: 'glb', desc: 'Standard 3D format' },
         { name: 'GLTF', ext: 'gltf', desc: 'For web & three.js' },
-        { name: 'FBX', ext: 'fbx', desc: 'For Unity/Unreal' },
     ],
     'CAD & Manufacturing': [
         { name: 'OBJ', ext: 'obj', desc: 'For 3D modeling' },
@@ -58,6 +55,22 @@ const getContentType = (format: ModelFormat): ModelContentType => {
     }
 };
 
+const getModelUrl = (modelPath: string, bucket: string) => {
+    // If it's already a full URL, return it
+    if (modelPath.startsWith('http')) {
+        return modelPath;
+    }
+
+    // For default assets, always use the default-assets bucket
+    if (modelPath.startsWith('default-assets/')) {
+        return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/default-assets/${modelPath.replace('default-assets/', '')}`;
+    }
+
+    // For other models, use the specified bucket
+    const cleanPath = modelPath.replace(/^\/+/, '');
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${cleanPath}`;
+};
+
 export function DownloadModal({ isOpen, onClose, product, onDownload }: DownloadModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const downloadingRef = useRef<boolean>(false);
@@ -82,163 +95,201 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
     }, [isOpen, onClose]);
 
     const convertModel = async (format: ModelFormat): Promise<string> => {
+        let dracoLoader: DRACOLoader | null = null;
+        let scene: THREE.Scene | null = null;
+        let convertedData: ArrayBuffer | Blob | null = null;
+
         try {
             setConversionStatus({ isConverting: true, progress: 0 });
 
-            // Ensure we have a valid model path
-            if (!product.model_path) {
-                throw new Error('No model path provided');
-            }
-
-            // Use the same URL construction logic as ModelPreview
+            // Get the GLB model first
             const bucket = product.tags?.includes('template') ? 'default-assets' : 'product-models';
-            const modelUrl = getStorageUrl(product.model_path, bucket);
+            const modelUrl = getModelUrl(product.model_path, bucket);
 
-            // Download the GLB file
-            const response = await fetch(modelUrl);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch model: ${response.statusText}`);
-            }
-            const modelBuffer = await response.arrayBuffer();
+            // Debug the URL
+            console.log('Attempting to fetch model from:', modelUrl);
+            console.log('Product model path:', product.model_path);
+            console.log('Bucket:', bucket);
 
-            // Create Three.js scene and load model
-            const scene = new THREE.Scene();
-            const loader = new GLTFLoader();
-            const gltf = await loader.parseAsync(modelBuffer, '');
-            scene.add(gltf.scene);
-
-            let convertedData;
-
-            // Handle different format conversions
             switch (format.toLowerCase()) {
                 case 'usdz':
-                    const usdzExporter = new USDZExporter();
-                    convertedData = await usdzExporter.parse(scene);
-                    break;
-
-                case 'gltf':
-                    const gltfExporter = new GLTFExporter();
-                    convertedData = await new Promise<Blob>((resolve, reject) => {
-                        gltfExporter.parse(
-                            scene,
-                            (result) => {
-                                if (result instanceof ArrayBuffer) {
-                                    resolve(new Blob([result], { type: 'model/gltf-binary' }));
-                                } else {
-                                    // For JSON format (GLTF)
-                                    const text = JSON.stringify(result, null, 2);
-                                    resolve(new Blob([text], { type: 'model/gltf+json' }));
-                                }
-                            },
-                            (error) => {
-                                reject(error);
-                            },
-                            { binary: false }
-                        );
-                    });
-                    break;
-
-                case 'fbx':
-                    // First export to GLB
-                    const glbExporter = new GLTFExporter();
-                    const glbData = await new Promise<ArrayBuffer>((resolve, reject) => {
-                        glbExporter.parse(
-                            scene,
-                            (result) => {
-                                if (result instanceof ArrayBuffer) {
-                                    resolve(result);
-                                } else {
-                                    // Handle JSON result by converting to ArrayBuffer
-                                    const jsonString = JSON.stringify(result);
-                                    // Convert to Uint8Array first, then create a new ArrayBuffer
-                                    const uint8Array = new TextEncoder().encode(jsonString);
-                                    const arrayBuffer = new ArrayBuffer(uint8Array.byteLength);
-                                    new Uint8Array(arrayBuffer).set(uint8Array);
-                                    resolve(arrayBuffer);
-                                }
-                            },
-                            (error) => reject(error),
-                            { binary: true }
-                        );
-                    });
-
-                    // Upload GLB to temporary storage
-                    const tempFileName = `temp-${product.id}-${Date.now()}.glb`;
-                    const { data: tempData, error: tempError } = await supabase.storage
-                        .from('temp-conversions')
-                        .upload(tempFileName, new Blob([glbData], { type: 'model/gltf-binary' }), {
-                            contentType: 'model/gltf-binary',
-                            upsert: true
-                        });
-
-                    if (tempError) throw tempError;
-
-                    // Get temporary URL
-                    const { data: { publicUrl: tempUrl } } = supabase.storage
-                        .from('temp-conversions')
-                        .getPublicUrl(tempFileName);
-
-                    // Call conversion service
-                    const fbxResponse = await fetch('/api/convert-fbx', {
+                    // Call our API endpoint to convert GLB to USDZ
+                    const response = await fetch('/api/convert-model', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ url: tempUrl })
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            modelUrl,
+                            format: 'usdz',
+                            quality: 'high',
+                            productId: product.id
+                        }),
                     });
 
-                    if (!fbxResponse.ok) {
-                        const errorData = await fbxResponse.json();
-                        throw errorData;
+                    if (!response.ok) {
+                        throw new Error('Failed to convert to USDZ');
                     }
 
-                    convertedData = new Blob([await fbxResponse.arrayBuffer()], {
-                        type: 'application/octet-stream'
-                    });
-                    break;
+                    const { convertedUrl } = await response.json();
+                    return convertedUrl;
 
+                case 'gltf':
                 case 'obj':
-                    const objExporter = new OBJExporter();
-                    const objString = objExporter.parse(scene);
-                    convertedData = new TextEncoder().encode(objString).buffer;
-                    break;
-
                 case 'stl':
-                    const stlExporter = new STLExporter();
-                    const stlString = stlExporter.parse(scene, { binary: true });
-                    convertedData = stlString;
-                    break;
+                case 'fbx':
+                    // Download and parse the original GLB
+                    const modelResponse = await fetch(modelUrl);
+                    if (!modelResponse.ok) {
+                        throw new Error(`Failed to fetch model: ${modelResponse.statusText}`);
+                    }
+                    const modelBuffer = await modelResponse.arrayBuffer();
+
+                    // Set up loaders
+                    dracoLoader = new DRACOLoader();
+                    dracoLoader.setDecoderPath('/draco/');
+                    const loader = new GLTFLoader();
+                    loader.setDRACOLoader(dracoLoader);
+
+                    // Create scene and load model
+                    scene = new THREE.Scene();
+                    const gltf = await loader.parseAsync(modelBuffer, '');
+                    if (scene && gltf.scene) {
+                        scene.add(gltf.scene);
+                    }
+
+                    // Handle format-specific conversion
+                    switch (format) {
+                        case 'gltf':
+                            const gltfExporter = new GLTFExporter();
+                            convertedData = await new Promise<Blob>((resolve, reject) => {
+                                if (!scene) {
+                                    reject(new Error('Scene not initialized'));
+                                    return;
+                                }
+                                gltfExporter.parse(
+                                    scene as THREE.Object3D,
+                                    (result) => {
+                                        if (result instanceof ArrayBuffer) {
+                                            resolve(new Blob([result], { type: 'model/gltf-binary' }));
+                                        } else {
+                                            const text = JSON.stringify(result, null, 2);
+                                            resolve(new Blob([text], { type: 'model/gltf+json' }));
+                                        }
+                                    },
+                                    reject,
+                                    { binary: false }
+                                );
+                            });
+                            break;
+
+                        case 'obj':
+                            if (!scene) throw new Error('Scene not initialized');
+                            const objExporter = new OBJExporter();
+                            convertedData = new Blob([objExporter.parse(scene as THREE.Object3D)], { type: 'model/obj' });
+                            break;
+
+                        case 'stl':
+                            if (!scene) throw new Error('Scene not initialized');
+                            const stlExporter = new STLExporter();
+                            convertedData = new Blob([stlExporter.parse(scene as THREE.Object3D, { binary: true })], { type: 'model/stl' });
+                            break;
+
+                        case 'fbx':
+                            if (!scene) throw new Error('Scene not initialized');
+                            const glbExporter = new GLTFExporter();
+                            const glbData = await new Promise<ArrayBuffer>((resolve, reject) => {
+                                glbExporter.parse(
+                                    scene as THREE.Object3D,
+                                    (result) => {
+                                        if (result instanceof ArrayBuffer) {
+                                            resolve(result);
+                                        } else {
+                                            const jsonString = JSON.stringify(result);
+                                            const uint8Array = new TextEncoder().encode(jsonString);
+                                            const arrayBuffer = new ArrayBuffer(uint8Array.byteLength);
+                                            new Uint8Array(arrayBuffer).set(uint8Array);
+                                            resolve(arrayBuffer);
+                                        }
+                                    },
+                                    reject,
+                                    { binary: true }
+                                );
+                            });
+
+                            // Upload GLB to temporary storage
+                            const tempFileName = `temp-${product.id}-${Date.now()}.glb`;
+                            const { data: tempData, error: tempError } = await supabase.storage
+                                .from('temp-conversions')
+                                .upload(tempFileName, new Blob([glbData], { type: 'model/gltf-binary' }), {
+                                    contentType: 'model/gltf-binary',
+                                    upsert: true
+                                });
+
+                            if (tempError) throw tempError;
+
+                            // Get temporary URL
+                            const { data: { publicUrl: tempUrl } } = supabase.storage
+                                .from('temp-conversions')
+                                .getPublicUrl(tempFileName);
+
+                            // Call conversion service
+                            const fbxResponse = await fetch('/api/convert-fbx', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ url: tempUrl })
+                            });
+
+                            if (!fbxResponse.ok) {
+                                const errorData = await fbxResponse.json();
+                                throw errorData;
+                            }
+
+                            convertedData = new Blob([await fbxResponse.arrayBuffer()], {
+                                type: 'application/octet-stream'
+                            });
+                            break;
+                    }
+
+                    // Upload the converted file
+                    if (convertedData) {
+                        const fileName = `converted-${product.id}-${Date.now()}.${format.toLowerCase()}`;
+                        const { data, error } = await supabase.storage
+                            .from('converted-models')
+                            .upload(fileName,
+                                convertedData instanceof Blob ? convertedData : new Blob([convertedData]),
+                                {
+                                    contentType: getContentType(format),
+                                    cacheControl: '3600',
+                                    upsert: true
+                                }
+                            );
+
+                        if (error) throw error;
+
+                        const { data: { publicUrl } } = supabase.storage
+                            .from('converted-models')
+                            .getPublicUrl(fileName);
+
+                        return publicUrl;
+                    }
+                    throw new Error('Conversion failed');
 
                 default:
                     throw new Error(`Unsupported format: ${format}`);
             }
-
-            // Upload the converted file to Supabase
-            const fileName = `converted-${product.id}-${Date.now()}.${format.toLowerCase()}`;
-            const { data, error } = await supabase.storage
-                .from('converted-models')
-                .upload(fileName,
-                    convertedData instanceof Blob ? convertedData :
-                        new Blob([convertedData as ArrayBuffer], {
-                            type: getContentType(format)
-                        }), {
-                    contentType: getContentType(format),
-                    cacheControl: '3600',
-                    upsert: true
-                });
-
-            if (error) throw error;
-
-            // Get the public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('converted-models')
-                .getPublicUrl(fileName);
-
-            setConversionStatus({ isConverting: false, progress: 100 });
-            return publicUrl;
-
         } catch (error) {
             setConversionStatus({ isConverting: false, progress: 0 });
             console.error('Conversion error details:', error);
             throw error;
+        } finally {
+            if (dracoLoader) {
+                dracoLoader.dispose();
+            }
+            if (scene) {
+                scene.clear();
+                scene.remove(...(scene.children as THREE.Object3D[]));
+            }
         }
     };
 
@@ -287,8 +338,8 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                 // Record download with format
                 try {
                     const { error: downloadError } = await supabase.rpc('record_product_download', {
-                        p_format: format,
-                        p_product_id: product.id
+                        p_product_id: product.id,
+                        p_format: format
                     });
 
                     if (downloadError) {

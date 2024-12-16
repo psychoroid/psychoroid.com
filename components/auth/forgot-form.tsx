@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase/supabase'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/lib/hooks/use-toast'
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
 

@@ -2,17 +2,15 @@ import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-11-20.acacia'
 });
 
-// Use new route segment config
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 export const preferredRegion = 'auto';
-export const maxDuration = 60;  // Set maximum duration for webhook processing
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
     try {

@@ -1,12 +1,11 @@
 'use client';
 
 import { CommunityItem } from './CommunityItem';
-import type { CommunityProduct, CommunityGridProps } from '@/types/community';
+import type { CommunityGridProps } from '@/types/community';
 
 export function CommunityGrid({
     products,
     onProductSelect,
-    selectedProduct,
     onLike,
     onDownload,
     userLikes

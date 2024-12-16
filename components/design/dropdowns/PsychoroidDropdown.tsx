@@ -1,6 +1,6 @@
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
-import { Building2, Sparkles, Zap, Rocket, Globe } from 'lucide-react';
+import { Zap, Rocket, Globe } from 'lucide-react';
 import { ProductHuntBadge } from '../product-hunt-badge';
 
 export function CompanyDropdown() {

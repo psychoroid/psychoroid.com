@@ -1,7 +1,7 @@
 -- Function to record product downloads
 CREATE OR REPLACE FUNCTION public.record_product_download(
-    p_format TEXT,
-    p_product_id UUID
+    p_product_id UUID,
+    p_format TEXT
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -41,7 +41,7 @@ END;
 $$;
 
 -- Grant execute permission
-GRANT EXECUTE ON FUNCTION record_product_download(TEXT, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION record_product_download(UUID, TEXT) TO authenticated;
 
 -- Add index for better performance
 CREATE INDEX IF NOT EXISTS idx_product_downloads_product_format 

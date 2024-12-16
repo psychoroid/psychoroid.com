@@ -2,10 +2,9 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
-import { Mesh, TextureLoader, Box3, Vector3, GridHelper, Group } from 'three';
+import { Mesh, Box3, Vector3, GridHelper, Group } from 'three';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { ProductProps } from '@/types/community';
-import { ModelState } from '@/types/components';
 
 // Define the GLTF result type
 type GLTFResult = GLTF & {

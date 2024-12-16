@@ -139,39 +139,6 @@ BEGIN
 END;
 $$;
 
--- Function to record a download
-CREATE OR REPLACE FUNCTION record_product_download(
-    p_product_id UUID,
-    p_format TEXT
-)
-RETURNS VOID
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-DECLARE
-    v_last_download TIMESTAMPTZ;
-BEGIN
-    -- Check last download time
-    SELECT created_at INTO v_last_download
-    FROM product_downloads
-    WHERE product_id = p_product_id 
-    AND user_id = auth.uid()
-    ORDER BY created_at DESC
-    LIMIT 1;
-    
-    -- Only record if no download in last 5 seconds
-    IF v_last_download IS NULL OR v_last_download < NOW() - INTERVAL '5 seconds' THEN
-        INSERT INTO product_downloads (product_id, user_id, format)
-        VALUES (p_product_id, auth.uid(), p_format);
-        
-        UPDATE products
-        SET downloads_count = downloads_count + 1
-        WHERE id = p_product_id;
-    END IF;
-END;
-$$;
-
 -- Add this function
 CREATE OR REPLACE FUNCTION get_user_product_likes(p_user_id UUID)
 RETURNS TABLE (product_id UUID)
@@ -191,5 +158,4 @@ $$;
 GRANT EXECUTE ON FUNCTION get_trending_products(INTEGER, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_featured_products(INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION toggle_product_like(UUID) TO authenticated;
-GRANT EXECUTE ON FUNCTION record_product_download(UUID, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_user_product_likes(UUID) TO authenticated; 

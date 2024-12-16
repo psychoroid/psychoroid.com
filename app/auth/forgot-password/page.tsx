@@ -6,7 +6,7 @@ import { ForgotForm } from '@/components/auth/forgot-form'
 import { CheckEmailMessage } from '@/components/auth/check-email-message'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/supabase';
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/lib/hooks/use-toast'
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
 

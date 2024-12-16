@@ -11,9 +11,9 @@
     "postinstall": "node lib/setup-draco.js"
   },
   "dependencies": {
-    "@gltf-transform/core": "^3.7.1",
-    "@gltf-transform/extensions": "^3.7.1",
-    "@gltf-transform/functions": "^3.7.1",
+    "@gltf-transform/core": "^3.10.1",
+    "@gltf-transform/extensions": "^3.10.1",
+    "@gltf-transform/functions": "^3.10.1",
     "@hookform/resolvers": "^3.9.1",
     "@huggingface/inference": "^2.8.1",
     "@radix-ui/react-alert-dialog": "^1.1.2",

@@ -1,11 +1,11 @@
-interface ConversionRequest {
+export interface ConversionRequest {
     modelUrl: string;
     format: string;
-    quality: 'high' | 'medium' | 'low';
+    quality?: 'high' | 'medium' | 'low';
     productId: string;
 }
 
-interface ConversionResponse {
+export interface ConversionResponse {
     success: boolean;
     convertedUrl?: string;
     error?: string;

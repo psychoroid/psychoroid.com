@@ -1,32 +1,41 @@
 declare module '@gltf-transform/core' {
     export class Document {
         transform(...transforms: any[]): Promise<void>;
-        // Add other methods as needed
     }
+
     export class NodeIO {
-        registerExtensions(extensions: any): this;
-        registerDependencies(deps: any): this;
+        registerExtensions(extensions: any[]): this;
         readBinary(buffer: Uint8Array): Promise<Document>;
-        writeBinary(document: Document): Promise<ArrayBuffer>;
+        writeBinary(document: Document): Promise<Uint8Array>;
     }
-    export function transform(...transforms: any[]): any;
-    export function dedup(): any;
-    export function prune(): any;
-    export function draco(): any;
-    export function resample(): any;
-    export function quantize(): any;
 }
 
 declare module '@gltf-transform/extensions' {
-    export const ALL_EXTENSIONS: any[];
+    const ALL_EXTENSIONS: any[];
+    export { ALL_EXTENSIONS };
 }
 
 declare module '@gltf-transform/functions' {
-    export function meshopt(): any;
+    export function transform(...transforms: any[]): any;
+    
+    interface TransformFunction {
+        (): (doc: any) => Promise<void>;
+    }
+
+    const functions = {
+        dedup: (): TransformFunction => (() => Promise.resolve()),
+        draco: (): TransformFunction => (() => Promise.resolve()),
+        resample: (): TransformFunction => (() => Promise.resolve()),
+        prune: (): TransformFunction => (() => Promise.resolve()),
+        meshopt: (): TransformFunction => (() => Promise.resolve())
+    };
+
+    export default functions;
 }
 
 declare module 'fbx2gltf' {
-    export default function(input: string, output: string): Promise<void>;
+    const convert: (input: string, output: string) => Promise<void>;
+    export default convert;
 }
 
 declare module 'obj2gltf' {

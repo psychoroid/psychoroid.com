@@ -12,7 +12,7 @@ import { Coins, Menu } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { DockDropdown } from './DockDropdown';
 import { CompanyDropdown } from './dropdowns/PsychoroidDropdown';
-import { EngineDropdown } from './dropdowns/EngineDropdown';
+// import { EngineDropdown } from './dropdowns/EngineDropdown';
 import { getLocalStorageItem, setLocalStorageItem, clearAuthState } from '@/lib/utils/localStorage';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';

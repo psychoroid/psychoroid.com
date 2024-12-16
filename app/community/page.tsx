@@ -6,7 +6,6 @@ import { Footer } from '@/components/design/Footer';
 import { Input } from "@/components/ui/input";
 import { supabase } from '@/lib/supabase/supabase';
 import { CommunityProductViewer } from '@/components/community/CommunityProductViewer';
-import { ProductControls } from '@/components/3D/ProductControls';
 import { CommunityGrid } from '@/components/community/CommunityGrid';
 import { Search } from 'lucide-react';
 import { useUser } from '@/lib/contexts/UserContext';
@@ -142,7 +141,10 @@ export default function CommunityPage() {
         try {
             // Record the download
             const { error } = await supabase
-                .rpc('record_product_download', { p_product_id: productId });
+                .rpc('record_product_download', {
+                    p_product_id: productId,
+                    p_format: 'glb'
+                });
 
             if (error) throw error;
 

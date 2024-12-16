@@ -285,3 +285,25 @@ GRANT ALL ON products TO authenticated;
 GRANT ALL ON feedback TO authenticated;
 GRANT ALL ON support_requests TO authenticated;
 GRANT SELECT, UPDATE ON user_roids TO authenticated;
+
+-- Converted Models Storage Policies
+create policy "Authenticated Users Can Upload Converted Models"
+    on storage.objects for insert
+    with check (
+        bucket_id = 'converted-models'
+        and auth.role() = 'authenticated'
+    );
+
+create policy "Users Can Update Their Converted Models"
+    on storage.objects for update
+    using (
+        bucket_id = 'converted-models'
+        and auth.role() = 'authenticated'
+    );
+
+create policy "Users Can Delete Their Converted Models"
+    on storage.objects for delete
+    using (
+        bucket_id = 'converted-models'
+        and auth.role() = 'authenticated'
+    );
