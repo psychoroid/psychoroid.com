@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { CommunityProduct } from '@/types/community';
 import { supabase } from '@/lib/supabase/supabase';
-import { ModelPreview } from '@/components/3D/ModelPreview';
+import { ModelPreview } from '@/components/community/CommunityModelPreview';
 import Image from 'next/image';
 import { DownloadModal } from './DownloadModal';
 import { formatCount } from '@/lib/utils/products';
@@ -124,6 +124,7 @@ export function CommunityItem({
                                 modelUrl={product.model_path}
                                 imageUrl={product.image_path}
                                 bucket={product.tags?.includes('starter') ? 'default-assets' : 'product-models'}
+                                canvasId={`preview-canvas-${product.id}`}
                             />
                         </div>
                     ) : (

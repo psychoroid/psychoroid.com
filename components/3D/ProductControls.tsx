@@ -21,7 +21,7 @@ export function ProductControls({
         onClick={onRotateToggle}
         variant="outline"
         size="icon"
-        className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+        className="rounded-none border-2 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
       >
         {isRotating ? <PauseCircle className="h-6 w-6" /> : <PlayCircle className="h-6 w-6" />}
       </Button>
@@ -29,7 +29,7 @@ export function ProductControls({
         onClick={onZoomIn}
         variant="outline"
         size="icon"
-        className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+        className="rounded-none border-2 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
       >
         <ZoomIn className="h-6 w-6" />
       </Button>
@@ -37,7 +37,7 @@ export function ProductControls({
         onClick={onZoomOut}
         variant="outline"
         size="icon"
-        className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+        className="rounded-none border-2 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
       >
         <ZoomOut className="h-6 w-6" />
       </Button>
@@ -46,7 +46,7 @@ export function ProductControls({
           onClick={onExpand}
           variant="outline"
           size="icon"
-          className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+          className="rounded-none border-2 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
         >
           <Expand className="h-6 w-6" />
         </Button>
@@ -56,7 +56,7 @@ export function ProductControls({
           onClick={onDownload}
           variant="outline"
           size="icon"
-          className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+          className="rounded-none border-2 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
         >
           <Download className="h-6 w-6" />
         </Button>

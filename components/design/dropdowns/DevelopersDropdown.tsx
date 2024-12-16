@@ -10,12 +10,64 @@ import {
     AppWindow
 } from 'lucide-react';
 import Globe, { GLOBE_CONFIG } from '@/components/ui/magic/globe';
+import { useEffect, useRef, useState } from 'react';
+
+// Persistent Globe component that stays mounted
+function PersistentGlobe({ isVisible }: { isVisible: boolean }) {
+    return (
+        <div
+            className="w-[350px] h-[350px] select-none pointer-events-none transition-opacity duration-300"
+            style={{
+                opacity: isVisible ? 1 : 0,
+                position: 'absolute',
+                right: '-550px',
+                top: '-65px',
+                transform: 'scale(0.8)'
+            }}
+        >
+            <Globe
+                config={{
+                    ...GLOBE_CONFIG,
+                    width: 400,
+                    height: 400,
+                    phi: 0.8,
+                    theta: 1.1,
+                    dark: 2,
+                    diffuse: 0.9,
+                    mapBrightness: 6,
+                    baseColor: [0.3, 0.3, 0.3],
+                    markerColor: [0.91, 0.20, 0.34],
+                    glowColor: [0.91, 0.20, 0.34],
+                }}
+            />
+        </div>
+    );
+}
 
 export function ResourcesDropdown() {
     const { currentLanguage } = useTranslation();
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    setIsVisible(entry.isIntersecting);
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        if (dropdownRef.current) {
+            observer.observe(dropdownRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
 
     return (
-        <div className="w-fit min-w-[220px] py-2 relative">
+        <div ref={dropdownRef} className="w-fit min-w-[220px] py-2 relative">
             <div className="flex items-start">
                 <div className="flex flex-col space-y-2">
                     <Link
@@ -61,25 +113,7 @@ export function ResourcesDropdown() {
                         {t(currentLanguage, 'dropdowns.resources.boilerplates')}
                     </Link>
                 </div>
-
-                <div className="absolute -right-[550px] -top-[65px] w-[350px] h-[350px] select-none pointer-events-none">
-                    <Globe
-                        className="scale-[0.8] opacity-84"
-                        config={{
-                            ...GLOBE_CONFIG,
-                            width: 400,
-                            height: 400,
-                            phi: 0.8,
-                            theta: 1.1,
-                            dark: 2,
-                            diffuse: 0.9,
-                            mapBrightness: 6,
-                            baseColor: [0.3, 0.3, 0.3],
-                            markerColor: [0.91, 0.20, 0.34],
-                            glowColor: [0.91, 0.20, 0.34],
-                        }}
-                    />
-                </div>
+                <PersistentGlobe isVisible={isVisible} />
             </div>
         </div>
     );

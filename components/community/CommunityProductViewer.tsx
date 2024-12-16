@@ -4,7 +4,6 @@ import React, { Suspense, useRef, useState, useEffect, useCallback } from 'react
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { Product } from '@/components/community/CommunityProduct3D';
-import { ProductViewerProps } from '@/types/community';
 import { ModelState } from '@/types/components';
 import { Vector3 } from 'three';
 import { ProductControls } from '@/components/3D/ProductControls';
@@ -163,51 +162,62 @@ export function CommunityProductViewer({
     };
 
     const renderCanvas = (expanded: boolean) => (
-        <Canvas
-            gl={{ preserveDrawingBuffer: true }}
-            camera={{ position: cameraPositionVector }}
-            style={{ width: '100%', height: '100%' }}
-        >
-            <PerspectiveCamera
-                makeDefault
-                position={cameraPositionVector}
-                zoom={controlsState.zoom}
-            />
-            <ambientLight intensity={2} />
-            <directionalLight position={[5, 5, 5]} intensity={3} castShadow />
-            <directionalLight position={[-5, 3, -5]} intensity={1.5} />
-            <directionalLight position={[0, 10, -5]} intensity={1.2} />
-            <hemisphereLight intensity={1} groundColor="white" />
-            <Suspense fallback={null}>
-                <Product
-                    imageUrl={imageUrl}
-                    modelUrl={processedModelUrl}
-                    isRotating={isAutoRotating}
-                    zoom={zoom}
-                    modelState={{
-                        ...modelState,
-                        position: INITIAL_MODEL_POSITION,
-                        scale: INITIAL_MODEL_SCALE // Use the smaller scale
-                    }}
-                    onModelStateChange={handleModelStateChange}
-                    showGrid={false}
-                    scale={INITIAL_MODEL_SCALE} // Use the smaller scale here too
+        <div className="w-full h-full" style={{ contain: 'strict', isolation: 'isolate' }}>
+            <Canvas
+                id={`viewer-canvas-${expanded ? 'expanded' : 'normal'}`}
+                frameloop="demand"
+                gl={{
+                    preserveDrawingBuffer: true,
+                    alpha: true,
+                    antialias: true,
+                    failIfMajorPerformanceCaveat: false,
+                    powerPreference: 'high-performance'
+                }}
+                camera={{ position: cameraPositionVector }}
+                style={{ width: '100%', height: '100%' }}
+            >
+                <PerspectiveCamera
+                    makeDefault
+                    position={cameraPositionVector}
+                    zoom={controlsState.zoom}
                 />
-            </Suspense>
-            <OrbitControls
-                ref={controlsRef}
-                enableZoom={true}
-                enablePan={true}
-                enableRotate={true}
-                autoRotate={isAutoRotating}
-                autoRotateSpeed={ROTATION_SPEED}
-                onChange={handleControlsChange}
-                target={new Vector3(...INITIAL_TARGET)}
-                minDistance={0.5}
-                maxDistance={5}
-                zoomSpeed={1}
-            />
-        </Canvas>
+                <ambientLight intensity={2} />
+                <directionalLight position={[5, 5, 5]} intensity={3} castShadow={false} />
+                <directionalLight position={[-5, 3, -5]} intensity={1.5} castShadow={false} />
+                <directionalLight position={[0, 10, -5]} intensity={1.2} castShadow={false} />
+                <hemisphereLight intensity={1} groundColor="white" />
+                <Suspense fallback={null}>
+                    <Product
+                        imageUrl={imageUrl}
+                        modelUrl={processedModelUrl}
+                        isRotating={isAutoRotating}
+                        zoom={zoom}
+                        modelState={{
+                            ...modelState,
+                            position: INITIAL_MODEL_POSITION,
+                            scale: INITIAL_MODEL_SCALE
+                        }}
+                        onModelStateChange={handleModelStateChange}
+                        showGrid={false}
+                        scale={INITIAL_MODEL_SCALE}
+                    />
+                </Suspense>
+                <OrbitControls
+                    ref={controlsRef}
+                    enableZoom={true}
+                    enablePan={true}
+                    enableRotate={true}
+                    autoRotate={isAutoRotating}
+                    autoRotateSpeed={ROTATION_SPEED}
+                    onChange={handleControlsChange}
+                    target={new Vector3(...INITIAL_TARGET)}
+                    minDistance={0.5}
+                    maxDistance={5}
+                    zoomSpeed={1}
+                    makeDefault
+                />
+            </Canvas>
+        </div>
     );
 
     const handleModelStateChange = (newState: ModelState) => {

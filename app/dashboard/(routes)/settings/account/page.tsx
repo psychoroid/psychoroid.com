@@ -264,7 +264,7 @@ export default function AccountSettings() {
                                         {showConfirmInput && (
                                             <div className="mt-4 space-y-2">
                                                 <label className="text-sm font-medium text-destructive block">
-                                                    Type &quot;delete my account&quot; to confirm
+                                                    Type &quot;delete my account&quot; below to confirm.
                                                 </label>
                                                 <Input
                                                     value={deleteConfirmation}

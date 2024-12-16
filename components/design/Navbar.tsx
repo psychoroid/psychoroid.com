@@ -175,8 +175,8 @@ export function Navbar() {
                                     <Image
                                         src="/transparent.png"
                                         alt="Logo"
-                                        width={60}
-                                        height={60}
+                                        width={55}
+                                        height={55}
                                         className="mr-1 -ml-1"
                                     />
                                 </button>
