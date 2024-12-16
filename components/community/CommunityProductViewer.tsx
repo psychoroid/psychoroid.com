@@ -17,7 +17,7 @@ const INITIAL_ZOOM = 1.5;
 const INITIAL_MODEL_ROTATION: [number, number, number] = [0, 0, 0];
 const INITIAL_MODEL_POSITION: [number, number, number] = [0, 0, 0];
 const INITIAL_MODEL_SCALE: [number, number, number] = [0.5, 0.5, 0.5];
-const ROTATION_SPEED = 0.8;
+const ROTATION_SPEED = 1;
 
 interface CommunityProductViewerProps {
     imagePath?: string;
@@ -261,9 +261,9 @@ export function CommunityProductViewer({
                         <div className="w-full h-full flex items-center justify-center">
                             {renderCanvas(true)}
                         </div>
-                        <div className="absolute top-2 right-2 flex items-center space-x-2">
+                        <div className="absolute top-2 right-3 flex items-center space-x-2">
                             <button
-                                className="bg-white bg-opacity-20 text-white px-2 py-1 rounded-none text-sm focus:outline-none hover:bg-opacity-30 transition duration-200"
+                                className="rounded-none border-2 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm px-2 py-1 text-sm focus:outline-none"
                                 onClick={handleClose}
                             >
                                 ESC

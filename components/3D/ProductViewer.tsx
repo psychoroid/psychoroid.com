@@ -213,7 +213,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                         </div>
                         <div className="absolute top-4 right-4 flex items-center space-x-2">
                             <button
-                                className="bg-white bg-opacity-20 text-white px-2 py-1 rounded-md text-sm focus:outline-none hover:bg-opacity-30 transition duration-200"
+                                className="rounded-none border-2 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm px-2 py-1 text-sm focus:outline-none"
                                 onClick={handleClose}
                             >
                                 ESC
