@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase/supabase'
 import { useUser } from '@/lib/contexts/UserContext'
 import { UserUpload } from '@/types/product'
 import { Footer } from '@/components/design/Footer'
+import P0Element from '@/components/design/p0-element'
 
 export default function Home() {
     const [isRotating, setIsRotating] = useState(true)
@@ -170,8 +171,12 @@ export default function Home() {
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-background">
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <P0Element />
+            </div>
+
             <Navbar />
-            <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24 overflow-auto">
+            <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24 overflow-auto relative z-10">
                 <div className="max-w-7xl mx-auto text-gray-900 dark:text-white pb-4">
                     <ImageUpload
                         onImageUpload={handleImageUpload}

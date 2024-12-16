@@ -22,7 +22,7 @@ declare module '@gltf-transform/functions' {
         (): (doc: any) => Promise<void>;
     }
 
-    const functions = {
+    const transformFunctions = {
         dedup: (): TransformFunction => (() => Promise.resolve()),
         draco: (): TransformFunction => (() => Promise.resolve()),
         resample: (): TransformFunction => (() => Promise.resolve()),
@@ -30,7 +30,7 @@ declare module '@gltf-transform/functions' {
         meshopt: (): TransformFunction => (() => Promise.resolve())
     };
 
-    export default functions;
+    export default transformFunctions;
 }
 
 declare module 'fbx2gltf' {
@@ -52,7 +52,8 @@ declare module 'obj2gltf' {
         glb: Uint8Array;
     }
     
-    export default function(input: string | Buffer, options?: Options): Promise<Result>;
+    const obj2gltf: (input: string | Buffer, options?: Options) => Promise<Result>;
+    export default obj2gltf;
 }
 
 declare module 'gltf-pipeline' {
@@ -83,7 +84,9 @@ declare module 'gltf-pipeline' {
 }
 
 declare module 'draco3d' {
-    export function createDecoderModule(): Promise<any>;
-    export function createEncoderModule(): Promise<any>;
-    export default { createDecoderModule, createEncoderModule };
+    const dracoModules = {
+        createDecoderModule: (): Promise<any> => Promise.resolve({}),
+        createEncoderModule: (): Promise<any> => Promise.resolve({})
+    };
+    export default dracoModules;
 } 
