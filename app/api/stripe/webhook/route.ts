@@ -8,12 +8,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-11-20.acacia'
 });
 
-// Disable body parsing, we need the raw body for signature verification
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
+// Use new route segment config
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+export const preferredRegion = 'auto';
+export const maxDuration = 60;  // Set maximum duration for webhook processing
 
 export async function POST(req: Request) {
     try {
@@ -168,6 +167,3 @@ export async function POST(req: Request) {
         );
     }
 }
-
-// Use edge runtime for better performance
-export const runtime = 'edge';
