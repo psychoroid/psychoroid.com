@@ -28,6 +28,7 @@ const nextConfig = {
 
         // Production-only optimizations
         if (!dev && !isServer) {
+            // Only apply obfuscation to production client-side code
             config.plugins.push(
                 new WebpackObfuscator({
                     compact: true,
@@ -68,7 +69,6 @@ const nextConfig = {
                 pathname: '/dzrdlevfn/**',
             }
         ],
-        // Enable image optimization
         unoptimized: false,
         minimumCacheTTL: 60,
     },
@@ -86,7 +86,6 @@ const nextConfig = {
                         key: 'Cross-Origin-Embedder-Policy',
                         value: 'require-corp',
                     },
-                    // Add cache control headers for better performance
                     {
                         key: 'Cache-Control',
                         value: 'public, max-age=31536000, immutable',

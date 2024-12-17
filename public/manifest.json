@@ -42,17 +42,17 @@
     {
       "name": "3D Engine",
       "url": "/engine",
-      "description": "Access the 3D engine"
+      "description": "Convert text or images to 3D with AI"
     },
     {
       "name": "Community",
       "url": "/community",
-      "description": "Browse community assets"
+      "description": "Browse and download community 3D assets"
     },
     {
-      "name": "Pricing",
-      "url": "/pricing",
-      "description": "Get more information about our pricing structure"
+      "name": "Docs",
+      "url": "/",
+      "description": "Use psychoroid.com API to create your own 3D applications"
     }
   ],
   "locales": {

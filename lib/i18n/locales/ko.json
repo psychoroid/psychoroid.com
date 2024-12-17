@@ -154,7 +154,7 @@
       },
       "rules": {
         "title": "이용 규칙",
-        "content": "서비스 오용, 악성 콘텐츠 업로드, 무단 접근 시도를 하지 않을 것에 동의합니다. 이 약관을 위반하는 나 사기 활동에 관여하는 계정 정지할 권리가 있습니다."
+        "content": "서비스 오용, 악성 콘텐츠 업로드, 무단 접근 시도를 하지 않을 것에 동의합니다. 이 약관을 위반하거나 사기 활동에 관여하는 계정을 정지할 권리가 있습니다."
       },
       "changes": {
         "title": "서비스 변경",
@@ -188,7 +188,7 @@
       "password_placeholder": "비밀번호**",
       "forgot_password": "비밀번호를 잊으셨나요?",
       "connect_button": "로그인",
-      "processing": "처리 ��...",
+      "processing": "처리 중...",
       "or_continue": "또는 다음으로 계속",
       "google": "Google",
       "github": "GitHub",

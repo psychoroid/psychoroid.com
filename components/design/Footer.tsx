@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Github } from 'lucide-react';
 import FeedbackForm from './feedback-form';
 import { XIcon } from '@/components/icons/XIcon';
+import { DiscordIcon } from '@/components/icons/DiscordIcon';
+import { GitHubIcon } from '@/components/icons/GitHubIcon';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
@@ -13,7 +14,7 @@ export function Footer() {
     const { currentLanguage } = useTranslation();
 
     return (
-        <nav className="bg-background/80 backdrop-blur-sm border-t border-border">
+        <nav className="bg-background/80 backdrop-blur-sm border-t border-border relative z-50">
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="flex items-center justify-end h-8">
                     <div className="hidden md:flex items-center text-xs text-muted-foreground">
@@ -30,16 +31,25 @@ export function Footer() {
                             rel="noopener noreferrer"
                             className="text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            <Github className="h-3 w-3" />
+                            <GitHubIcon className="h-3 w-3 -translate-y-[2px]" />
                         </Link>
                         <div className="h-4 w-px bg-border"></div>
                         <Link
-                            href="https://producthunt.com/@psychoroid"
+                            href="https://producthunt.com/psychoroid"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            <PHIcon className="h-4 w-4 fill-current -translate-y-[1px]" />
+                            <PHIcon className="h-4 w-4 fill-current -translate-y-[1.5px]" />
+                        </Link>
+                        <div className="h-4 w-px bg-border"></div>
+                        <Link
+                            href="https://discord.gg/hVFZ3Wq2Hh"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <DiscordIcon className="h-4 w-4 -translate-y-[1px]" />
                         </Link>
                         <div className="h-4 w-px bg-border"></div>
                         <Link
@@ -48,7 +58,7 @@ export function Footer() {
                             rel="noopener noreferrer"
                             className="text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            <XIcon className="h-3 w-3 fill-current" />
+                            <XIcon className="h-3.5 w-3.5 fill-current -translate-y-[0.5px]" />
                         </Link>
                         <div className="h-4 w-px bg-border"></div>
                         <div className="flex items-center space-x-6">

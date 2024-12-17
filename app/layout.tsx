@@ -20,7 +20,8 @@ export const viewport = {
 
 export const metadata: Metadata = {
     title: 'psychoroid.com | Open Source Generative AI 3D Engine',
-    description: 'The open source generative AI 3D platform for product visualization, 3D modeling, and game development.',
+    description: 'Generate and customize 3D assets with AI. Convert text and images to high-quality 3D models, optimize for games, 3D printing, and e-commerce. Chat, download, ship.',
+    metadataBase: new URL('https://psychoroid.com'),
     keywords: '3D viewer, AI 3D, open source, product visualization, 3D modeling, game development, WebGL, Blender, Unity, Unreal Engine, Godot, generative AI, 3D engine, interactive 3D, 3D scan, AR, VR, metaverse, 3D print, CAD, mesh, texturing, rigging, animation, opensource',
     authors: [{ name: 'Princemuichkine' }],
     creator: 'Princemuichkine',
