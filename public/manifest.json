@@ -1,7 +1,7 @@
 {
   "name": "psychoroid.com | Open Source Generative AI 3D Engine",
   "short_name": "psychoroid.com",
-  "description": "The open source generative AI 3D platform for asset creation and distribution.",
+  "description": "Generate and customize 3D assets with AI. Convert text and images to high-quality 3D models, optimize for games, 3D printing, and e-commerce. Chat, download, ship.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
@@ -59,37 +59,37 @@
     "en": {
       "name": "psychoroid.com | Open Source Generative AI 3D Engine",
       "short_name": "psychoroid.com",
-      "description": "The open source generative AI 3D platform for asset creation and distribution."
+      "description": "Generate and customize 3D assets with AI. Convert text and images to high-quality models, optimize for games, 3D printing, and e-commerce. Chat, download, ship."
     },
     "es": {
-      "name": "psychoroid.com | Motor 3D de IA Generativa de Código Abierto",
+      "name": "psychoroid.com | Motor 3D de IA Generativa",
       "short_name": "psychoroid.com",
-      "description": "La plataforma 3D de código abierto para creación y distribución de assets."
+      "description": "Genera y personaliza modelos 3D con IA. Convierte texto y imágenes en modelos de alta calidad, optimiza para juegos, impresión 3D y e-commerce. Chatea, descarga, envía."
     },
     "fr": {
-      "name": "psychoroid.com | Moteur 3D IA Générative Open Source",
+      "name": "psychoroid.com | Open Source Generative AI 3D Engine",
       "short_name": "psychoroid.com",
-      "description": "La plateforme 3D open source pour la création et la distribution d'assets."
+      "description": "Générez et personnalisez des modèles 3D avec IA. Convertissez texte et images en modèles de haute qualité, optimisés pour les jeux vidéos, l'impression 3D et le e-commerce. Chatez, téléchargez, utilisez."
     },
     "ja": {
       "name": "psychoroid.com | オープンソース生成AI 3Dエンジン",
       "short_name": "psychoroid.com",
-      "description": "アセット作成と配布のためのオープンソース3Dプラットフォーム。"
+      "description": "テキストや画像をAIで3Dモデルに変換し、ゲーム、3D印刷、オンラインショップのために最適化します。チャット、ダウンロード、使用。"
     },
     "ko": {
       "name": "psychoroid.com | 오픈소스 생성형 AI 3D 엔진",
       "short_name": "psychoroid.com",
-      "description": "에셋 제작 및 배포를 위한 오픈소스 3D 플랫폼."
+      "description": "텍스트와 이미지를 AI로 3D 모델로 변환하여 게임, 3D 인쇄, 온라인 쇼핑의 용도로 최적화합니다. 채팅, 다운로드, 사용."
     },
     "pt": {
-      "name": "psychoroid.com | Motor 3D de IA Generativa de Código Aberto",
+      "name": "psychoroid.com | Motor 3D de IA Generativa",
       "short_name": "psychoroid.com",
-      "description": "A plataforma 3D de código aberto para criação e distribuição de assets."
+      "description": "Gere e personalize modelos 3D com IA. Converta texto e imagens em modelos de alta qualidade, otimizados para jogos, impressão 3D e e-commerce. Chate, baixe, use."
     },
     "zh": {
       "name": "psychoroid.com | 开源生成式AI 3D引擎",
       "short_name": "psychoroid.com",
-      "description": "用于资产创建和分发的开源3D平台。"
+      "description": "将文本和图像转换为AI 3D模型，优化用于游戏、3D打印和电子商务。聊天、下载、使用。"
     }
   }
-} 
+}

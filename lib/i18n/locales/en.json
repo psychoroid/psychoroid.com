@@ -327,5 +327,59 @@
       "integrations": "Integrations [Coming soon]",
       "boilerplates": "Boilerplates [Coming soon]"
     }
+  },
+  "model_suggestions": {
+    "categories": {
+      "gaming": "Gaming & Entertainment",
+      "jewelry": "Jewelry & Accessories",
+      "furniture": "Furniture & Lighting",
+      "decorative": "Decorative Objects",
+      "tech": "Tech & Gadgets",
+      "containers": "Containers & Vessels"
+    },
+    "items": {
+      "gaming": [
+        "Retro arcade cabinet with LED trim",
+        "Dragon-themed gaming mouse",
+        "Holographic dice set with case",
+        "Mechanical keyboard with custom keycaps",
+        "Virtual reality controller with haptics"
+      ],
+      "jewelry": [
+        "Crystal pendant with silver wire wrap",
+        "Geometric bracelet with sliding clasp",
+        "Constellation earrings with stars",
+        "Ancient compass with brass details"
+      ],
+      "furniture": [
+        "Bamboo desk lamp with floating shade",
+        "Origami-inspired folding chair",
+        "Spiral bookshelf with hidden drawer",
+        "Cloud-shaped ceiling light",
+        "Modular coffee table with storage",
+        "Floating bedside table with light"
+      ],
+      "decorative": [
+        "Treasure chest with intricate carvings",
+        "Bonsai planter with water feature",
+        "Gold Japanese tea set",
+        "Geometric terrarium with metal frame"
+      ],
+      "tech": [
+        "Levitating bluetooth speaker",
+        "Minimalist smart watch design",
+        "Foldable drone with camera mount",
+        "Portable projector with handle",
+        "Wireless charger with ambient light",
+        "Smart home controller with screen"
+      ],
+      "containers": [
+        "Art nouveau vase with flowers",
+        "Puzzle box with sliding panels",
+        "Potion bottle with cork stopper",
+        "Geometric planter with drainage",
+        "Vintage perfume bottle design"
+      ]
+    }
   }
 } 

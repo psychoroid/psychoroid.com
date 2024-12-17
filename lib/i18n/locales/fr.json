@@ -234,7 +234,7 @@
     },
     "check_email": {
       "title": "Vérifiez votre e-mail",
-      "message": "Nous vous avons envoyé un e-mail de confirmation à <email>. Veuillez vérifier votre boîte de réception et suivre les instructions pour compléter votre inscription.",
+      "message": "Nous vous avons envoy un e-mail de confirmation à <email>. Veuillez vérifier votre boîte de réception et suivre les instructions pour compléter votre inscription.",
       "resend": "Vous n'avez pas reçu l'e-mail ? Vérifiez vos spams ou",
       "resend_link": "renvoyer l'e-mail"
     },
@@ -327,6 +327,60 @@
       "join_community": "Rejoindre la communauté",
       "integrations": "Intégrations [Bientôt]",
       "boilerplates": "Boilerplates [Bientôt]"
+    }
+  },
+  "model_suggestions": {
+    "categories": {
+      "gaming": "Jeux & Divertissement",
+      "jewelry": "Bijoux & Accessoires",
+      "furniture": "Mobilier & Éclairage",
+      "decorative": "Objets Décoratifs",
+      "tech": "Tech & Gadgets",
+      "containers": "Contenants & Récipients"
+    },
+    "items": {
+      "gaming": [
+        "Borne d'arcade rétro avec LED",
+        "Souris gaming thème dragon",
+        "Set de dés holographiques avec étui",
+        "Clavier mécanique avec touches personnalisées",
+        "Contrôleur VR avec retour haptique"
+      ],
+      "jewelry": [
+        "Pendentif cristal avec fil d'argent tressé",
+        "Bracelet géométrique avec fermoir coulissant",
+        "Boucles d'oreilles constellation avec étoiles",
+        "Boussole ancienne avec détails en laiton"
+      ],
+      "furniture": [
+        "Lampe de bureau en bambou avec abat-jour flottant",
+        "Chaise pliante inspiration origami",
+        "Bibliothèque spirale avec tiroir secret",
+        "Plafonnier en forme de nuage",
+        "Table basse modulaire avec rangement",
+        "Table de chevet flottante avec lumière"
+      ],
+      "decorative": [
+        "Coffre au trésor avec gravures complexes",
+        "Pot bonsaï avec fontaine",
+        "Service à thé japonais en or",
+        "Terrarium géométrique avec cadre métallique"
+      ],
+      "tech": [
+        "Enceinte bluetooth lévitante",
+        "Design de montre connectée minimaliste",
+        "Drone pliable avec support caméra",
+        "Projecteur portable avec poignée",
+        "Chargeur sans fil avec lumière ambiante",
+        "Contrôleur domotique avec écran"
+      ],
+      "containers": [
+        "Vase art nouveau avec fleurs",
+        "Boîte puzzle avec panneaux coulissants",
+        "Fiole de potion avec bouchon en liège",
+        "Pot géométrique avec drainage",
+        "Flacon de parfum vintage"
+      ]
     }
   }
 } 

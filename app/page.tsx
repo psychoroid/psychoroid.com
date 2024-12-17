@@ -18,16 +18,19 @@ export default function Home() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
     const [modelUrl, setModelUrl] = useState<string | null>(null)
     const [page, setPage] = useState(1)
-    const [zoom, setZoom] = useState(1);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [zoom, setZoom] = useState(1)
+    const [isExpanded, setIsExpanded] = useState(false)
+    const [mounted, setMounted] = useState(false)
     const { user } = useUser()
-    const [processingImages, setProcessingImages] = useState<{ [key: string]: number }>(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('processingImages');
-            return saved ? JSON.parse(saved) : {};
+    const [processingImages, setProcessingImages] = useState<{ [key: string]: number }>({})
+
+    useEffect(() => {
+        setMounted(true)
+        const savedProcessingImages = localStorage.getItem('processingImages')
+        if (savedProcessingImages) {
+            setProcessingImages(JSON.parse(savedProcessingImages))
         }
-        return {};
-    });
+    }, [])
 
     useEffect(() => {
         const cachedImages = localStorage.getItem('cachedImages')
@@ -169,6 +172,10 @@ export default function Home() {
         })
     }, []);
 
+    if (!mounted) {
+        return null // Prevents hydration issues
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-background">
             <div className="fixed inset-0 pointer-events-none z-0">
@@ -178,6 +185,10 @@ export default function Home() {
             <Navbar />
             <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24 overflow-auto relative z-10">
                 <div className="max-w-7xl mx-auto text-gray-900 dark:text-white pb-4">
+                    <h1 className="text-xl md:text-2xl font-bold text-center mb-6 text-foreground">
+                        What can I help you create?
+                    </h1>
+
                     <ImageUpload
                         onImageUpload={handleImageUpload}
                         onModelUrlChange={setModelUrl}

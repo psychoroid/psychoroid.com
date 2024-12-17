@@ -56,15 +56,14 @@ RETURNS TEXT AS $$
 DECLARE
     adjectives TEXT[] := ARRAY[
         'magnificent', 'distinguished', 'awesome', 'brilliant', 'cosmic',
-        'legendary', 'mysterious', 'noble', 'radiant', 'spectacular',
+        'legendary', 'mysterious', 'noble', 'spectacular',
         'majestic', 'fantastic', 'incredible', 'supreme', 'stellar',
         'mighty', 'epic', 'grand', 'heroic', 'phenomenal', 'space',
         'esteemed', 'exceptional', 'preferred', 'honored', 'respected',
         'prestigious', 'elite', 'premium', 'distinguished',
-        'glorious', 'illustrious', 'eminent', 'notable', 'venerable',
+        'glorious', 'illustrious', 'eminent', 'notable',
         'jazzy', 'fancy', 'super', 'ultra', 'mega', 'hyper', 'turbo',
         'cool', 'amazing', 'fabulous', 'marvelous', 'splendid',
-        'dazzling', 'sparkly', 'shiny', 'glittering',
         'unstoppable', 'unbeatable', 'invincible', 'ultimate', 'undisputed',
         'unmatched', 'undefeated', 'unrivaled', 'unparalleled',
         'quantum', 'cyber', 'digital', 'techno', 'neo',
@@ -84,8 +83,7 @@ DECLARE
         'beast', 'machine', 'robot', 'cyborg', 'android',
         'legend', 'champion', 'winner',
         'wizard', 'sorcerer', 'mage', 'alchemist',
-        'pogchamp', 'memelord', 'kingpin', 'chad',
-        'gigachad', 'megamind', 'bigbrain', 'mastermind'
+        'pogchamp', 'kingpin', 'chad'
     ];
     prefixes TEXT[] := ARRAY[
         'the', 'dr', 'prof',
@@ -95,7 +93,7 @@ DECLARE
         'oftheuniverse', 'supreme', 'prime', 'elite', 'pro',
         'master', 'expert', 'guru', 'wizard', 'sage', 'cobra',
         'legend', 'goat', 'boss', 'king', 'queen', 'of-the-world', 
-        'of-the-universe', 'of-the-galaxy', 'of-the-multiverse', '-san'
+        'of-the-universe', 'of-the-galaxy', 'of-the-multiverse', 'san'
     ];
     v_adjective TEXT;
     v_noun TEXT;

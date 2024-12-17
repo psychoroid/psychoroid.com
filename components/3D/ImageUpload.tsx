@@ -8,6 +8,8 @@ import { useUser } from '@/lib/contexts/UserContext'
 import { ImageUploadProps } from '@/types/components'
 import { ProductDetails } from '@/types/product'
 import { PROGRESS_MESSAGES } from '@/lib/utils/progressMessages'
+import { ChatInstance } from './ChatInstance'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface SavedProgresses {
   [key: string]: number;
@@ -197,6 +199,21 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
         return
       }
 
+      // Check if server is available
+      try {
+        const response = await fetch('http://localhost:8000/health')
+        if (!response.ok) {
+          toast.error('Server is currently offline. Please try again later.')
+          return
+        }
+      } catch (error) {
+        toast.error('Server is currently offline. Please try again later.')
+        // Reset any partial uploads
+        setImagePaths([])
+        setModelUrl(null)
+        return
+      }
+
       setUploading(true)
       const files = event.target.files
       if (!files || files.length === 0) return
@@ -205,51 +222,88 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
         const fileExt = file.name.split('.').pop()
         const fileName = `${user.id}/${Date.now()}_${index}.${fileExt}`
         const filePath = `${fileName}`
+        let uploadedImagePath: string | null = null
 
-        onProgressUpdate(filePath, 5);
+        // Show initial upload toast
+        const uploadToast = toast.loading('Starting upload...')
+        onProgressUpdate(filePath, 5)
 
-        const { data, error } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, file)
+        try {
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(filePath, file)
 
-        if (error) throw error
-
-        if (data) {
-          const imagePath = data.path
-          onImageUpload(imagePath)
-          setImagePaths((prevImagePaths) => [...prevImagePaths, imagePath])
-
-          setIsLoading(true)
-          const modelUrl = await generate3DModel(imagePath, (progress) => {
-            onProgressUpdate(imagePath, progress)
-          })
-          setModelUrl(modelUrl)
-          setIsLoading(false)
-
-          const { data: productData, error: productError } = await supabase
-            .rpc('create_product', {
-              p_name: 'New Product',
-              p_description: 'Product description',
-              p_image_path: imagePath,
-              p_model_path: modelUrl,
-              p_user_id: user.id
-            })
-            .single()
-
-          if (productError) {
-            console.error('Error creating product:', productError)
-            throw new Error('Failed to create product')
+          if (uploadError) {
+            toast.error('Upload failed', { id: uploadToast })
+            throw uploadError
           }
 
-          return productData
+          if (uploadData) {
+            toast.success('Upload complete', { id: uploadToast })
+            uploadedImagePath = uploadData.path
+            onImageUpload(uploadedImagePath)
+            setImagePaths((prevImagePaths) => [...prevImagePaths, uploadedImagePath!])
+
+            setIsLoading(true)
+            const processingToast = toast.loading('Processing image...')
+
+            try {
+              const modelUrl = await generate3DModel(uploadedImagePath, (progress) => {
+                onProgressUpdate(uploadedImagePath!, progress)
+                toast.loading(getProgressMessage(progress), { id: processingToast })
+              })
+
+              setModelUrl(modelUrl)
+              toast.success('3D model generated successfully!', { id: processingToast })
+
+              const { data: productData, error: productError } = await supabase
+                .rpc('create_product', {
+                  p_name: 'New Product',
+                  p_description: 'Product description',
+                  p_image_path: uploadedImagePath,
+                  p_model_path: modelUrl,
+                  p_user_id: user.id
+                })
+                .single()
+
+              if (productError) {
+                // Clean up the uploaded image if product creation fails
+                await supabase.storage
+                  .from('product-images')
+                  .remove([uploadedImagePath])
+                console.error('Error creating product:', productError)
+                throw new Error('Failed to create product')
+              }
+
+              return productData
+            } catch (error) {
+              // Clean up the uploaded image if processing fails
+              if (uploadedImagePath) {
+                await supabase.storage
+                  .from('product-images')
+                  .remove([uploadedImagePath])
+              }
+              throw error
+            }
+          }
+        } catch (error) {
+          // If any error occurs during the process, ensure we clean up
+          if (uploadedImagePath) {
+            await supabase.storage
+              .from('product-images')
+              .remove([uploadedImagePath])
+          }
+          throw error
         }
       })
 
       await Promise.all(uploadPromises)
-      toast.success('Images uploaded successfully')
     } catch (error) {
       console.error('Error uploading images:', error)
       toast.error('Error uploading images: ' + (error instanceof Error ? error.message : String(error)))
+      // Reset states on error
+      setImagePaths([])
+      setModelUrl(null)
     } finally {
       setUploading(false)
       setIsLoading(false)
@@ -265,34 +319,39 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
     return messageSet.messages[Math.floor(Math.random() * messageSet.messages.length)];
   };
 
+  const handlePromptSubmit = async (prompt: string) => {
+    // TODO: Implement prompt-based 3D mesh generation
+    console.log('Generating 3D mesh from prompt:', prompt)
+  }
+
   return (
     <>
       <div className="max-w-3xl mx-auto">
-        <label
-          htmlFor="image-upload"
-          className={`w-full h-40 border-2 border-dashed border-gray-300 rounded-none flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          <span className="text-base text-gray-500">
-            {uploading ? getProgressMessage(currentProgress) : 'Click or drag to upload product images'}
-          </span>
-          <input
-            id="image-upload"
-            type="file"
-            className="hidden"
-            accept="image/*"
-            onChange={handleFileUpload}
-            disabled={uploading}
-            multiple
-          />
-        </label>
-        <div className="mt-2 mb-4 flex justify-end">
-          <p className="text-gray-300 text-xs mb-2 py-1">
-            Supported formats: JPG, PNG [max 5MB each]
-          </p>
-        </div>
+        <ChatInstance
+          onFileSelect={handleFileUpload}
+          isUploading={uploading}
+          onPromptSubmit={handlePromptSubmit}
+        />
+
+        <AnimatePresence>
+          {uploading && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              className="mt-2 mb-4"
+            >
+              <motion.p
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                className="text-gray-500 dark:text-gray-300 text-sm font-medium bg-black/50 px-3 py-1.5 rounded-none backdrop-blur-sm"
+              >
+                {getProgressMessage(currentProgress)}
+              </motion.p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <AuthModal
