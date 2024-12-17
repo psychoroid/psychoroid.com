@@ -12,6 +12,7 @@
 /dist
 /.next/
 /out/
+.cache
 
 # AI Prompts
 /lib/huggingface/prompts/

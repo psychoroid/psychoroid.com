@@ -1,49 +1,54 @@
 'use client'
 
-import React from 'react'
+import React, { memo, useMemo } from 'react'
 import { motion } from 'framer-motion'
 
-const P0Element: React.FC = () => {
-    const pAnimation = {
-        initial: { pathLength: 0 },
-        animate: { pathLength: 1 },
-        transition: {
-            duration: 29,
-            repeat: Infinity,
-            repeatType: "loop" as const,
-            ease: "linear",
-            repeatDelay: 0
+const P0Element: React.FC = memo(() => {
+    const animations = useMemo(() => ({
+        p: {
+            initial: { pathLength: 0 },
+            animate: { pathLength: 1 },
+            transition: {
+                duration: 29,
+                repeat: 2,
+                repeatType: "loop" as const,
+                ease: "linear",
+                repeatDelay: 0
+            }
+        },
+        zero: {
+            initial: { pathLength: 0 },
+            animate: { pathLength: 1 },
+            transition: {
+                duration: 12,
+                repeat: 2,
+                repeatType: "loop" as const,
+                ease: "linear",
+                repeatDelay: 17
+            }
         }
-    }
+    }), []);
 
-    const zeroAnimation = {
-        initial: { pathLength: 0 },
-        animate: { pathLength: 1 },
-        transition: {
-            duration: 12,
-            repeat: Infinity,
-            repeatType: "loop" as const,
-            ease: "linear",
-            repeatDelay: 17
-        }
-    }
+    const svgProps = useMemo(() => ({
+        width: "100%",
+        height: "100%",
+        viewBox: "-50 0 1500 1100",
+        fill: "none",
+        xmlns: "http://www.w3.org/2000/svg",
+        style: {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) scale(0.6)',
+            opacity: 0.8,
+            willChange: 'transform',
+            backfaceVisibility: 'hidden'
+        } as React.CSSProperties
+    }), []);
 
     return (
         <div className="w-full h-full bg-transparent">
-            <svg
-                width="100%"
-                height="100%"
-                viewBox="-50 0 1500 1100"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%) scale(0.6)',
-                    opacity: 0.8
-                }}
-            >
+            <svg {...svgProps}>
                 <defs>
                     <filter id="glow">
                         <feGaussianBlur stdDeviation="2" result="coloredBlur" />
@@ -76,7 +81,7 @@ const P0Element: React.FC = () => {
                         strokeOpacity="1"
                         filter="url(#glow)"
                         vectorEffect="non-scaling-stroke"
-                        {...pAnimation}
+                        {...animations.p}
                     />
 
                     {/* Static 0 */}
@@ -96,12 +101,14 @@ const P0Element: React.FC = () => {
                         strokeOpacity="1"
                         filter="url(#glow)"
                         vectorEffect="non-scaling-stroke"
-                        {...zeroAnimation}
+                        {...animations.zero}
                     />
                 </g>
             </svg>
         </div>
     )
-}
+});
+
+P0Element.displayName = 'P0Element';
 
 export default P0Element

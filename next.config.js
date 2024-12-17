@@ -4,21 +4,29 @@ const WebpackObfuscator = require('webpack-obfuscator');
 const nextConfig = {
     reactStrictMode: true,
     swcMinify: true,
+    poweredByHeader: false,
+    compress: true,
+
+    // Optimize page loading
+    pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
 
     webpack: (config, { dev, isServer }) => {
-        // Keep existing rules
+        // Asset handling
         config.module.rules.push({
             test: /\.(woff|woff2|eot|ttf|otf)$/i,
             type: 'asset/resource',
         });
+
+        // Enhanced 3D model file handling
         config.module.rules.push({
-            test: /\.(glb|gltf)$/,
-            use: {
-                loader: 'file-loader',
-            },
+            test: /\.(glb|gltf|obj|stl|usdz|fbx|step)$/,
+            type: 'asset/resource',
+            generator: {
+                filename: 'static/models/[hash][ext]'
+            }
         });
 
-        // Add lightweight code protection for production builds only
+        // Production-only optimizations
         if (!dev && !isServer) {
             config.plugins.push(
                 new WebpackObfuscator({
@@ -60,6 +68,9 @@ const nextConfig = {
                 pathname: '/dzrdlevfn/**',
             }
         ],
+        // Enable image optimization
+        unoptimized: false,
+        minimumCacheTTL: 60,
     },
 
     async headers() {
@@ -75,10 +86,15 @@ const nextConfig = {
                         key: 'Cross-Origin-Embedder-Policy',
                         value: 'require-corp',
                     },
+                    // Add cache control headers for better performance
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
+                    },
                 ],
             },
         ];
     },
-}
+};
 
-module.exports = nextConfig 
+module.exports = nextConfig; 

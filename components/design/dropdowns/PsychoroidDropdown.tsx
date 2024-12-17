@@ -1,7 +1,8 @@
+'use client'
+
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
 import { Zap, Rocket, Globe } from 'lucide-react';
-import { ProductHuntBadge } from '../product-hunt-badge';
 
 export function CompanyDropdown() {
     const { currentLanguage } = useTranslation();
@@ -32,10 +33,10 @@ export function CompanyDropdown() {
                     </div>
                 </div>
 
-                {/* Product Hunt Badge */}
+                {/* Product Hunt Badge
                 <div className="mt-8 flex-shrink-0">
-                    <ProductHuntBadge productId="animate-ai" />
-                </div>
+                    <ProductHuntBadge productId="animated-ai" />
+                </div> */}
             </div>
         </div>
     );
