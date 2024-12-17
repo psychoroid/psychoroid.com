@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "generate-sitemap": "python scripts/generate_sitemap.py",
-    "postinstall": "node lib/setup-draco.js"
+    "postinstall": "node lib/utils/setup-draco.js"
   },
   "dependencies": {
     "@gltf-transform/core": "^3.10.1",

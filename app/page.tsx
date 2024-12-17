@@ -11,6 +11,7 @@ import { useUser } from '@/lib/contexts/UserContext'
 import { UserUpload } from '@/types/product'
 import { Footer } from '@/components/design/Footer'
 import P0Element from '@/components/design/p0-element'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function Home() {
     const [isRotating, setIsRotating] = useState(true)
@@ -185,9 +186,18 @@ export default function Home() {
             <Navbar />
             <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24 overflow-auto relative z-10">
                 <div className="max-w-7xl mx-auto text-gray-900 dark:text-white pb-4">
-                    <h1 className="text-xl md:text-2xl font-bold text-center mb-6 text-foreground">
-                        What can I help you create?
-                    </h1>
+                    <AnimatePresence>
+                        {!selectedImage && (
+                            <motion.h1
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="text-xl md:text-2xl font-bold text-center mb-6 text-foreground translate-y-[50px]"
+                            >
+                                What can I help you create?
+                            </motion.h1>
+                        )}
+                    </AnimatePresence>
 
                     <ImageUpload
                         onImageUpload={handleImageUpload}
