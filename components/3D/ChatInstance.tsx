@@ -24,8 +24,21 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     const [isFocused, setIsFocused] = useState(false)
     const [isDragging, setIsDragging] = useState(false)
     const [previewImages, setPreviewImages] = useState<Array<{ file: File, url: string }>>([])
+    const [isDesktop, setIsDesktop] = useState(false)
     const dragCounter = useRef(0)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    // Check if device is desktop on mount
+    useEffect(() => {
+        const checkIfDesktop = () => {
+            setIsDesktop(window.innerWidth >= 768) // 768px is a common breakpoint for tablets/mobile
+        }
+
+        checkIfDesktop()
+        window.addEventListener('resize', checkIfDesktop)
+
+        return () => window.removeEventListener('resize', checkIfDesktop)
+    }, [])
 
     // Clear input and disable when preview is shown
     useEffect(() => {
@@ -36,6 +49,17 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
 
     useEffect(() => {
         setMounted(true)
+    }, [])
+
+    // Separate effect for focusing the textarea (only on desktop)
+    useEffect(() => {
+        if (textareaRef.current && mounted && isDesktop) {
+            textareaRef.current.focus()
+            textareaRef.current.setSelectionRange(inputValue.length, inputValue.length)
+        }
+    }, [mounted, inputValue, isDesktop])
+
+    useEffect(() => {
         return () => {
             // Cleanup preview URLs when component unmounts
             previewImages.forEach(img => {
@@ -247,12 +271,12 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                             onChange={(e) => {
                                 if (!showPreview) {
                                     setInputValue(e.target.value)
-                                    adjustTextareaHeight()
                                 }
                             }}
                             onFocus={() => !showPreview && setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
                             disabled={showPreview || previewImages.length > 0}
+                            autoFocus={isDesktop}
                             className={cn(
                                 "w-full border-0 bg-transparent px-0 pl-0 text-sm resize-none",
                                 "text-foreground dark:text-white placeholder:text-muted-foreground/60 placeholder:text-sm",
@@ -265,7 +289,8 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                             style={{
                                 border: 'none',
                                 outline: 'none',
-                                boxShadow: 'none'
+                                boxShadow: 'none',
+                                overflow: 'hidden'
                             }}
                             placeholder={previewImages.length > 0 ? "Uploaded and ready, confirm to continue" : "Describe your dream model or just drop an image..."}
                             onKeyDown={mounted ? (e) => {
