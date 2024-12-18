@@ -14,9 +14,11 @@ interface StoredSuggestions {
     suggestions: string[]
     timestamp: number
     language: string
+    version: number
 }
 
 const FOUR_HOURS = 4 * 60 * 60 * 1000 // 4 hours in milliseconds
+const CURRENT_VERSION = 1 // Version to force refresh of cached suggestions
 
 export function ModelSuggestions({ onSelect }: ModelSuggestionsProps) {
     const { currentLanguage } = useTranslation()
@@ -45,22 +47,24 @@ export function ModelSuggestions({ onSelect }: ModelSuggestionsProps) {
             const stored: StoredSuggestions = JSON.parse(storedData)
             const isExpired = Date.now() - stored.timestamp > FOUR_HOURS
             const languageChanged = stored.language !== currentLanguage
+            const isOldVersion = !stored.version || stored.version < CURRENT_VERSION
 
             // Return stored suggestions if they're still valid
-            if (!isExpired && !languageChanged) {
+            if (!isExpired && !languageChanged && !isOldVersion && stored.suggestions.length === 3) {
                 return stored.suggestions
             }
         }
 
         // Generate new suggestions if needed
         const shuffled = [...allSuggestions].sort(() => 0.5 - Math.random())
-        const newSuggestions = shuffled.slice(0, 4)
+        const newSuggestions = shuffled.slice(0, 3)
 
         // Store new suggestions
         const newStoredData: StoredSuggestions = {
             suggestions: newSuggestions,
             timestamp: Date.now(),
-            language: currentLanguage
+            language: currentLanguage,
+            version: CURRENT_VERSION
         }
         localStorage.setItem('modelSuggestions', JSON.stringify(newStoredData))
 
@@ -72,7 +76,7 @@ export function ModelSuggestions({ onSelect }: ModelSuggestionsProps) {
     }
 
     return (
-        <div className="flex flex-wrap justify-center gap-2 max-w-[90%] mx-auto">
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-2 max-w-[95%] sm:max-w-[90%] mx-auto">
             {randomSuggestions.map((suggestion) => (
                 <Button
                     key={suggestion}
@@ -80,7 +84,7 @@ export function ModelSuggestions({ onSelect }: ModelSuggestionsProps) {
                     onClick={() => onSelect(suggestion)}
                     type="button"
                     className={cn(
-                        "h-6 rounded-none px-3 text-xs",
+                        "h-8 sm:h-6 rounded-none px-4 sm:px-3 text-sm sm:text-xs",
                         "bg-background/80 text-muted-foreground",
                         "hover:bg-background hover:text-foreground",
                         "border border-border/40",

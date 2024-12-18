@@ -1,12 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Paperclip, ArrowUp, X } from 'lucide-react'
 import { cn } from "@/lib/actions/utils"
 import { ModelSuggestions } from './ModelSuggestions'
 import { motion, AnimatePresence } from 'framer-motion'
+import RippleButton from "@/components/ui/magic/ripple-button"
 import Image from 'next/image'
 
 interface ChatInstanceProps {
@@ -14,9 +13,11 @@ interface ChatInstanceProps {
     isUploading: boolean
     onPromptSubmit?: (prompt: string) => void
     showPreview?: boolean
+    user?: any
+    setShowAuthModal?: (show: boolean) => void
 }
 
-export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPreview = false }: ChatInstanceProps) {
+export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPreview = false, user, setShowAuthModal }: ChatInstanceProps) {
     const [inputValue, setInputValue] = useState('')
     const [mounted, setMounted] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
@@ -83,7 +84,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         if (files && files.length > 0) {
             const imageFiles = Array.from(files)
                 .filter(file => file.type.startsWith('image/'))
-                .slice(0, 10) // Limit to 10 files
+                .slice(0, 5) // Limit to 5 files
 
             const newPreviews = imageFiles.map(file => ({
                 file,
@@ -123,6 +124,12 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     }
 
     const handleSubmit = () => {
+        // Check if user is authenticated before proceeding
+        if (!user && setShowAuthModal) {
+            setShowAuthModal(true)
+            return
+        }
+
         if (previewImages.length > 0) {
             handleProcessImages()
             return
@@ -137,6 +144,11 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     const handleSuggestionSelect = (suggestion: string) => {
         if (!showPreview) {
             setInputValue(suggestion)
+            // Check authentication before submitting
+            if (!user && setShowAuthModal) {
+                setShowAuthModal(true)
+                return
+            }
             if (onPromptSubmit) {
                 onPromptSubmit(suggestion)
             }
@@ -160,17 +172,8 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     }
 
     return (
-        <motion.div
-            className="space-y-6"
-            initial={false}
-            animate={{
-                y: showPreview ? -50 : 50,
-                transition: {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30
-                }
-            }}
+        <div
+            className="space-y-8 sm:space-y-6 translate-y-8 sm:translate-y-12"
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
@@ -178,25 +181,18 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         >
             <motion.div
                 onClick={handleBoxClick}
+                animate={{ height: "auto" }}
                 className={cn(
-                    "relative flex flex-col justify-between rounded-none p-4 pt-2 min-h-[100px] shadow-sm cursor-text",
+                    "relative flex flex-col justify-between rounded-none p-6 sm:p-4 pt-4 sm:pt-2 shadow-sm cursor-text min-h-[160px]",
                     "before:absolute before:inset-0 before:border before:border-border/20",
                     "after:absolute after:inset-[0.25px] after:border after:border-border/20",
                     "before:rounded-none after:rounded-none",
                     isFocused && "before:border-border/40 after:border-border/40",
                     isDragging && "before:border-primary/40 after:border-primary/40",
-                    "bg-background/60 dark:bg-background/60 backdrop-blur-[1px]",
-                    "[background:radial-gradient(circle_at_center,rgba(0,0,0,0.8)_1.5px,transparent_1.5px),radial-gradient(circle_at_center,rgba(0,0,0,0.4)_1.5px,transparent_1.5px)] dark:[background:radial-gradient(circle_at_center,rgba(255,255,255,0.8)_1.5px,transparent_1.5px),radial-gradient(circle_at_center,rgba(255,255,255,0.4)_1.5px,transparent_1.5px)]",
-                    "[background-position:0_0,8px_8px] dark:[background-position:0_0,8px_8px]",
-                    "[background-size:16px_16px] dark:[background-size:16px_16px]",
-                    "after:bg-background/75 dark:after:bg-background/75",
-                    "before:bg-gradient-to-b before:from-background/30 before:to-background/50 dark:before:from-background/30 dark:before:to-background/50"
+                    "bg-slate-50 dark:bg-zinc-900",
+                    "after:bg-slate-50 dark:after:bg-zinc-900",
+                    "before:bg-slate-50 dark:before:bg-zinc-900"
                 )}
-                animate={{
-                    scale: isDragging ? 1.02 : 1,
-                    borderColor: isDragging ? "rgba(215, 61, 87, 0.4)" : "rgba(63, 63, 70, 0.2)"
-                }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
                 <AnimatePresence>
                     {isDragging && previewImages.length === 0 && (
@@ -226,20 +222,33 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                 <div className="absolute inset-0 bg-gradient-to-b from-muted/20 to-muted/10 rounded-none pointer-events-none" />
 
                 <div className="flex flex-col justify-between h-full relative z-10">
-                    <Input
-                        ref={(el) => setInputRef(el)}
+                    <motion.textarea
+                        ref={(el) => setInputRef(el as any)}
                         value={inputValue}
-                        onChange={(e) => !showPreview && setInputValue(e.target.value)}
+                        onChange={(e) => {
+                            if (!showPreview) {
+                                setInputValue(e.target.value);
+                                if (e.target) {
+                                    e.target.style.height = 'inherit';
+                                    const newHeight = Math.max(60, e.target.scrollHeight);
+                                    e.target.style.height = `${newHeight}px`;
+                                }
+                            }
+                        }}
                         onFocus={() => !showPreview && setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
                         disabled={showPreview || previewImages.length > 0}
+                        animate={{ height: "auto" }}
                         className={cn(
-                            "w-full border-0 bg-transparent px-0 pl-0 text-sm",
-                            "text-muted-foreground dark:text-muted-foreground placeholder:text-muted-foreground placeholder:text-sm",
+                            "w-[calc(100%-80px)] border-0 bg-transparent px-0 pl-0 text-sm resize-none",
+                            "text-foreground dark:text-white placeholder:text-muted-foreground/60 placeholder:text-sm",
                             "focus-visible:ring-0 focus:outline-none shadow-none ring-0 ring-offset-0",
                             "relative z-10",
+                            "min-h-[60px] pb-2",
+                            "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
                             (showPreview || previewImages.length > 0) && "opacity-50 cursor-not-allowed"
                         )}
+                        rows={4}
                         placeholder={previewImages.length > 0 ? "Uploaded and ready, confirm to continue" : "Describe your dream model or just drop an image..."}
                         onKeyDown={mounted ? (e) => {
                             if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
@@ -265,7 +274,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                             src={img.url}
                                             alt={`Preview ${index + 1}`}
                                             fill
-                                            className="object-cover rounded-sm"
+                                            className="object-cover rounded-full"
                                             sizes="32px"
                                             priority
                                         />
@@ -293,8 +302,8 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                             </AnimatePresence>
                         </div>
 
-                        <div className="flex gap-2 z-50">
-                            <button
+                        <div className="flex gap-2 z-50 absolute bottom-2 right-2">
+                            <RippleButton
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -304,17 +313,19 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                     }
                                 }}
                                 className={cn(
-                                    "h-6 w-6 flex items-center justify-center",
-                                    "text-muted-foreground hover:text-foreground",
-                                    "transition-colors duration-200 rounded-none",
-                                    "hover:bg-background/80",
+                                    "h-8 w-8 sm:h-6 sm:w-6 flex items-center justify-center p-0",
+                                    "text-zinc-600 hover:text-zinc-900 dark:text-muted-foreground dark:hover:text-foreground",
+                                    "transition-colors duration-200 rounded-none border-0",
+                                    "hover:bg-zinc-200/80 dark:hover:bg-background/80",
                                     (isUploading || !mounted || showPreview) && "opacity-50 cursor-not-allowed"
                                 )}
+                                rippleColor="rgba(255, 255, 255, 0.2)"
+                                disabled={isUploading || !mounted || showPreview}
                             >
-                                <Paperclip className="h-4 w-4" />
-                            </button>
+                                <Paperclip className="h-5 w-5 sm:h-4 sm:w-4" />
+                            </RippleButton>
 
-                            <button
+                            <RippleButton
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -323,17 +334,18 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                     }
                                 }}
                                 className={cn(
-                                    "flex h-6 w-6 items-center justify-center rounded-none transition-all duration-200",
+                                    "flex h-8 w-8 sm:h-6 sm:w-6 items-center justify-center rounded-none transition-all duration-200 p-0 border-0",
                                     ((inputValue.length > 0 && !showPreview) || previewImages.length > 0) && mounted
                                         ? "bg-primary/80 text-primary-foreground hover:bg-primary cursor-pointer"
-                                        : "bg-background/80 text-muted-foreground hover:bg-background hover:text-foreground",
+                                        : "bg-white text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:bg-background/80 dark:text-muted-foreground dark:hover:bg-background dark:hover:text-foreground",
                                     showPreview && "opacity-50 cursor-not-allowed"
                                 )}
+                                rippleColor="rgba(255, 255, 255, 0.2)"
+                                disabled={showPreview || (!inputValue.length && !previewImages.length) || !mounted}
                             >
-                                <ArrowUp className="h-4 w-4" />
-                            </button>
+                                <ArrowUp className="h-5 w-5 sm:h-4 sm:w-4" />
+                            </RippleButton>
                         </div>
-
                     </div>
                 </div>
             </motion.div>
@@ -367,6 +379,6 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                     <ModelSuggestions onSelect={handleSuggestionSelect} />
                 )}
             </AnimatePresence>
-        </motion.div>
+        </div>
     )
 } 

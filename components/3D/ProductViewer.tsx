@@ -23,6 +23,8 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         position: [0, 0, 0] as [number, number, number],
         scale: [1, 1, 1] as [number, number, number]
     });
+    const [loadError, setLoadError] = useState<Error | null>(null);
+    const [isServerOffline, setIsServerOffline] = useState(false);
 
     const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(INITIAL_CAMERA_POSITION);
     const [controlsState, setControlsState] = useState({
@@ -32,6 +34,13 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
     const [isAutoRotating, setIsAutoRotating] = useState(isRotating);
 
     const imageUrl = imagePath ? `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}` : undefined;
+
+    // Convert relative model path to full URL
+    const fullModelUrl = modelUrl ?
+        modelUrl.startsWith('http') ?
+            modelUrl :
+            `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-models/${modelUrl}`
+        : undefined;
 
     // Update zoom constants
     const ZOOM_STEP = 1.2;
@@ -131,43 +140,75 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         });
     };
 
+    // Add error handling for the model
+    const handleModelError = (error: Error) => {
+        setLoadError(error);
+        console.error('Model loading error:', error);
+    };
+
+    // Add server status check
+    useEffect(() => {
+        const checkServerStatus = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                setIsServerOffline(!response.ok);
+            } catch (error) {
+                setIsServerOffline(true);
+            }
+        };
+
+        checkServerStatus();
+    }, []);
+
     const renderCanvas = (expanded: boolean) => (
-        <Canvas
-            gl={{ preserveDrawingBuffer: true }}
-            camera={{ position: cameraPositionVector }}
-            style={{ width: '100%', height: '100%' }}
-        >
-            <PerspectiveCamera
-                makeDefault
-                position={cameraPositionVector}
-                zoom={controlsState.zoom}
-            />
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
-            <Suspense fallback={null}>
-                <Product
-                    imageUrl={imageUrl}
-                    modelUrl={modelUrl}
-                    isRotating={isAutoRotating}
-                    zoom={zoom}
-                    modelState={modelState}
-                    onModelStateChange={handleModelStateChange}
+        <>
+            {isServerOffline && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
+                    <div className="bg-background/80 backdrop-blur-sm p-4 rounded-none border border-border/40 shadow-lg">
+                        <p className="text-sm text-muted-foreground">
+                            Server is currently offline. 3D preview unavailable.
+                        </p>
+                    </div>
+                </div>
+            )}
+            <Canvas
+                gl={{ preserveDrawingBuffer: true }}
+                camera={{ position: cameraPositionVector }}
+                style={{ width: '100%', height: '100%' }}
+            >
+                <PerspectiveCamera
+                    makeDefault
+                    position={cameraPositionVector}
+                    zoom={controlsState.zoom}
                 />
-            </Suspense>
-            <OrbitControls
-                ref={controlsRef}
-                enableZoom={true}
-                enablePan={true}
-                enableRotate={true}
-                autoRotate={isAutoRotating}
-                autoRotateSpeed={1}
-                onChange={handleControlsChange}
-                target={targetVector}
-                minDistance={MIN_DISTANCE}
-                maxDistance={MAX_DISTANCE}
-                zoomSpeed={1}
-            />
-        </Canvas>
+                <ambientLight intensity={0.5} />
+                <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
+                <Suspense fallback={null}>
+                    <Product
+                        imageUrl={imageUrl}
+                        modelUrl={fullModelUrl}
+                        isRotating={isAutoRotating}
+                        zoom={zoom}
+                        modelState={modelState}
+                        onModelStateChange={handleModelStateChange}
+                        onError={handleModelError}
+                    />
+                </Suspense>
+                <OrbitControls
+                    ref={controlsRef}
+                    enableZoom={true}
+                    enablePan={true}
+                    enableRotate={true}
+                    autoRotate={isAutoRotating}
+                    autoRotateSpeed={1}
+                    onChange={handleControlsChange}
+                    target={targetVector}
+                    minDistance={MIN_DISTANCE}
+                    maxDistance={MAX_DISTANCE}
+                    zoomSpeed={1}
+                />
+            </Canvas>
+        </>
     );
 
     const handleModelStateChange = (newState: ModelState) => {

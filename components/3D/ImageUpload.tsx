@@ -10,8 +10,6 @@ import { ProductDetails } from '@/types/product'
 import { PROGRESS_MESSAGES } from '@/lib/utils/progressMessages'
 import { ChatInstance } from './ChatInstance'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ImagePreview } from '@/components/3D/ImagePreview'
-import { cn } from '@/lib/actions/utils'
 
 interface SavedProgresses {
   [key: string]: number;
@@ -196,75 +194,76 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
     }
   }, [user]);
 
-  // Check server health
-  const checkServerHealth = async () => {
+  // Add server status check before making API calls
+  const checkServerStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8000/health')
-      setIsServerOffline(!response.ok)
-      return response.ok
+      const response = await fetch('http://localhost:8000/health');
+      const isOffline = !response.ok;
+      setIsServerOffline(isOffline);
+      return !isOffline;
     } catch (error) {
-      setIsServerOffline(true)
-      return false
+      setIsServerOffline(true);
+      return false;
     }
-  }
+  };
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!user) {
-        setShowAuthModal(true)
-        return
+        setShowAuthModal(true);
+        return;
       }
 
-      // Check server health before proceeding
-      const isServerHealthy = await checkServerHealth()
-
-      setUploading(true)
-      const files = event.target.files
-      if (!files || files.length === 0) return
+      // Check server status before proceeding
+      const isServerOnline = await checkServerStatus();
+      setUploading(true);
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
 
       const uploadPromises = Array.from(files).map(async (file, index) => {
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${user.id}/${Date.now()}_${index}.${fileExt}`
-        const filePath = `${fileName}`
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}_${index}.${fileExt}`;
+        const filePath = `${fileName}`;
 
         // Show initial upload toast
-        const uploadToast = toast.loading('Starting upload...')
+        const uploadToast = toast.loading('Starting upload...');
 
         try {
-          // If server is offline, just show the preview without mesh generation
-          if (!isServerHealthy) {
-            toast.success('Preview mode (Server offline)', { id: uploadToast })
-            setImagePaths(prev => [...prev, filePath])
-            onImageUpload(filePath)
-            return
-          }
-
-          // Normal upload process when server is online
+          // Upload the image to Supabase storage regardless of server status
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('product-images')
-            .upload(filePath, file)
+            .upload(filePath, file);
 
           if (uploadError) {
-            toast.error('Upload failed', { id: uploadToast })
-            throw uploadError
+            toast.error('Upload failed', { id: uploadToast });
+            throw uploadError;
           }
 
           if (uploadData) {
-            toast.success('Upload complete', { id: uploadToast })
-            setImagePaths(prev => [...prev, filePath])
-            onImageUpload(filePath)
+            // If server is offline, just show preview without 3D processing
+            if (!isServerOnline) {
+              toast.success('Image uploaded (Preview only - Server offline)', { id: uploadToast });
+              setImagePaths(prev => [...prev, filePath]);
+              onImageUpload(filePath);
+              return;
+            }
 
-            setIsLoading(true)
-            const processingToast = toast.loading('Processing image...')
+            // Continue with 3D processing if server is online
+            toast.success('Upload complete, generating 3D model...', { id: uploadToast });
+            setImagePaths(prev => [...prev, filePath]);
+            onImageUpload(filePath);
+
+            setIsLoading(true);
+            const processingToast = toast.loading('Processing image...');
 
             try {
               const modelUrl = await generate3DModel(filePath, (progress) => {
-                onProgressUpdate(filePath, progress)
-                toast.loading(getProgressMessage(progress), { id: processingToast })
-              })
+                onProgressUpdate(filePath, progress);
+                toast.loading(getProgressMessage(progress), { id: processingToast });
+              });
 
-              setModelUrl(modelUrl)
-              toast.success('3D model generated successfully!', { id: processingToast })
+              setModelUrl(modelUrl);
+              toast.success('3D model generated successfully!', { id: processingToast });
 
               const { data: productData, error: productError } = await supabase
                 .rpc('create_product', {
@@ -274,53 +273,41 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
                   p_model_path: modelUrl,
                   p_user_id: user.id
                 })
-                .single()
+                .single();
 
               if (productError) {
-                // Clean up the uploaded image if product creation fails
-                await supabase.storage
-                  .from('product-images')
-                  .remove([filePath])
-                console.error('Error creating product:', productError)
-                throw new Error('Failed to create product')
+                console.error('Error creating product:', productError);
+                throw new Error('Failed to create product');
               }
 
-              return productData
+              return productData;
             } catch (error) {
-              // Clean up the uploaded image if processing fails
-              if (filePath) {
-                await supabase.storage
-                  .from('product-images')
-                  .remove([filePath])
-              }
-              throw error
+              console.error('Error during 3D processing:', error);
+              toast.error('3D processing failed - Server may be offline', { id: processingToast });
+
+              // Keep the image preview even if 3D processing fails
+              setImagePaths(prev => [...prev, filePath]);
+              onImageUpload(filePath);
             }
           }
         } catch (error) {
-          console.error('Error during upload:', error)
-          if (!isServerHealthy) {
-            // In offline mode, still show the preview
-            toast.success('Preview mode active (Server offline)', { id: uploadToast })
-            setImagePaths(prev => [...prev, filePath])
-            onImageUpload(filePath)
-          } else {
-            toast.error('Error uploading: ' + String(error), { id: uploadToast })
-          }
+          console.error('Error during upload:', error);
+          toast.error('Upload error: ' + String(error), { id: uploadToast });
         }
-      })
+      });
 
-      await Promise.all(uploadPromises)
+      await Promise.all(uploadPromises);
     } catch (error) {
-      console.error('Error uploading images:', error)
-      toast.error('Error uploading images: ' + String(error))
+      console.error('Error uploading images:', error);
+      toast.error('Error uploading images: ' + String(error));
     } finally {
-      setUploading(false)
-      setIsLoading(false)
+      setUploading(false);
+      setIsLoading(false);
       if (event.target) {
-        event.target.value = ''
+        event.target.value = '';
       }
     }
-  }, [onImageUpload, onProgressUpdate, generate3DModel, user])
+  }, [onImageUpload, onProgressUpdate, generate3DModel, user]);
 
   const getProgressMessage = (progress: number) => {
     const messageSet = PROGRESS_MESSAGES.find(set => progress <= set.threshold);
@@ -329,6 +316,12 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
   };
 
   const handlePromptSubmit = async (prompt: string) => {
+    // Check if user is authenticated
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+
     // TODO: Implement prompt-based 3D mesh generation
     console.log('Generating 3D mesh from prompt:', prompt)
   }
@@ -343,12 +336,14 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
 
   return (
     <>
-      <div className="max-w-3xl mx-auto relative">
+      <div className="max-w-3xl mx-auto px-4 sm:px-0 relative">
         <ChatInstance
           onFileSelect={handleFileUpload}
           isUploading={uploading}
           onPromptSubmit={handlePromptSubmit}
-          showPreview={imagePaths.length > 0}
+          showPreview={false}
+          user={user}
+          setShowAuthModal={setShowAuthModal}
         />
 
         <AnimatePresence>
@@ -358,12 +353,12 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              className="mt-2 mb-4"
+              className="mt-4 mb-6 sm:mt-2 sm:mb-4"
             >
               <motion.p
                 initial={{ scale: 0.95 }}
                 animate={{ scale: 1 }}
-                className="text-gray-500 dark:text-gray-300 text-sm font-medium bg-black/50 px-3 py-1.5 rounded-none backdrop-blur-sm"
+                className="text-base sm:text-sm text-gray-500 dark:text-gray-300 font-medium bg-black/50 px-4 py-2 sm:px-3 sm:py-1.5 rounded-none backdrop-blur-sm"
               >
                 {getProgressMessage(currentProgress)}
               </motion.p>
@@ -371,53 +366,6 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
           )}
         </AnimatePresence>
       </div>
-
-      <AnimatePresence mode="wait">
-        {imagePaths.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              transition: {
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-                delay: 0.2 // Slight delay to let ChatInstance move up first
-              }
-            }}
-            exit={{
-              opacity: 0,
-              y: 20,
-              transition: {
-                duration: 0.2
-              }
-            }}
-            className="mt-8 relative"
-          >
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute -top-4 right-4 z-10 bg-background/80 backdrop-blur-sm border border-border/40 rounded-none px-3 py-1.5 text-xs font-medium hover:bg-background/90 transition-colors duration-200"
-              onClick={handleClose}
-            >
-              Close Preview
-            </motion.button>
-
-            <ImagePreview
-              imagePaths={imagePaths}
-              selectedImage={selectedImage}
-              onImageClick={onImageClick}
-              onImageRemove={onImageRemove}
-              currentPage={currentPage}
-              onPageChange={onPageChange}
-              isLoading={isLoading}
-              processingImages={processingImages}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <AuthModal
         isOpen={showAuthModal}
