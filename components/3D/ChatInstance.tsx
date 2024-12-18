@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Paperclip, ArrowUp, X } from 'lucide-react'
 import { cn } from "@/lib/actions/utils"
 import { ModelSuggestions } from './ModelSuggestions'
 import { motion, AnimatePresence } from 'framer-motion'
-import RippleButton from "@/components/ui/magic/ripple-button"
 import Image from 'next/image'
+import RippleButton from "@/components/ui/magic/ripple-button"
+import { Textarea } from "@/components/ui/textarea"
 
 interface ChatInstanceProps {
     onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
@@ -23,8 +24,8 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     const [isFocused, setIsFocused] = useState(false)
     const [isDragging, setIsDragging] = useState(false)
     const [previewImages, setPreviewImages] = useState<Array<{ file: File, url: string }>>([])
-    const dragCounter = React.useRef(0)
-    const [inputRef, setInputRef] = useState<HTMLInputElement | null>(null)
+    const dragCounter = useRef(0)
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     // Clear input and disable when preview is shown
     useEffect(() => {
@@ -84,7 +85,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         if (files && files.length > 0) {
             const imageFiles = Array.from(files)
                 .filter(file => file.type.startsWith('image/'))
-                .slice(0, 5) // Limit to 5 files
+                .slice(0, 10) // Limit to 10 files
 
             const newPreviews = imageFiles.map(file => ({
                 file,
@@ -162,14 +163,32 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
             target.tagName === 'BUTTON' ||
             target.closest('button') ||
             target.closest('.controls-area') ||
-            target.closest('.interactive')
+            target.closest('.interactive') ||
+            target.closest('.preview-images-area') ||
+            target.tagName === 'TEXTAREA' // Don't handle click if directly on textarea
         ) {
             return
         }
 
-        // Focus the input
-        inputRef?.focus()
+        // Focus the textarea
+        if (textareaRef.current) {
+            textareaRef.current.focus()
+            // Place cursor at the end of the text
+            const length = textareaRef.current.value.length
+            textareaRef.current.setSelectionRange(length, length)
+        }
     }
+
+    const adjustTextareaHeight = () => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto'
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+        }
+    }
+
+    useEffect(() => {
+        adjustTextareaHeight()
+    }, [inputValue])
 
     return (
         <div
@@ -181,17 +200,16 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         >
             <motion.div
                 onClick={handleBoxClick}
-                animate={{ height: "auto" }}
                 className={cn(
-                    "relative flex flex-col justify-between rounded-none p-6 sm:p-4 pt-4 sm:pt-2 shadow-sm cursor-text min-h-[160px]",
-                    "before:absolute before:inset-0 before:border before:border-border/20",
-                    "after:absolute after:inset-[0.25px] after:border after:border-border/20",
+                    "relative flex flex-col justify-between rounded-none p-4 sm:p-3 pt-3 sm:pt-2 min-h-[140px] sm:min-h-[100px] shadow-sm cursor-text",
+                    "before:absolute before:inset-0 before:border before:border-border/5",
+                    "after:absolute after:inset-[0.25px] after:border after:border-border/5",
                     "before:rounded-none after:rounded-none",
-                    isFocused && "before:border-border/40 after:border-border/40",
-                    isDragging && "before:border-primary/40 after:border-primary/40",
-                    "bg-slate-50 dark:bg-zinc-900",
-                    "after:bg-slate-50 dark:after:bg-zinc-900",
-                    "before:bg-slate-50 dark:before:bg-zinc-900"
+                    isFocused && "before:border-border/10 after:border-border/10",
+                    isDragging && "before:border-primary/20 after:border-primary/20",
+                    "bg-slate-50/80 dark:bg-zinc-900/80",
+                    "after:bg-slate-50/80 dark:after:bg-zinc-900/80",
+                    "before:bg-slate-50/80 dark:before:bg-zinc-900/80"
                 )}
             >
                 <AnimatePresence>
@@ -222,44 +240,46 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                 <div className="absolute inset-0 bg-gradient-to-b from-muted/20 to-muted/10 rounded-none pointer-events-none" />
 
                 <div className="flex flex-col justify-between h-full relative z-10">
-                    <motion.textarea
-                        ref={(el) => setInputRef(el as any)}
-                        value={inputValue}
-                        onChange={(e) => {
-                            if (!showPreview) {
-                                setInputValue(e.target.value);
-                                if (e.target) {
-                                    e.target.style.height = 'inherit';
-                                    const newHeight = Math.max(60, e.target.scrollHeight);
-                                    e.target.style.height = `${newHeight}px`;
+                    <div className="flex-grow">
+                        <Textarea
+                            ref={textareaRef}
+                            value={inputValue}
+                            onChange={(e) => {
+                                if (!showPreview) {
+                                    setInputValue(e.target.value)
+                                    adjustTextareaHeight()
                                 }
-                            }
-                        }}
-                        onFocus={() => !showPreview && setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        disabled={showPreview || previewImages.length > 0}
-                        animate={{ height: "auto" }}
-                        className={cn(
-                            "w-[calc(100%-80px)] border-0 bg-transparent px-0 pl-0 text-sm resize-none",
-                            "text-foreground dark:text-white placeholder:text-muted-foreground/60 placeholder:text-sm",
-                            "focus-visible:ring-0 focus:outline-none shadow-none ring-0 ring-offset-0",
-                            "relative z-10",
-                            "min-h-[60px] pb-2",
-                            "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-                            (showPreview || previewImages.length > 0) && "opacity-50 cursor-not-allowed"
-                        )}
-                        rows={4}
-                        placeholder={previewImages.length > 0 ? "Uploaded and ready, confirm to continue" : "Describe your dream model or just drop an image..."}
-                        onKeyDown={mounted ? (e) => {
-                            if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
-                                e.preventDefault()
-                                handleSubmit()
-                            }
-                        } : undefined}
-                    />
+                            }}
+                            onFocus={() => !showPreview && setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            disabled={showPreview || previewImages.length > 0}
+                            className={cn(
+                                "w-full border-0 bg-transparent px-0 pl-0 text-sm resize-none",
+                                "text-foreground dark:text-white placeholder:text-muted-foreground/60 placeholder:text-sm",
+                                "focus-visible:ring-0 focus:outline-none shadow-none ring-0 ring-offset-0",
+                                "relative z-10 min-h-[24px]",
+                                "border-none focus:border-none active:border-none",
+                                "selection:bg-primary/20 selection:text-foreground",
+                                (showPreview || previewImages.length > 0) && "opacity-50 cursor-not-allowed"
+                            )}
+                            style={{
+                                border: 'none',
+                                outline: 'none',
+                                boxShadow: 'none'
+                            }}
+                            placeholder={previewImages.length > 0 ? "Uploaded and ready, confirm to continue" : "Describe your dream model or just drop an image..."}
+                            onKeyDown={mounted ? (e) => {
+                                if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
+                                    e.preventDefault()
+                                    handleSubmit()
+                                }
+                            } : undefined}
+                            rows={1}
+                        />
+                    </div>
 
-                    <div className="flex items-center justify-between mt-2 controls-area interactive">
-                        <div className="flex gap-1 z-50">
+                    <div className="flex items-center justify-between mt-4 controls-area interactive">
+                        <div className="flex flex-wrap gap-1 z-50 preview-images-area">
                             <AnimatePresence mode="popLayout">
                                 {previewImages.map((img, index) => (
                                     <motion.div
@@ -274,7 +294,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                             src={img.url}
                                             alt={`Preview ${index + 1}`}
                                             fill
-                                            className="object-cover rounded-full"
+                                            className="object-cover rounded-sm"
                                             sizes="32px"
                                             priority
                                         />
@@ -302,7 +322,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                             </AnimatePresence>
                         </div>
 
-                        <div className="flex gap-2 z-50 absolute bottom-2 right-2">
+                        <div className="flex gap-2 z-50 ml-auto">
                             <RippleButton
                                 type="button"
                                 onClick={(e) => {
