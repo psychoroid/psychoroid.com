@@ -226,14 +226,14 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                 onClick={handleBoxClick}
                 className={cn(
                     "relative flex flex-col justify-between rounded-none p-4 sm:p-3 pt-3 sm:pt-2 min-h-[140px] sm:min-h-[100px] shadow-sm cursor-text",
-                    "before:absolute before:inset-0 before:border before:border-border/5",
-                    "after:absolute after:inset-[0.25px] after:border after:border-border/5",
+                    "before:absolute before:inset-0 before:border before:border-black/[0.08] dark:before:border-white/[0.08]",
+                    "after:absolute after:inset-[0.25px] after:border after:border-black/[0.08] dark:after:border-white/[0.08]",
                     "before:rounded-none after:rounded-none",
-                    isFocused && "before:border-border/10 after:border-border/10",
+                    isFocused && "before:border-black/[0.15] after:border-black/[0.15] dark:before:border-white/[0.15] dark:after:border-white/[0.15]",
                     isDragging && "before:border-primary/20 after:border-primary/20",
-                    "bg-slate-50/80 dark:bg-zinc-900/80",
-                    "after:bg-slate-50/80 dark:after:bg-zinc-900/80",
-                    "before:bg-slate-50/80 dark:before:bg-zinc-900/80"
+                    "bg-slate-50/60 dark:bg-zinc-900/50",
+                    "after:bg-slate-50/60 dark:after:bg-zinc-900/50",
+                    "before:bg-slate-50/60 dark:before:bg-zinc-900/50"
                 )}
             >
                 <AnimatePresence>
@@ -271,6 +271,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                             onChange={(e) => {
                                 if (!showPreview) {
                                     setInputValue(e.target.value)
+                                    adjustTextareaHeight()
                                 }
                             }}
                             onFocus={() => !showPreview && setIsFocused(true)}
@@ -279,20 +280,23 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                             autoFocus={isDesktop}
                             className={cn(
                                 "w-full border-0 bg-transparent px-0 pl-0 text-sm resize-none",
-                                "text-foreground dark:text-white placeholder:text-muted-foreground/60 placeholder:text-sm",
+                                "text-muted-foreground placeholder:text-muted-foreground/60 placeholder:text-sm",
                                 "focus-visible:ring-0 focus:outline-none shadow-none ring-0 ring-offset-0",
-                                "relative z-10 min-h-[24px]",
+                                "relative z-10 min-h-[24px] max-h-[200px] overflow-y-auto",
                                 "border-none focus:border-none active:border-none",
-                                "selection:bg-primary/20 selection:text-foreground",
+                                "selection:bg-primary/20 selection:text-muted-foreground",
+                                "transition-all duration-200 ease-in-out",
                                 (showPreview || previewImages.length > 0) && "opacity-50 cursor-not-allowed"
                             )}
                             style={{
                                 border: 'none',
                                 outline: 'none',
                                 boxShadow: 'none',
-                                overflow: 'hidden'
+                                overflow: 'hidden',
+                                lineHeight: '1.5',
+                                letterSpacing: '0.01em'
                             }}
-                            placeholder={previewImages.length > 0 ? "Uploaded and ready, confirm to continue" : "Describe your dream model or just drop an image..."}
+                            placeholder={previewImages.length > 0 ? "Uploaded and ready, confirm to continue" : "Describe your dream 3D asset or just drop an image..."}
                             onKeyDown={mounted ? (e) => {
                                 if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
                                     e.preventDefault()
@@ -359,9 +363,9 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                 }}
                                 className={cn(
                                     "h-8 w-8 sm:h-6 sm:w-6 flex items-center justify-center p-0",
-                                    "text-zinc-600 hover:text-zinc-900 dark:text-muted-foreground dark:hover:text-foreground",
+                                    "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white",
                                     "transition-colors duration-200 rounded-none border-0",
-                                    "hover:bg-zinc-200/80 dark:hover:bg-background/80",
+                                    "bg-zinc-200/80 hover:bg-zinc-300/90 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/90",
                                     (isUploading || !mounted || showPreview) && "opacity-50 cursor-not-allowed"
                                 )}
                                 rippleColor="rgba(255, 255, 255, 0.2)"
@@ -381,8 +385,8 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                 className={cn(
                                     "flex h-8 w-8 sm:h-6 sm:w-6 items-center justify-center rounded-none transition-all duration-200 p-0 border-0",
                                     ((inputValue.length > 0 && !showPreview) || previewImages.length > 0) && mounted
-                                        ? "bg-primary/80 text-primary-foreground hover:bg-primary cursor-pointer"
-                                        : "bg-white text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:bg-background/80 dark:text-muted-foreground dark:hover:bg-background dark:hover:text-foreground",
+                                        ? "bg-primary/90 text-primary-foreground hover:bg-primary cursor-pointer"
+                                        : "bg-zinc-200/80 hover:bg-zinc-300/90 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/90 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
                                     showPreview && "opacity-50 cursor-not-allowed"
                                 )}
                                 rippleColor="rgba(255, 255, 255, 0.2)"

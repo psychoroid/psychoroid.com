@@ -32,7 +32,7 @@ const P0Element: React.FC = memo(() => {
     const svgProps = useMemo(() => ({
         width: "100%",
         height: "100%",
-        viewBox: "-50 0 1500 1100",
+        viewBox: "-50 -15 1500 1100",
         fill: "none",
         xmlns: "http://www.w3.org/2000/svg",
         style: {
@@ -62,23 +62,25 @@ const P0Element: React.FC = memo(() => {
                 <g>
                     {/* Static P */}
                     <path
-                        d="M44 367V1075.5H173V367H339C459.5 367 522 460.5 522 573C522 685.5 459.5 779 339 779H173V1075.5
-                        M173 487H339C395.5 487 413 530 413 573C413 616 395.5 659 339 659H173V487
-                        M44 267V367V1075.5H173V879H339C509.5 879 622 735.5 622 573C622 410.5 509.5 267 339 267H134H44Z"
-                        stroke="#FF1744"
-                        strokeWidth="3"
-                        strokeOpacity="0.2"
+                        d="M44 317V1025.5H173V317H339C459.5 317 522 410.5 522 523C522 635.5 459.5 729 339 729H173V1025.5
+                        M173 437H339C395.5 437 413 480 413 523C413 566 395.5 609 339 609H173V437
+                        M44 217V317V1025.5H173V829H339C509.5 829 622 685.5 622 523C622 360.5 509.5 217 339 217H134H44Z"
+                        stroke="#FF5252"
+                        strokeWidth="2"
+                        strokeOpacity="0.15"
+                        strokeDasharray="3,8"
                         filter="url(#glow)"
                         vectorEffect="non-scaling-stroke"
                     />
                     {/* Animated P */}
                     <motion.path
-                        d="M44 367V1075.5H173V367H339C459.5 367 522 460.5 522 573C522 685.5 459.5 779 339 779H173V1075.5
-                        M173 487H339C395.5 487 413 530 413 573C413 616 395.5 659 339 659H173V487
-                        M44 267V367V1075.5H173V879H339C509.5 879 622 735.5 622 573C622 410.5 509.5 267 339 267H134H44Z"
-                        stroke="#FF1744"
-                        strokeWidth="3"
-                        strokeOpacity="1"
+                        d="M44 317V1025.5H173V317H339C459.5 317 522 410.5 522 523C522 635.5 459.5 729 339 729H173V1025.5
+                        M173 437H339C395.5 437 413 480 413 523C413 566 395.5 609 339 609H173V437
+                        M44 217V317V1025.5H173V829H339C509.5 829 622 685.5 622 523C622 360.5 509.5 217 339 217H134H44Z"
+                        stroke="#FF5252"
+                        strokeWidth="2"
+                        strokeOpacity="0.8"
+                        strokeDasharray="3,8"
                         filter="url(#glow)"
                         vectorEffect="non-scaling-stroke"
                         {...animations.p}
@@ -86,19 +88,21 @@ const P0Element: React.FC = memo(() => {
 
                     {/* Static 0 */}
                     <path
-                        d="M731.5 182.5H1153L852 478V69C852 69 1032.5 69 1153 69C1273.5 69 1360 182.5 1360 275C1360 367.5 1360 563.5 1360 563.5H946.5L1240 275V677.5C1240 677.5 1076 677.5 946.5 677.5C817 677.5 731.5 555 731.5 478C731.5 401 731.5 182.5 731.5 182.5Z"
-                        stroke="#FF1744"
-                        strokeWidth="3"
-                        strokeOpacity="0.2"
+                        d="M731.5 132.5H1153L852 428V19C852 19 1032.5 19 1153 19C1273.5 19 1360 132.5 1360 225C1360 317.5 1360 513.5 1360 513.5H946.5L1240 225V627.5C1240 627.5 1076 627.5 946.5 627.5C817 627.5 731.5 505 731.5 428C731.5 351 731.5 132.5 731.5 132.5Z"
+                        stroke="#FF5252"
+                        strokeWidth="2"
+                        strokeOpacity="0.15"
+                        strokeDasharray="3,8"
                         filter="url(#glow)"
                         vectorEffect="non-scaling-stroke"
                     />
                     {/* Animated 0 */}
                     <motion.path
-                        d="M731.5 182.5H1153L852 478V69C852 69 1032.5 69 1153 69C1273.5 69 1360 182.5 1360 275C1360 367.5 1360 563.5 1360 563.5H946.5L1240 275V677.5C1240 677.5 1076 677.5 946.5 677.5C817 677.5 731.5 555 731.5 478C731.5 401 731.5 182.5 731.5 182.5Z"
-                        stroke="#FF1744"
-                        strokeWidth="3"
-                        strokeOpacity="1"
+                        d="M731.5 132.5H1153L852 428V19C852 19 1032.5 19 1153 19C1273.5 19 1360 132.5 1360 225C1360 317.5 1360 513.5 1360 513.5H946.5L1240 225V627.5C1240 627.5 1076 627.5 946.5 627.5C817 627.5 731.5 505 731.5 428C731.5 351 731.5 132.5 731.5 132.5Z"
+                        stroke="#FF5252"
+                        strokeWidth="2"
+                        strokeOpacity="0.8"
+                        strokeDasharray="3,8"
                         filter="url(#glow)"
                         vectorEffect="non-scaling-stroke"
                         {...animations.zero}

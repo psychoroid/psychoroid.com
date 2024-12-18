@@ -203,7 +203,7 @@ export function Navbar() {
                                     </div>
                                     <Link
                                         href="/dashboard"
-                                        className="text-zinc-400 hover:text-zinc-200 transition-colors text-xs font-medium ml-3 translate-y-[2px]"
+                                        className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium ml-3 translate-y-[2px]"
                                     >
                                         {t(currentLanguage, 'navbar.dashboard')}
                                     </Link>
@@ -245,7 +245,7 @@ export function Navbar() {
                             >
                                 <Link
                                     href="https://developers.psychoroid.com"
-                                    className="text-zinc-400 hover:text-zinc-200 transition-colors text-xs font-medium"
+                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -262,14 +262,14 @@ export function Navbar() {
                             {session ? (
                                 <button
                                     onClick={handleSignOut}
-                                    className="text-zinc-400 hover:text-zinc-200 transition-colors text-xs font-medium translate-y-[2px]"
+                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
                                 >
                                     {t(currentLanguage, 'navbar.sign_out')}
                                 </button>
                             ) : (
                                 <Link
                                     href="/auth/sign-in"
-                                    className="text-zinc-400 hover:text-zinc-200 transition-colors text-xs font-medium translate-y-[2px]"
+                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
                                 >
                                     {t(currentLanguage, 'navbar.sign_in')}
                                 </Link>
@@ -321,7 +321,7 @@ export function Navbar() {
                                     </div>
                                     <Link
                                         href="/dashboard"
-                                        className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
+                                        className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
                                     >
                                         {t(currentLanguage, 'navbar.dashboard')}
                                     </Link>
@@ -346,7 +346,7 @@ export function Navbar() {
                             >
                                 <Link
                                     href="https://developers.psychoroid.com"
-                                    className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
+                                    className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -364,7 +364,7 @@ export function Navbar() {
                                     <div className="h-px w-full bg-border"></div>
                                     <button
                                         onClick={handleSignOut}
-                                        className="text-sm font-medium text-left text-muted-foreground hover:text-[#D73D57] transition-colors"
+                                        className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium text-left"
                                     >
                                         {t(currentLanguage, 'navbar.sign_out')}
                                     </button>
@@ -374,7 +374,7 @@ export function Navbar() {
                                     <div className="h-px w-full bg-border"></div>
                                     <Link
                                         href="/auth/sign-in"
-                                        className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
+                                        className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
                                     >
                                         {t(currentLanguage, 'navbar.sign_in')}
                                     </Link>
