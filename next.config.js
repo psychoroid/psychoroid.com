@@ -10,11 +10,17 @@ const nextConfig = {
     // Optimize page loading
     pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
 
+    // Font optimization
+    optimizeFonts: true,
+
     webpack: (config, { dev, isServer }) => {
         // Asset handling
         config.module.rules.push({
             test: /\.(woff|woff2|eot|ttf|otf)$/i,
             type: 'asset/resource',
+            generator: {
+                filename: 'static/fonts/[hash][ext]'
+            }
         });
 
         // Enhanced 3D model file handling
@@ -67,6 +73,11 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'res.cloudinary.com',
                 pathname: '/dzrdlevfn/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'api.producthunt.com',
+                pathname: '/widgets/embed-image/v1/**',
             }
         ],
         unoptimized: false,
@@ -74,23 +85,34 @@ const nextConfig = {
     },
 
     async headers() {
+        const headers = [
+            {
+                key: 'Cross-Origin-Opener-Policy',
+                value: 'same-origin',
+            },
+            {
+                key: 'Cross-Origin-Embedder-Policy',
+                value: 'credentialless',
+            }
+        ];
+
+        // Only add aggressive caching in production
+        if (process.env.NODE_ENV === 'production') {
+            headers.push({
+                key: 'Cache-Control',
+                value: 'public, max-age=150000, stale-while-revalidate=86400',
+            });
+        } else {
+            headers.push({
+                key: 'Cache-Control',
+                value: 'no-cache, no-store, must-revalidate',
+            });
+        }
+
         return [
             {
                 source: '/:path*',
-                headers: [
-                    {
-                        key: 'Cross-Origin-Opener-Policy',
-                        value: 'same-origin',
-                    },
-                    {
-                        key: 'Cross-Origin-Embedder-Policy',
-                        value: 'credentialless',
-                    },
-                    {
-                        key: 'Cache-Control',
-                        value: 'public, max-age=31536000, immutable',
-                    },
-                ],
+                headers,
             },
         ];
     },

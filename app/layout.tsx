@@ -9,7 +9,13 @@ import { TranslationProvider } from '@/lib/contexts/TranslationContext';
 import { headers } from 'next/headers';
 import { languages } from '@/lib/i18n/config';
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+    subsets: ['latin'],
+    display: 'swap',
+    preload: true,
+    weight: ['400', '500', '600', '700'],
+    variable: '--font-inter',
+})
 
 export const viewport = {
     width: 'device-width',

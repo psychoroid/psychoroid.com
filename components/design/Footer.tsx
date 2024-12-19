@@ -35,7 +35,7 @@ export function Footer() {
                         </Link>
                         <div className="hidden lg:block h-4 w-px bg-border"></div>
                         <Link
-                            href="https://producthunt.com/psychoroid"
+                            href="https://www.producthunt.com/products/psychoroid-com"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-muted-foreground hover:text-foreground transition-colors"

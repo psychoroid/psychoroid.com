@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useUser } from '@/lib/contexts/UserContext'
 import { supabase } from '@/lib/supabase/supabase'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
+import { AuthModal } from '@/components/auth/AuthModal'
 
 type Sentiment = 'very_positive' | 'positive' | 'negative' | 'very_negative' | 'null'
 
@@ -23,8 +24,10 @@ export default function FeedbackForm() {
     const { user } = useUser()
     const { currentLanguage } = useTranslation()
     const [isOpen, setIsOpen] = useState(false)
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
     const [feedback, setFeedback] = useState('')
     const [sentiment, setSentiment] = useState<Sentiment>('null')
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const formRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -41,8 +44,14 @@ export default function FeedbackForm() {
     }, [])
 
     const handleSubmit = async () => {
-        if (!user?.id) return
+        if (!user?.id) {
+            setIsAuthModalOpen(true)
+            return
+        }
 
+        if (isSubmitting) return
+
+        setIsSubmitting(true)
         try {
             const { error } = await supabase.rpc('create_feedback', {
                 p_sentiment: sentiment,
@@ -51,13 +60,21 @@ export default function FeedbackForm() {
 
             if (error) throw error
 
-            toast.success('Feedback submitted successfully')
+            toast.success('Thank you for your feedback!', {
+                description: 'We appreciate your input to help improve our platform.',
+                duration: 4000,
+            })
             setFeedback('')
             setSentiment('null')
             setIsOpen(false)
         } catch (error) {
             console.error('Error submitting feedback:', error)
-            toast.error('Failed to submit feedback')
+            toast.error('Failed to submit feedback', {
+                description: 'Please try again later.',
+                duration: 4000,
+            })
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -70,7 +87,7 @@ export default function FeedbackForm() {
                 {t(currentLanguage, 'feedback_form.button')}
             </button>
             {isOpen && (
-                <div className="absolute bottom-8 right-0 w-80 bg-background border border-border shadow-lg translate-x-12">
+                <div className="absolute bottom-8 right-0 w-80 bg-background border border-border shadow-lg translate-x-12 z-[60]">
                     <div className="p-4">
                         <Textarea
                             placeholder={t(currentLanguage, 'feedback_form.placeholder')}
@@ -95,15 +112,19 @@ export default function FeedbackForm() {
                             <Button
                                 size="sm"
                                 onClick={handleSubmit}
+                                disabled={!feedback.trim() || sentiment === 'null' || isSubmitting}
                                 className="rounded-none bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white"
-                                disabled={!feedback.trim() || sentiment === 'null'}
                             >
-                                {t(currentLanguage, 'feedback_form.submit')}
+                                {isSubmitting ? 'Sending...' : t(currentLanguage, 'feedback_form.submit')}
                             </Button>
                         </div>
                     </div>
                 </div>
             )}
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+            />
         </div>
     )
 }

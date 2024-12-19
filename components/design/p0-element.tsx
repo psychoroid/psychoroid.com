@@ -6,12 +6,9 @@ import { motion } from 'framer-motion'
 const COLORS = [
     '#FF5252', // Red psychoroid
     '#3B82F6', // Blue
-    '#10B981', // Emerald
     '#08CFCE', // Cyber
     '#FEB60A', // Gold
     '#98D8C8', // Mint
-    '#00FF50', // Cyan
-    '#00FF50', // Cyan 2
 ];
 
 const P0Element: React.FC = memo(() => {
