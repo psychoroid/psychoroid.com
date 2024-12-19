@@ -27,6 +27,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     const [isDesktop, setIsDesktop] = useState(false)
     const dragCounter = useRef(0)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const submitButtonRef = useRef<HTMLButtonElement>(null)
 
     // Check if device is desktop on mount
     useEffect(() => {
@@ -155,11 +156,13 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
             return
         }
 
+        // If we have images, process them
         if (previewImages.length > 0) {
             handleProcessImages()
             return
         }
 
+        // Otherwise handle text submission
         if (inputValue.trim() && onPromptSubmit && !showPreview) {
             onPromptSubmit(inputValue)
             setInputValue('')
@@ -214,9 +217,15 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         adjustTextareaHeight()
     }, [inputValue])
 
+    useEffect(() => {
+        if (previewImages.length > 0 && submitButtonRef.current) {
+            submitButtonRef.current.focus()
+        }
+    }, [previewImages.length])
+
     return (
         <div
-            className="space-y-8 sm:space-y-6 translate-y-8 sm:translate-y-12"
+            className="space-y-8 sm:space-y-6 translate-y-8 sm:translate-y-12 w-full"
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
@@ -225,7 +234,8 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
             <motion.div
                 onClick={handleBoxClick}
                 className={cn(
-                    "relative flex flex-col justify-between rounded-none p-4 sm:p-3 pt-3 sm:pt-2 min-h-[140px] sm:min-h-[100px] shadow-sm cursor-text",
+                    "relative flex flex-col justify-between rounded-none p-3 sm:p-3 pt-3 sm:pt-2 shadow-sm cursor-text w-full",
+                    "h-[140px] sm:h-[100px]",
                     "before:absolute before:inset-0 before:border before:border-black/[0.08] dark:before:border-white/[0.08]",
                     "after:absolute after:inset-[0.25px] after:border after:border-black/[0.08] dark:after:border-white/[0.08]",
                     "before:rounded-none after:rounded-none",
@@ -263,15 +273,17 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
 
                 <div className="absolute inset-0 bg-gradient-to-b from-muted/20 to-muted/10 rounded-none pointer-events-none" />
 
-                <div className="flex flex-col justify-between h-full relative z-10">
-                    <div className="flex-grow">
+                <div className="flex flex-col h-full relative z-10">
+                    <div className="h-[100px] sm:h-[60px]">
                         <Textarea
                             ref={textareaRef}
                             value={inputValue}
                             onChange={(e) => {
                                 if (!showPreview) {
                                     setInputValue(e.target.value)
-                                    adjustTextareaHeight()
+                                    if (window.innerWidth >= 640) {
+                                        adjustTextareaHeight()
+                                    }
                                 }
                             }}
                             onFocus={() => !showPreview && setIsFocused(true)}
@@ -279,24 +291,27 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                             disabled={showPreview || previewImages.length > 0}
                             autoFocus={isDesktop}
                             className={cn(
-                                "w-full border-0 bg-transparent px-0 pl-0 text-sm resize-none",
+                                "w-full border-0 bg-transparent px-0 pl-0 text-sm",
                                 "text-muted-foreground placeholder:text-muted-foreground/60 placeholder:text-sm",
                                 "focus-visible:ring-0 focus:outline-none shadow-none ring-0 ring-offset-0",
-                                "relative z-10 min-h-[24px] max-h-[200px] overflow-y-auto",
                                 "border-none focus:border-none active:border-none",
                                 "selection:bg-primary/20 selection:text-muted-foreground",
                                 "transition-all duration-200 ease-in-out",
+                                "h-full sm:h-auto",
                                 (showPreview || previewImages.length > 0) && "opacity-50 cursor-not-allowed"
                             )}
                             style={{
                                 border: 'none',
                                 outline: 'none',
                                 boxShadow: 'none',
-                                overflow: 'hidden',
+                                resize: 'none',
                                 lineHeight: '1.5',
                                 letterSpacing: '0.01em'
                             }}
-                            placeholder={previewImages.length > 0 ? "Uploaded and ready, confirm to continue" : "Describe your dream 3D asset or just drop an image..."}
+                            placeholder={previewImages.length > 0
+                                ? "Uploaded and ready, press ⏎ to continue"
+                                : "Describe your dream asset or just drop an image..."
+                            }
                             onKeyDown={mounted ? (e) => {
                                 if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
                                     e.preventDefault()
@@ -307,7 +322,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                         />
                     </div>
 
-                    <div className="flex items-center justify-between mt-4 controls-area interactive">
+                    <div className="h-[40px] sm:h-[30px] flex items-center justify-between controls-area interactive">
                         <div className="flex flex-wrap gap-1 z-50 preview-images-area">
                             <AnimatePresence mode="popLayout">
                                 {previewImages.map((img, index) => (
@@ -317,14 +332,14 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.8 }}
                                         layout
-                                        className="relative w-8 h-8 flex-shrink-0 group"
+                                        className="relative w-10 h-10 mb-6 flex-shrink-0 group"
                                     >
                                         <Image
                                             src={img.url}
                                             alt={`Preview ${index + 1}`}
                                             fill
                                             className="object-cover rounded-sm"
-                                            sizes="32px"
+                                            sizes="40px"
                                             priority
                                         />
                                         <button
@@ -335,7 +350,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                                 handleRemovePreview(index);
                                             }}
                                             className={cn(
-                                                "absolute -top-1 -right-1 w-4 h-4 z-50",
+                                                "absolute -top-1.5 -right-1.5 w-5 h-5 z-50",
                                                 "flex items-center justify-center",
                                                 "bg-background/80 backdrop-blur-sm rounded-full",
                                                 "hover:bg-background cursor-pointer",
@@ -344,7 +359,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                                 "border border-border/50"
                                             )}
                                         >
-                                            <X className="h-2.5 w-2.5" />
+                                            <X className="h-3 w-3" />
                                         </button>
                                     </motion.div>
                                 ))}
@@ -362,7 +377,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                     }
                                 }}
                                 className={cn(
-                                    "h-8 w-8 sm:h-6 sm:w-6 flex items-center justify-center p-0",
+                                    "h-7 w-7 sm:h-6 sm:w-6 flex items-center justify-center p-0",
                                     "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white",
                                     "transition-colors duration-200 rounded-none border-0",
                                     "bg-zinc-200/80 hover:bg-zinc-300/90 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/90",
@@ -371,19 +386,20 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                 rippleColor="rgba(255, 255, 255, 0.2)"
                                 disabled={isUploading || !mounted || showPreview}
                             >
-                                <Paperclip className="h-5 w-5 sm:h-4 sm:w-4" />
+                                <Paperclip className="h-4 w-4" />
                             </RippleButton>
 
                             <RippleButton
+                                ref={submitButtonRef}
                                 type="button"
                                 onClick={(e) => {
-                                    e.stopPropagation();
+                                    e.stopPropagation()
                                     if (!isUploading && mounted && !showPreview) {
-                                        handleSubmit();
+                                        handleSubmit()
                                     }
                                 }}
                                 className={cn(
-                                    "flex h-8 w-8 sm:h-6 sm:w-6 items-center justify-center rounded-none transition-all duration-200 p-0 border-0",
+                                    "flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-none transition-all duration-200 p-0 border-0",
                                     ((inputValue.length > 0 && !showPreview) || previewImages.length > 0) && mounted
                                         ? "bg-primary/90 text-primary-foreground hover:bg-primary cursor-pointer"
                                         : "bg-zinc-200/80 hover:bg-zinc-300/90 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/90 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
@@ -392,7 +408,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                 rippleColor="rgba(255, 255, 255, 0.2)"
                                 disabled={showPreview || (!inputValue.length && !previewImages.length) || !mounted}
                             >
-                                <ArrowUp className="h-5 w-5 sm:h-4 sm:w-4" />
+                                <ArrowUp className="h-4 w-4" />
                             </RippleButton>
                         </div>
                     </div>
@@ -409,6 +425,8 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                 onChange={e => {
                     e.stopPropagation();
                     if (e.target.files && e.target.files.length > 0) {
+                        setInputValue('');
+
                         const imageFiles = Array.from(e.target.files)
                             .slice(0, 10 - previewImages.length);
 

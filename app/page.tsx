@@ -60,23 +60,25 @@ export default function Home() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-background">
+        <div className="h-svh flex flex-col bg-gray-50 dark:bg-background">
             <div className="fixed inset-0 pointer-events-none z-0 hidden md:block">
                 <P0Element />
             </div>
 
             <Navbar />
-            <main className="flex-grow p-4 md:p-8 pt-28 md:pt-36 overflow-auto relative z-10">
+            <main className="flex-grow p-0 md:p-8 pt-28 md:pt-36 overflow-auto relative z-10">
                 <div className="max-w-7xl mx-auto text-gray-900 dark:text-white pb-2">
-                    <h1 className="text-2xl md:text-4xl font-bold text-center text-foreground translate-y-[30px] md:translate-y-[50px] mb-6 md:mb-8">
+                    <h1 className="text-2xl md:text-4xl font-bold text-center text-foreground translate-y-[30px] md:translate-y-[50px] mb-6 md:mb-8 px-4">
                         What can I help you create?
                     </h1>
 
-                    <ImageUpload
-                        onImageUpload={handleImageUpload}
-                        onModelUrlChange={handleModelUrlChange}
-                        onProgressUpdate={handleProgressUpdate}
-                    />
+                    <div className="px-2 md:px-4">
+                        <ImageUpload
+                            onImageUpload={handleImageUpload}
+                            onModelUrlChange={handleModelUrlChange}
+                            onProgressUpdate={handleProgressUpdate}
+                        />
+                    </div>
                 </div>
             </main>
             <Footer />

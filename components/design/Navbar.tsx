@@ -131,7 +131,7 @@ export function Navbar() {
     const handleCompanyMenuLeave = () => {
         companyTimeoutRef.current = setTimeout(() => {
             setCompanyMenuOpen(false);
-        }, 300); // 300ms delay before closing
+        }, 140); // Reduced from 300ms to 100ms
     };
 
     const handleEngineMenuEnter = () => {
@@ -144,7 +144,7 @@ export function Navbar() {
     const handleEngineMenuLeave = () => {
         engineTimeoutRef.current = setTimeout(() => {
             setEngineMenuOpen(false);
-        }, 300); // 300ms delay before closing
+        }, 140); // Reduced from 300ms to 100ms
     };
 
     const handleResourcesMenuEnter = () => {
@@ -157,7 +157,7 @@ export function Navbar() {
     const handleResourcesMenuLeave = () => {
         resourcesTimeoutRef.current = setTimeout(() => {
             setResourcesMenuOpen(false);
-        }, 300);
+        }, 140); // Reduced from 300ms to 100ms
     };
 
     return (
@@ -241,7 +241,7 @@ export function Navbar() {
                             <div
                                 onMouseEnter={handleResourcesMenuEnter}
                                 onMouseLeave={handleResourcesMenuLeave}
-                                className="translate-y-[1px]"
+                                className="translate-y-[0.5px]"
                             >
                                 <Link
                                     href="https://developers.psychoroid.com"

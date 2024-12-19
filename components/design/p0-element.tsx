@@ -3,7 +3,29 @@
 import React, { memo, useMemo } from 'react'
 import { motion } from 'framer-motion'
 
+const COLORS = [
+    '#FF5252', // Red psychoroid
+    '#3B82F6', // Blue
+    '#10B981', // Emerald
+    '#08CFCE', // Cyber
+    '#FEB60A', // Gold
+    '#98D8C8', // Mint
+    '#00FF50', // Cyan
+    '#00FF50', // Cyan 2
+];
+
 const P0Element: React.FC = memo(() => {
+    const selectedColor = useMemo(() => {
+        // Use session storage to maintain color during session
+        const storedColor = sessionStorage.getItem('p0ElementColor');
+        if (storedColor) return storedColor;
+
+        // Select random color if none stored
+        const newColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+        sessionStorage.setItem('p0ElementColor', newColor);
+        return newColor;
+    }, []);
+
     const animations = useMemo(() => ({
         p: {
             initial: { pathLength: 0 },
@@ -65,7 +87,7 @@ const P0Element: React.FC = memo(() => {
                         d="M44 317V1025.5H173V317H339C459.5 317 522 410.5 522 523C522 635.5 459.5 729 339 729H173V1025.5
                         M173 437H339C395.5 437 413 480 413 523C413 566 395.5 609 339 609H173V437
                         M44 217V317V1025.5H173V829H339C509.5 829 622 685.5 622 523C622 360.5 509.5 217 339 217H134H44Z"
-                        stroke="#FF5252"
+                        stroke={selectedColor}
                         strokeWidth="2"
                         strokeOpacity="0.15"
                         strokeDasharray="3,8"
@@ -77,7 +99,7 @@ const P0Element: React.FC = memo(() => {
                         d="M44 317V1025.5H173V317H339C459.5 317 522 410.5 522 523C522 635.5 459.5 729 339 729H173V1025.5
                         M173 437H339C395.5 437 413 480 413 523C413 566 395.5 609 339 609H173V437
                         M44 217V317V1025.5H173V829H339C509.5 829 622 685.5 622 523C622 360.5 509.5 217 339 217H134H44Z"
-                        stroke="#FF5252"
+                        stroke={selectedColor}
                         strokeWidth="2"
                         strokeOpacity="0.8"
                         strokeDasharray="3,8"
@@ -89,7 +111,7 @@ const P0Element: React.FC = memo(() => {
                     {/* Static 0 */}
                     <path
                         d="M731.5 132.5H1153L852 428V19C852 19 1032.5 19 1153 19C1273.5 19 1360 132.5 1360 225C1360 317.5 1360 513.5 1360 513.5H946.5L1240 225V627.5C1240 627.5 1076 627.5 946.5 627.5C817 627.5 731.5 505 731.5 428C731.5 351 731.5 132.5 731.5 132.5Z"
-                        stroke="#FF5252"
+                        stroke={selectedColor}
                         strokeWidth="2"
                         strokeOpacity="0.15"
                         strokeDasharray="3,8"
@@ -99,7 +121,7 @@ const P0Element: React.FC = memo(() => {
                     {/* Animated 0 */}
                     <motion.path
                         d="M731.5 132.5H1153L852 428V19C852 19 1032.5 19 1153 19C1273.5 19 1360 132.5 1360 225C1360 317.5 1360 513.5 1360 513.5H946.5L1240 225V627.5C1240 627.5 1076 627.5 946.5 627.5C817 627.5 731.5 505 731.5 428C731.5 351 731.5 132.5 731.5 132.5Z"
-                        stroke="#FF5252"
+                        stroke={selectedColor}
                         strokeWidth="2"
                         strokeOpacity="0.8"
                         strokeDasharray="3,8"

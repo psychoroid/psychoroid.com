@@ -336,7 +336,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
 
   return (
     <>
-      <div className="max-w-3xl mx-auto px-4 sm:px-0 relative">
+      <div className="max-w-3xl mx-auto px-2 sm:px-0 relative">
         <ChatInstance
           onFileSelect={handleFileUpload}
           isUploading={uploading}

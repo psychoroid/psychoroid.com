@@ -172,9 +172,9 @@ export default function CommunityPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background flex flex-col">
+        <div className="h-svh flex flex-col bg-background">
             <Navbar />
-            <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24">
+            <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24 overflow-auto">
                 <div className="px-0 md:px-4">
                     <div className="max-w-3xl mx-auto mb-8">
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">

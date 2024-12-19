@@ -17,23 +17,23 @@ export function Footer() {
         <nav className="bg-background/80 backdrop-blur-sm border-t border-border relative z-50">
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="flex items-center justify-end h-8">
-                    <div className="hidden md:flex items-center text-xs text-muted-foreground">
+                    <div className="hidden lg:flex items-center text-xs text-muted-foreground">
                         {t(currentLanguage, 'footer.copyright')}
                         <div className="h-4 w-px bg-border mx-4" />
                         <FeedbackForm />
                         <div className="h-4 w-px bg-border mx-4" />
                         <LanguageSwitcher />
                     </div>
-                    <div className="flex items-center space-x-6 py-2 md:py-0 ml-auto">
+                    <div className="flex items-center space-x-6 py-2 lg:py-0 ml-auto">
                         <Link
                             href="https://github.com/psychoroid"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground transition-colors"
+                            className="hidden lg:inline-flex text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <GitHubIcon className="h-3 w-3 -translate-y-[2px]" />
                         </Link>
-                        <div className="h-4 w-px bg-border"></div>
+                        <div className="hidden lg:block h-4 w-px bg-border"></div>
                         <Link
                             href="https://producthunt.com/psychoroid"
                             target="_blank"
@@ -75,13 +75,15 @@ export function Footer() {
                             >
                                 {t(currentLanguage, 'footer.privacy')}
                             </Link>
-                            <div className="h-4 w-px bg-border"></div>
-                            <Link
-                                href="/terms"
-                                className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
-                            >
-                                {t(currentLanguage, 'footer.terms')}
-                            </Link>
+                            <div className="h-4 w-px bg-border hidden lg:block"></div>
+                            <div className="hidden lg:block">
+                                <Link
+                                    href="/terms"
+                                    className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                                >
+                                    {t(currentLanguage, 'footer.terms')}
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

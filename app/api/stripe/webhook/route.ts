@@ -12,6 +12,22 @@ export const dynamic = 'force-dynamic';
 export const preferredRegion = 'auto';
 export const maxDuration = 60;
 
+// Add CORS headers helper
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Stripe-Signature',
+    'Access-Control-Max-Age': '86400',
+};
+
+// Handle OPTIONS request for CORS
+export async function OPTIONS() {
+    return new Response(null, {
+        status: 200,
+        headers: corsHeaders,
+    });
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.text();
@@ -19,7 +35,13 @@ export async function POST(req: Request) {
 
         if (!signature) {
             console.log('⚠️ No signature found in webhook request');
-            return new Response('No signature found', { status: 400 });
+            return new Response('No signature found', { 
+                status: 400,
+                headers: {
+                    ...corsHeaders,
+                    'Content-Type': 'application/json',
+                }
+            });
         }
 
         // Verify the event with Stripe
@@ -33,7 +55,13 @@ export async function POST(req: Request) {
         } catch (err) {
             const error = err as Error;
             console.log(`⚠️ Webhook signature verification failed:`, error.message);
-            return new Response(`Webhook Error: ${error.message}`, { status: 400 });
+            return new Response(`Webhook Error: ${error.message}`, { 
+                status: 400,
+                headers: {
+                    ...corsHeaders,
+                    'Content-Type': 'application/json',
+                }
+            });
         }
 
         const supabase = createRouteHandlerClient({ cookies });
@@ -146,6 +174,7 @@ export async function POST(req: Request) {
         return new Response(JSON.stringify({ received: true }), {
             status: 200,
             headers: {
+                ...corsHeaders,
                 'Content-Type': 'application/json',
             },
         });
@@ -159,6 +188,7 @@ export async function POST(req: Request) {
             { 
                 status: 500,
                 headers: {
+                    ...corsHeaders,
                     'Content-Type': 'application/json',
                 },
             }
