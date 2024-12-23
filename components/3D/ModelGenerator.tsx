@@ -46,11 +46,11 @@ export function ModelGenerator({
     }
 
     return (
-        <div className="w-80 flex flex-col">
+        <div className="w-full h-full flex flex-col">
             <motion.div
-                className="flex-1 border border-border bg-card/50 flex flex-col"
+                className="flex-1 border border-border bg-card/50 flex flex-col h-full"
                 animate={{
-                    height: isRemeshOpen || isTextureOpen ? "auto" : "calc(100vh - 14rem)"
+                    height: isRemeshOpen || isTextureOpen ? "auto" : "100%"
                 }}
             >
                 <div className="grid grid-cols-1 gap-1 p-1">
@@ -62,7 +62,7 @@ export function ModelGenerator({
                         <div className="flex items-center gap-3">
                             <Box className="h-5 w-5 -ml-11 shrink-0 text-[#D73D57]" />
                             <div className="flex flex-col items-start">
-                                <span className="font-medium">New Model</span>
+                                <span className="font-medium">Create</span>
                                 <span className="text-xs text-muted-foreground">
                                     Generate a new 3D model
                                 </span>

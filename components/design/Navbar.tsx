@@ -355,7 +355,7 @@ export function Navbar() {
                             </div>
                             <Link
                                 href="/pricing"
-                                className="text-sm font-medium text-muted-foreground hover:text-[#D73D57] transition-colors"
+                                className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors"
                             >
                                 {t(currentLanguage, 'navbar.pricing')}
                             </Link>

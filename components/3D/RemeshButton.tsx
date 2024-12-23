@@ -45,8 +45,8 @@ export function RemeshButton({ isOpen, onClick }: RemeshButtonProps) {
                         <div className="p-2 mx-4 space-y-4">
                             <div>
                                 <h3 className="text-sm font-medium mb-2">Target Polycount</h3>
-                                <div className="grid grid-cols-5 gap-2 mb-4">
-                                    {["Custom", "3K", "10K", "30K", "100K"].map((count) => (
+                                <div className="grid grid-cols-4 gap-2 mb-4">
+                                    {["Custom", "3K", "20K", "100K"].map((count) => (
                                         <RippleButton
                                             key={count}
                                             className={cn(
@@ -86,8 +86,8 @@ export function RemeshButton({ isOpen, onClick }: RemeshButtonProps) {
                                 )}
                             </div>
                             <RippleButton
-                                className="w-full h-10 bg-zinc-800 text-white rounded-none hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-300"
-                                rippleColor="rgba(255, 255, 255, 0.2)"
+                                className="w-full h-10 rounded-none border-2 border-border hover:bg-accent"
+                                rippleColor="rgba(0, 0, 0, 0.1)"
                             >
                                 <div className="flex items-center justify-center gap-2">
                                     <Check className="h-4 w-4" />
