@@ -112,7 +112,7 @@ export function TextureButton({ isOpen, onClick }: TextureButtonProps) {
                             </motion.div>
 
                             <RippleButton
-                                className="w-full h-10 bg-purple-500 text-white rounded-none"
+                                className="w-full h-10 bg-cyan-500 text-white rounded-none"
                                 rippleColor="rgba(255, 255, 255, 0.2)"
                             >
                                 <div className="flex items-center justify-center gap-2">

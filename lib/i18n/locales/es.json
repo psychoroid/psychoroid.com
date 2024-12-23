@@ -519,7 +519,7 @@
           "organizationHint": "Se utilizará para la facturación.",
           "organizationPlaceholder": "Nombre de tu organización",
           "birthdateFormat": "DD/MM/AAAA",
-          "supportText": "Si necesitas ayuda para actualizar esta información, puedes contactar a dev@psychoroid.com o enviar un ticket"
+          "supportText": "Si necesitas ayuda para actualizar esta información, puedes contactar "
         },
         "buttons": {
           "update": "Actualizar",

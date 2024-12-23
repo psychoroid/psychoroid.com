@@ -12,12 +12,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabase/supabase'
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
+import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import RippleButton from '@/components/ui/magic/ripple-button'
+import { useTheme } from 'next-themes'
 
 export default function DashboardPage() {
     const { user, lastActivity, roidsBalance, assetsCount, refreshUserData } = useUser()
     const [isLoading, setIsLoading] = useState(true)
     const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'User'
     const { currentLanguage } = useTranslation()
+    const router = useRouter()
+    const { theme } = useTheme()
 
     // Preload activities when dashboard mounts
     useEffect(() => {
@@ -129,10 +135,26 @@ export default function DashboardPage() {
     return (
         <div className="flex flex-col space-y-6">
             <div>
-                <DashboardHeader
-                    title={t(currentLanguage, 'ui.dashboard.title')}
-                    description={t(currentLanguage, 'ui.dashboard.welcome').replace('{firstName}', firstName)}
-                />
+                <div className="flex justify-between items-center">
+                    <DashboardHeader
+                        title={t(currentLanguage, 'ui.dashboard.title')}
+                        description={t(currentLanguage, 'ui.dashboard.welcome').replace('{firstName}', firstName)}
+                    />
+                    <RippleButton
+                        onClick={() => router.push('/workspace')}
+                        className={`rounded-none h-10 px-6 transition-colors
+                            ${theme === 'dark'
+                                ? 'border-blue-400 text-blue-400 hover:text-blue-400/90 hover:border-blue-400/90'
+                                : 'border-[#D73D57] text-[#D73D57] hover:text-[#D73D57]/90 hover:border-[#D73D57]/90'
+                            }`}
+                        rippleColor={theme === 'dark'
+                            ? "rgba(96, 165, 250, 0.1)"  // blue-400 with opacity
+                            : "rgba(215, 61, 87, 0.1)"   // #D73D57 with opacity
+                        }
+                    >
+                        Workspace
+                    </RippleButton>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <DashboardCard

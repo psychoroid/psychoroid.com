@@ -519,7 +519,7 @@
           "organizationHint": "将用于账单。",
           "organizationPlaceholder": "您的组织名称",
           "birthdateFormat": "DD/MM/YYYY",
-          "supportText": "如果您需要帮助更新这些信息，可以联系dev@psychoroid.com或提交工单"
+          "supportText": "如果您需要帮助更新这些信息，可以联系 "
         },
         "buttons": {
           "update": "更新",

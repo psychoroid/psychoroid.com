@@ -519,7 +519,7 @@
           "organizationHint": "請求に使用されます。",
           "organizationPlaceholder": "組織名",
           "birthdateFormat": "DD/MM/YYYY",
-          "supportText": "この情報の更新について助けが必要な場合は、dev@psychoroid.comに連絡するかチケットを送信してください"
+          "supportText": "この情報の更新について助けが必要な場合は、お問い合わせください "
         },
         "buttons": {
           "update": "更新",

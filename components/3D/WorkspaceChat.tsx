@@ -308,7 +308,7 @@ export function WorkspaceChat({
                 </motion.div>
             </motion.div>
 
-            <div className="p-1 border border-border bg-background/50">
+            <div className="p-0 border border-border bg-background/50">
                 <RippleButton
                     onClick={handleGenerate}
                     className="w-full h-10 bg-gradient-to-r from-[#D73D57] via-purple-500 to-cyan-500 text-white rounded-none"

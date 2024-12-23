@@ -519,7 +519,7 @@
           "organizationHint": "This will be used for billing purposes.",
           "organizationPlaceholder": "Your organization name",
           "birthdateFormat": "DD/MM/YYYY",
-          "supportText": "If you need assistance to update these information you can contact dev@psychoroid.com or submit a ticket to "
+          "supportText": "If you need assistance to update these information you can contact "
         },
         "buttons": {
           "update": "Update",
