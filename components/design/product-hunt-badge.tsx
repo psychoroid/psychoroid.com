@@ -9,13 +9,13 @@ export function ProductHuntBadge() {
 
     return (
         <a
-            href="https://www.producthunt.com/products/psychoroid-com?utm_source=badge-follow&utm_medium=badge&utm_souce=badge-psychoroid-com"
+            href="https://www.producthunt.com/posts/psychoroid-com?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-psychoroid-com"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block"
         >
             <Image
-                src={`https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=825252&theme=${isDark ? 'dark' : 'light'}`}
+                src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=425252&theme=${isDark ? 'dark' : 'light'}`}
                 alt="psychoroid.com - Turn prompts and images into production-ready 3D models | Product Hunt"
                 width={250}
                 height={54}
@@ -28,4 +28,3 @@ export function ProductHuntBadge() {
         </a>
     )
 }
-
