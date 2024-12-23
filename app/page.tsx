@@ -9,6 +9,7 @@ import P0Element from '@/components/design/p0-element'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
+import { PromoBanner } from '@/components/design/PromoBanner'
 
 export default function Home() {
     const [mounted, setMounted] = useState(false)
@@ -63,13 +64,19 @@ export default function Home() {
     }
 
     return (
-        <div className="h-svh flex flex-col bg-gray-50 dark:bg-background">
+        <div className="min-h-svh flex flex-col bg-gray-50 dark:bg-background">
+            <PromoBanner />
+            <div className="h-8" />
+
             <div className="fixed inset-0 pointer-events-none z-0 hidden md:block">
                 <P0Element />
             </div>
 
-            <Navbar />
-            <main className="flex-grow p-0 md:p-8 pt-28 md:pt-36 overflow-auto relative z-10">
+            <div className="sticky top-8 z-50 bg-gray-50 dark:bg-background">
+                <Navbar />
+            </div>
+
+            <main className="flex-grow p-0 md:p-8 pt-20 md:pt-28 overflow-auto relative z-10">
                 <div className="max-w-7xl mx-auto text-gray-900 dark:text-white pb-2">
                     <h1 className="text-2xl md:text-4xl font-bold text-center text-foreground translate-y-[30px] md:translate-y-[50px] mb-6 md:mb-8 px-4">
                         {mounted ? t(currentLanguage, 'ui.create_help') : ''}
