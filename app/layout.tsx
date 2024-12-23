@@ -52,7 +52,7 @@ export const metadata: Metadata = {
         siteName: 'psychoroid.com',
         images: [
             {
-                url: '/main.png',
+                url: '/psychoroid.png',
                 width: 575,
                 height: 575,
                 alt: 'psychoroid.com | Open Source Generative AI 3D Engine',

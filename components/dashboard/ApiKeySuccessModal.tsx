@@ -1,12 +1,13 @@
 'use client'
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Copy, Check } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 interface ApiKeySuccessModalProps {
     isOpen: boolean
@@ -16,6 +17,7 @@ interface ApiKeySuccessModalProps {
 
 export function ApiKeySuccessModal({ isOpen, onClose, apiKey }: ApiKeySuccessModalProps) {
     const [hasCopied, setHasCopied] = useState(false)
+    const { currentLanguage } = useTranslation()
 
     const handleCopyKey = async () => {
         if (!apiKey) return
@@ -23,14 +25,14 @@ export function ApiKeySuccessModal({ isOpen, onClose, apiKey }: ApiKeySuccessMod
         try {
             await navigator.clipboard.writeText(apiKey)
             setHasCopied(true)
-            toast.success('API key copied to clipboard')
+            toast.success(t(currentLanguage, 'ui.settings.api.sections.keys.keySuccess.copiedToClipboard'))
 
             // Reset copy state after 2 seconds
             setTimeout(() => {
                 setHasCopied(false)
             }, 2000)
         } catch (error) {
-            toast.error('Failed to copy API key')
+            toast.error(t(currentLanguage, 'ui.settings.api.sections.keys.keySuccess.copyError'))
         }
     }
 
@@ -38,9 +40,9 @@ export function ApiKeySuccessModal({ isOpen, onClose, apiKey }: ApiKeySuccessMod
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px] rounded-none">
                 <DialogHeader>
-                    <DialogTitle>API Key Generated</DialogTitle>
+                    <DialogTitle>{t(currentLanguage, 'ui.settings.api.sections.keys.keySuccess.title')}</DialogTitle>
                     <DialogDescription>
-                        Make sure to copy your API key now. You won&apos;t be able to see it again!
+                        {t(currentLanguage, 'ui.settings.api.sections.keys.keySuccess.description')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -64,7 +66,7 @@ export function ApiKeySuccessModal({ isOpen, onClose, apiKey }: ApiKeySuccessMod
                         </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        Please store this key securely. Anybody can get full access to your account through the API.
+                        {t(currentLanguage, 'ui.settings.api.sections.keys.keySuccess.securityNotice')}
                     </p>
                 </div>
             </DialogContent>

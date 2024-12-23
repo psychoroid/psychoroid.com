@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useUser } from '@/lib/contexts/UserContext'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { DashboardCard } from '@/components/dashboard/DashboardCard'
@@ -7,14 +8,16 @@ import { Card } from '@/components/ui/card'
 import { Coins, Clock, Box } from 'lucide-react'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { QuickActions } from '@/components/dashboard/QuickActions'
-import { useEffect, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabase/supabase'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 export default function DashboardPage() {
     const { user, lastActivity, roidsBalance, assetsCount, refreshUserData } = useUser()
     const [isLoading, setIsLoading] = useState(true)
     const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'User'
+    const { currentLanguage } = useTranslation()
 
     // Preload activities when dashboard mounts
     useEffect(() => {
@@ -107,8 +110,8 @@ export default function DashboardPage() {
         return (
             <div className="space-y-6 animate-in fade-in-50">
                 <DashboardHeader
-                    title="Dashboard"
-                    description={`Welcome back ${firstName}!`}
+                    title={t(currentLanguage, 'ui.dashboard.title')}
+                    description={t(currentLanguage, 'ui.dashboard.welcome').replace('{firstName}', firstName)}
                 />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[...Array(3)].map((_, i) => (
@@ -124,51 +127,47 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="h-full flex flex-col md:overflow-hidden overflow-auto pb-16 animate-in fade-in-50">
-            <div className="space-y-6 flex-shrink-0">
+        <div className="flex flex-col space-y-6">
+            <div>
                 <DashboardHeader
-                    title="Dashboard"
-                    description={`Welcome back ${firstName}!`}
+                    title={t(currentLanguage, 'ui.dashboard.title')}
+                    description={t(currentLanguage, 'ui.dashboard.welcome').replace('{firstName}', firstName)}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <DashboardCard
-                        title="Credits"
+                        title={t(currentLanguage, 'ui.dashboard.cards.credits.title')}
                         value={roidsBalance ?? '—'}
-                        description="Available ROIDS"
+                        description={t(currentLanguage, 'ui.dashboard.cards.credits.description')}
                         icon={Coins}
                         iconClassName="text-[#D73D57]"
                     />
                     <DashboardCard
-                        title="Assets"
+                        title={t(currentLanguage, 'ui.dashboard.cards.assets.title')}
                         value={assetsCount ?? '—'}
-                        description="3D models created"
+                        description={t(currentLanguage, 'ui.dashboard.cards.assets.description')}
                         icon={Box}
                         iconClassName="text-cyan-500 dark:text-cyan-400"
                     />
                     <DashboardCard
-                        title="Activity"
-                        value={lastActivity ? formatTimeAgo(lastActivity) : '—'}
-                        description="Latest interaction"
+                        title={t(currentLanguage, 'ui.dashboard.cards.activity.title')}
+                        value={lastActivity ? formatTimeAgo(lastActivity, currentLanguage) : '—'}
+                        description={t(currentLanguage, 'ui.dashboard.cards.activity.description')}
                         icon={Clock}
                         iconClassName="text-fuchsia-500 dark:text-fuchsia-400"
                     />
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 flex-1">
-                <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col">
-                    <h3 className="text-sm font-medium mb-4">Recent activity</h3>
-                    <div className="flex-1 overflow-auto">
-                        <RecentActivity />
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="p-6 rounded-none border-border">
+                    <h3 className="text-sm font-medium mb-4">{t(currentLanguage, 'ui.recentActivity.title')}</h3>
+                    <RecentActivity />
                 </Card>
 
-                <Card className="p-6 rounded-none border-border overflow-hidden flex flex-col">
-                    <h3 className="text-sm font-medium mb-4">Quick actions</h3>
-                    <div className="flex-1 overflow-auto">
-                        <QuickActions />
-                    </div>
+                <Card className="p-6 rounded-none border-border">
+                    <h3 className="text-sm font-medium mb-4">{t(currentLanguage, 'ui.quickActions.title')}</h3>
+                    <QuickActions />
                 </Card>
             </div>
         </div>
@@ -176,15 +175,15 @@ export default function DashboardPage() {
 }
 
 // Helper function to format time
-function formatTimeAgo(date: string) {
+function formatTimeAgo(date: string, currentLanguage: string) {
     const now = new Date()
     const activityDate = new Date(date)
     const diffInMinutes = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60))
     const diffInHours = Math.floor(diffInMinutes / 60)
 
-    if (diffInMinutes < 5) return 'Just now'
-    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`
-    if (diffInHours === 1) return '1 hour ago'
-    if (diffInHours < 24) return `${diffInHours} hours ago`
-    return `${Math.floor(diffInHours / 24)} days ago`
+    if (diffInMinutes < 5) return t(currentLanguage, 'ui.dashboard.timeAgo.justNow')
+    if (diffInMinutes < 60) return t(currentLanguage, 'ui.dashboard.timeAgo.minutesAgo').replace('{minutes}', diffInMinutes.toString())
+    if (diffInHours === 1) return t(currentLanguage, 'ui.dashboard.timeAgo.oneHourAgo')
+    if (diffInHours < 24) return t(currentLanguage, 'ui.dashboard.timeAgo.hoursAgo').replace('{hours}', diffInHours.toString())
+    return t(currentLanguage, 'ui.dashboard.timeAgo.daysAgo').replace('{days}', Math.floor(diffInHours / 24).toString())
 }

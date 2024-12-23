@@ -3,6 +3,26 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+    const url = request.nextUrl.clone();
+
+    // Handle www to non-www redirect
+    if (url.hostname.startsWith('www.')) {
+        url.hostname = url.hostname.replace('www.', '');
+        return NextResponse.redirect(url);
+    }
+
+    // Handle HTTP to HTTPS redirect
+    if (url.protocol === 'http:') {
+        url.protocol = 'https:';
+        return NextResponse.redirect(url);
+    }
+
+    // Handle trailing slash
+    if (url.pathname !== '/' && url.pathname.endsWith('/')) {
+        url.pathname = url.pathname.slice(0, -1);
+        return NextResponse.redirect(url);
+    }
+
     // Skip middleware for Stripe webhook requests
     if (request.nextUrl.pathname === '/api/stripe/webhook') {
         return NextResponse.next();
@@ -23,6 +43,13 @@ export async function middleware(request: NextRequest) {
             "form-action 'self' https://hooks.stripe.com",
         ].join('; ')
     )
+
+    // Add additional security headers
+    response.headers.set('X-DNS-Prefetch-Control', 'on');
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
     // Set secure cookie attributes
     if (process.env.NODE_ENV === 'production') {
@@ -45,10 +72,19 @@ export async function middleware(request: NextRequest) {
     return response
 }
 
-// Update matcher to include Stripe webhook path
+// Update matcher to include all necessary paths while excluding static files
 export const config = {
     matcher: [
-        '/((?!_next/static|_next/image|favicon.ico).*)',
+        /*
+         * Match all request paths except:
+         * 1. /api/ (API routes)
+         * 2. /_next/ (Next.js internals)
+         * 3. /_static (inside /public)
+         * 4. /_vercel (Vercel internals)
+         * 5. all root files inside /public (e.g. /favicon.ico)
+         * 6. Include auth callback and dashboard paths
+         */
+        '/((?!api/stripe/webhook|_next/static|_next/image|favicon.ico).*)',
         '/auth/callback',
         '/dashboard/:path*'
     ],

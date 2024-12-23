@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import RippleButton from "@/components/ui/magic/ripple-button"
 import { Textarea } from "@/components/ui/textarea"
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 interface ChatInstanceProps {
     onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
@@ -28,6 +30,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     const dragCounter = useRef(0)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const submitButtonRef = useRef<HTMLButtonElement>(null)
+    const { currentLanguage } = useTranslation()
 
     // Check if device is desktop on mount
     useEffect(() => {
@@ -110,14 +113,14 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         if (files && files.length > 0) {
             const imageFiles = Array.from(files)
                 .filter(file => file.type.startsWith('image/'))
-                .slice(0, 10) // Limit to 10 files
+                .slice(0, 5) // Limit to 5 files
 
             const newPreviews = imageFiles.map(file => ({
                 file,
                 url: URL.createObjectURL(file)
             }))
 
-            setPreviewImages(prev => [...prev, ...newPreviews].slice(0, 10))
+            setPreviewImages(prev => [...prev, ...newPreviews].slice(0, 5))
         }
     }
 
@@ -309,8 +312,8 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                 letterSpacing: '0.01em'
                             }}
                             placeholder={previewImages.length > 0
-                                ? "Uploaded and ready, press ⏎ to continue"
-                                : "Describe your dream asset or just drop an image..."
+                                ? t(currentLanguage, 'ui.upload.ready')
+                                : mounted ? t(currentLanguage, 'ui.asset_description') : ''
                             }
                             onKeyDown={mounted ? (e) => {
                                 if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
@@ -428,14 +431,14 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                         setInputValue('');
 
                         const imageFiles = Array.from(e.target.files)
-                            .slice(0, 10 - previewImages.length);
+                            .slice(0, 5 - previewImages.length);
 
                         const newPreviews = imageFiles.map(file => ({
                             file,
                             url: URL.createObjectURL(file)
                         }));
 
-                        setPreviewImages(prev => [...prev, ...newPreviews].slice(0, 10));
+                        setPreviewImages(prev => [...prev, ...newPreviews].slice(0, 5));
                     }
                 }}
                 disabled={isUploading || showPreview}

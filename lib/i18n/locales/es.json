@@ -327,5 +327,353 @@
       "integrations": "Integraciones [Próximamente]",
       "boilerplates": "Plantillas [Próximamente]"
     }
+  },
+  "model_suggestions": {
+    "categories": {
+      "gaming": "Juegos y Entretenimiento",
+      "jewelry": "Joyería y Accesorios",
+      "furniture": "Muebles e Iluminación",
+      "decorative": "Objetos Decorativos",
+      "tech": "Tecnología y Gadgets",
+      "containers": "Contenedores y Recipientes"
+    },
+    "items": {
+      "gaming": [
+        "Máquina arcade retro con LED",
+        "Ratón gaming tema dragón",
+        "Set de dados holográficos con estuche",
+        "Teclado mecánico con teclas personalizadas",
+        "Controlador de realidad virtual con hápticos"
+      ],
+      "jewelry": [
+        "Colgante de cristal con alambre de plata",
+        "Pulsera geométrica con cierre deslizante",
+        "Pendientes constelación con estrellas",
+        "Brújula antigua con detalles en latón"
+      ],
+      "furniture": [
+        "Lámpara de escritorio de bambú con pantalla flotante",
+        "Silla plegable inspirada en origami",
+        "Estantería espiral con cajón oculto",
+        "Lámpara de techo en forma de nube",
+        "Mesa de café modular con almacenamiento",
+        "Mesa de noche flotante con luz"
+      ],
+      "decorative": [
+        "Cofre del tesoro con grabados intrincados",
+        "Maceta bonsái con fuente de agua",
+        "Juego de té japonés dorado",
+        "Terrario geométrico con marco metálico"
+      ],
+      "tech": [
+        "Altavoz bluetooth levitante",
+        "Diseño minimalista de reloj inteligente",
+        "Dron plegable con soporte para cámara",
+        "Proyector portátil con asa",
+        "Cargador inalámbrico con luz ambiental",
+        "Controlador domótico con pantalla"
+      ],
+      "containers": [
+        "Jarrón art nouveau con flores",
+        "Caja puzzle con paneles deslizantes",
+        "Botella de poción con tapón de corcho",
+        "Maceta geométrica con drenaje",
+        "Diseño de frasco de perfume vintage"
+      ]
+    }
+  },
+  "ui": {
+    "create_help": "¿Qué puedo ayudarte a crear?",
+    "asset_description": "Describe tu asset soñado o simplemente arrastra una imagen...",
+    "upload": {
+      "starting": "Iniciando subida...",
+      "failed": "Error en la subida",
+      "preview_only": "Imagen subida (Solo vista previa - Servidor fuera de línea)",
+      "complete": "Subida completa, generando modelo 3D...",
+      "processing": "Procesando imagen...",
+      "success": "¡Modelo 3D generado con éxito!",
+      "processing_failed": "Error en el procesamiento 3D - El servidor puede estar fuera de línea",
+      "error": "Error de subida: ",
+      "error_multiple": "Error al subir imágenes: ",
+      "ready": "Subido y listo, presiona ⏎ para continuar"
+    },
+    "dashboard": {
+      "title": "Panel de control",
+      "welcome": "¡Bienvenido de nuevo {firstName}!",
+      "cards": {
+        "credits": {
+          "title": "Créditos",
+          "description": "ROIDS disponibles"
+        },
+        "assets": {
+          "title": "Modelos",
+          "description": "Modelos 3D creados"
+        },
+        "activity": {
+          "title": "Actividad",
+          "description": "Última interacción"
+        }
+      },
+      "timeAgo": {
+        "justNow": "Ahora mismo",
+        "minutesAgo": "Hace {minutes} minutos",
+        "oneHourAgo": "Hace 1 hora",
+        "hoursAgo": "Hace {hours} horas",
+        "daysAgo": "Hace {days} días"
+      },
+      "navigation": {
+        "overview": "Vista general",
+        "assets": "Recursos",
+        "settings": "Configuración"
+      }
+    },
+    "recentActivity": {
+      "title": "Actividad reciente",
+      "empty": {
+        "title": "Sin actividad reciente",
+        "description": "Tu actividad aparecerá aquí"
+      },
+      "actions": {
+        "modelCreated": "Nuevo modelo creado",
+        "modelLiked": "Modelo marcado como favorito",
+        "modelDownloaded": "Modelo descargado",
+        "creditsPurchased": "{amount} ROIDS comprados",
+        "creditsUsed": "{amount} ROIDS utilizados",
+        "modelUpdated": "Modelo actualizado",
+        "visibilityChanged": "Visibilidad del modelo cambiada",
+        "apiKeyGenerated": "Nueva clave API generada",
+        "apiKeyRevoked": "Clave API revocada",
+        "subscriptionUpdated": "Suscripción actualizada",
+        "profileUpdated": "Perfil actualizado"
+      }
+    },
+    "quickActions": {
+      "title": "Acciones rápidas",
+      "newModel": {
+        "title": "Nuevo modelo",
+        "description": "Crear un nuevo modelo 3D"
+      },
+      "community": {
+        "title": "Comunidad",
+        "description": "Explorar modelos públicos"
+      },
+      "developers": {
+        "title": "Desarrolladores",
+        "description": "Aprende a utilizar nuestra API"
+      },
+      "support": {
+        "title": "Soporte",
+        "description": "Obtén ayuda rápida"
+      }
+    },
+    "assets": {
+      "search": "Buscar assets",
+      "noResults": "No se encontraron assets",
+      "loading": "Cargando assets...",
+      "perPage": "por página",
+      "of": "de",
+      "page": "Página"
+    },
+    "settings": {
+      "title": "Configuración",
+      "navigation": {
+        "account": {
+          "title": "Cuenta",
+          "description": "Gestionar tus datos personales"
+        },
+        "billing": {
+          "title": "Facturación",
+          "description": "Gestionar tu suscripción y pagos"
+        },
+        "api": {
+          "title": "API",
+          "description": "Configuración de integración"
+        },
+        "support": {
+          "title": "Soporte",
+          "description": "Obtener ayuda y contactarnos"
+        }
+      },
+      "account": {
+        "title": "Configuración de cuenta",
+        "description": "Gestionar la información de tu cuenta",
+        "fields": {
+          "firstName": "Nombre",
+          "lastName": "Apellido",
+          "email": "Correo electrónico",
+          "username": "Nombre de usuario",
+          "organization": "Organización",
+          "birthdate": "Fecha de nacimiento"
+        },
+        "hints": {
+          "nameManaged": {
+            "github": "Nombre gestionado por Github. No se puede cambiar.",
+            "google": "Nombre gestionado por Google. No se puede cambiar."
+          },
+          "emailManaged": {
+            "github": "Correo electrónico gestionado por Github. No se puede cambiar.",
+            "google": "Correo electrónico gestionado por Google. No se puede cambiar."
+          },
+          "emailUsage": "Este correo se utilizará para notificaciones e inicio de sesión.",
+          "usernameHint": "Tu nombre de usuario único en la plataforma.",
+          "organizationHint": "Se utilizará para la facturación.",
+          "organizationPlaceholder": "Nombre de tu organización",
+          "birthdateFormat": "DD/MM/AAAA",
+          "supportText": "Si necesitas ayuda para actualizar esta información, puedes contactar a dev@psychoroid.com o enviar un ticket"
+        },
+        "buttons": {
+          "update": "Actualizar",
+          "updating": "Actualizando..."
+        },
+        "errors": {
+          "invalidBirthdate": "Formato de fecha inválido. Por favor usa DD/MM/AAAA",
+          "updateFailed": "Error al actualizar el perfil"
+        },
+        "success": {
+          "emailVerification": "Correo de verificación enviado",
+          "emailVerificationDesc": "Por favor revisa tu nueva bandeja de entrada para confirmar el cambio",
+          "profileUpdated": "Perfil actualizado exitosamente"
+        },
+        "dangerZone": {
+          "title": "Zona de peligro",
+          "description": "Una vez que elimines tu cuenta, no hay vuelta atrás ya que no podemos recuperar tus datos. Por favor, asegúrate de que quieres hacer esto.",
+          "deleteButton": "Quiero eliminar mi cuenta",
+          "deleteConfirm": {
+            "title": "¿Estás seguro?",
+            "description": "Esta acción no se puede deshacer. Esto:",
+            "consequences": "Eliminará permanentemente tu cuenta.\nEliminará todos tus productos y recursos.\nCancelará cualquier suscripción activa.\nEliminará todos tus datos de nuestros servidores.",
+            "typeConfirm": "Escribe \"delete my account\" abajo para confirmar.",
+            "buttons": {
+              "cancel": "Cancelar",
+              "continue": "Continuar",
+              "delete": "Eliminar",
+              "deleting": "Eliminando tu cuenta..."
+            },
+            "success": "Cuenta eliminada exitosamente",
+            "error": "Error al eliminar la cuenta"
+          }
+        }
+      },
+      "billing": {
+        "title": "Facturación y suscripción",
+        "description": "Detalles de tu suscripción y saldo de créditos",
+        "sections": {
+          "balance": "Saldo actual",
+          "subscription": "Suscripción",
+          "freePlan": "Plan Gratuito",
+          "paidPlan": {
+            "automate": "Plan AUTOMATE",
+            "scale": "Plan SCALE"
+          },
+          "nextBilling": {
+            "format": "Próxima facturación el {date}",
+            "default": "Próxima facturación el ..."
+          },
+          "endingSoon": "Suscripción por terminar",
+          "upgradeMessage": "Actualiza para obtener más funciones.",
+          "features": {
+            "standard": "Cancela en cualquier momento con reembolso prorrateado\nAcceso instantáneo a funciones empresariales\nSoporte prioritario",
+            "scale": "Llamadas API ilimitadas\nSoporte empresarial\nIntegraciones personalizadas\nGestor de cuenta dedicado"
+          }
+        },
+        "buttons": {
+          "manageBilling": "Gestionar facturación",
+          "manageSubscription": "Gestionar suscripción",
+          "upgrade": "Mejorar",
+          "loading": "Cargando...",
+          "processing": "Procesando..."
+        },
+        "errors": {
+          "loadFailed": "Error al cargar detalles de suscripción",
+          "portalAccess": "Error al acceder al portal de facturación",
+          "noPortalUrl": "No se recibió URL del portal de facturación"
+        }
+      },
+      "api": {
+        "title": "Configuración de desarrollador",
+        "description": "Gestionar tus claves API e integraciones",
+        "sections": {
+          "keys": {
+            "title": "Tus claves",
+            "noKeys": "Aún no hay claves generadas.",
+            "limitReached": {
+              "3": "Has alcanzado el número máximo de claves API activas (3)."
+            },
+            "generateButton": "Generar una clave",
+            "created": "Creada",
+            "expires": "Expira",
+            "status": {
+              "active": "Activa"
+            },
+            "newKey": {
+              "title": "Generar Nueva Clave API",
+              "description": "Dale un nombre a tu clave API para ayudarte a identificarla más tarde.",
+              "successTitle": "Nueva Clave API Generada",
+              "successDescription": "¡Asegúrate de copiar tu clave API ahora. No podrás verla de nuevo!",
+              "keyName": "Nombre de la Clave",
+              "keyNamePlaceholder": "ej: Desarrollo, Producción",
+              "generateButton": "Generar una clave",
+              "copyButton": "Copiar clave",
+              "copiedToClipboard": "Clave API copiada al portapapeles"
+            },
+            "keySuccess": {
+              "title": "Clave API Generada",
+              "description": "¡Asegúrate de copiar tu clave API ahora. No podrás verla de nuevo!",
+              "securityNotice": "Por favor, almacena esta clave de forma segura. Cualquiera puede obtener acceso completo a tu cuenta a través de la API.",
+              "copyButton": "Copiar clave",
+              "copiedToClipboard": "Clave API copiada al portapapeles",
+              "copyError": "Error al copiar la clave API"
+            }
+          }
+        },
+        "buttons": {
+          "revoke": "Revocar"
+        },
+        "errors": {
+          "fetchFailed": "Error al obtener claves API",
+          "signInRequired": "Por favor inicia sesión para generar claves API",
+          "limitReached": "Límite de claves API alcanzado",
+          "nameRequired": "Por favor ingresa un nombre para la clave",
+          "nameRequiredDesc": "Se requiere un nombre para generar una nueva clave API",
+          "invalidResponse": "Formato de respuesta inválido del servidor",
+          "generateFailed": "Error al generar clave API",
+          "revokeFailed": "Error al revocar clave API"
+        },
+        "success": {
+          "keyRevoked": "Clave API revocada",
+          "keyRevokedDesc": "La clave API ha sido revocada exitosamente"
+        }
+      },
+      "support": {
+        "title": "Soporte",
+        "description": "¿Necesitas ayuda?"
+      }
+    },
+    "support": {
+      "categories": {
+        "account": "Cuenta",
+        "billing": "Facturación",
+        "technical": "Soporte técnico",
+        "other": "Otros"
+      },
+      "form": {
+        "category": "Categoría",
+        "select_category": "Selecciona una categoría",
+        "message": "Mensaje",
+        "message_placeholder": "¿Cómo podemos ayudarte?",
+        "submit": "Enviar ticket de soporte",
+        "submitting": "Enviando..."
+      },
+      "errors": {
+        "category_required": "Por favor selecciona una categoría",
+        "message_required": "Por favor ingresa un mensaje",
+        "submit_failed": "Error al enviar la solicitud de soporte",
+        "invalid_file_type": "Por favor sube un archivo de imagen",
+        "file_too_large": "El tamaño de la imagen debe ser menor a 5MB"
+      },
+      "success": {
+        "submitted": "Solicitud de soporte enviada exitosamente"
+      }
+    }
   }
 }

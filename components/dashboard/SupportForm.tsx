@@ -6,14 +6,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { ImagePlus, X } from "lucide-react"
 import { useUser } from '@/lib/contexts/UserContext'
 import { supabase } from '@/lib/supabase/supabase'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 import { toast } from 'sonner'
-
-const categories = [
-    { value: 'account', label: 'Account issues' },
-    { value: 'billing', label: 'Billing questions' },
-    { value: 'technical', label: 'Technical support' },
-    { value: 'other', label: 'Other' }
-]
 
 interface SelectOption {
     value: string
@@ -29,6 +24,7 @@ interface CustomSelectProps {
 const CustomSelect = ({ value, onChange, options }: CustomSelectProps) => {
     const [isOpen, setIsOpen] = useState(false)
     const selectRef = useRef<HTMLDivElement>(null)
+    const { currentLanguage } = useTranslation()
 
     return (
         <div ref={selectRef} className="relative w-fit">
@@ -36,7 +32,7 @@ const CustomSelect = ({ value, onChange, options }: CustomSelectProps) => {
                 className="bg-background text-foreground p-2 cursor-pointer border border-input rounded-none text-sm min-w-[140px]"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                {value ? options.find((opt: SelectOption) => opt.value === value)?.label : 'Select a category'}
+                {value ? options.find((opt: SelectOption) => opt.value === value)?.label : t(currentLanguage, 'ui.support.form.select_category')}
             </div>
             {isOpen && (
                 <div className="absolute top-full left-0 w-full bg-background border border-input mt-1 z-10 text-sm rounded-none">
@@ -60,6 +56,7 @@ const CustomSelect = ({ value, onChange, options }: CustomSelectProps) => {
 
 export default function SupportForm() {
     const { user } = useUser()
+    const { currentLanguage } = useTranslation()
     const [category, setCategory] = useState('')
     const [message, setMessage] = useState('')
     const [image, setImage] = useState<File | null>(null)
@@ -67,19 +64,27 @@ export default function SupportForm() {
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+    const categories = [
+        { value: 'account', label: t(currentLanguage, 'ui.support.categories.account') },
+        { value: 'billing', label: t(currentLanguage, 'ui.support.categories.billing') },
+        { value: 'technical', label: t(currentLanguage, 'ui.support.categories.technical') },
+        { value: 'other', label: t(currentLanguage, 'ui.support.categories.other') }
+    ]
+
     const handleSubmit = async () => {
         if (!user) {
             console.error('User not found')
+            toast.error(t(currentLanguage, 'ui.support.errors.user_not_found'))
             return
         }
 
         if (!category) {
-            toast.error('Please select a category')
+            toast.error(t(currentLanguage, 'ui.support.errors.category_required'))
             return
         }
 
         if (!message.trim()) {
-            toast.error('Please enter a message')
+            toast.error(t(currentLanguage, 'ui.support.errors.message_required'))
             return
         }
 
@@ -115,13 +120,13 @@ export default function SupportForm() {
 
             if (error) throw error
 
-            toast.success('Support request submitted successfully')
+            toast.success(t(currentLanguage, 'ui.support.success.submitted'))
             setCategory('')
             setMessage('')
             setImage(null)
         } catch (error) {
             console.error('Error submitting support request:', error)
-            toast.error('Failed to submit support request')
+            toast.error(t(currentLanguage, 'ui.support.errors.submit_failed'))
         } finally {
             setIsLoading(false)
         }
@@ -129,12 +134,12 @@ export default function SupportForm() {
 
     const handleImageUpload = (file: File) => {
         if (!file.type.startsWith('image/')) {
-            toast.error('Please upload an image file')
+            toast.error(t(currentLanguage, 'ui.support.form.image.invalid_type'))
             return
         }
 
         if (file.size > 5 * 1024 * 1024) { // 5MB limit
-            toast.error('Image size should be less than 5MB')
+            toast.error(t(currentLanguage, 'ui.support.form.image.size_limit'))
             return
         }
 
@@ -161,7 +166,7 @@ export default function SupportForm() {
     return (
         <div className="space-y-4">
             <div className="grid gap-2">
-                <label className="text-sm font-medium">Category</label>
+                <label className="text-sm font-medium">{t(currentLanguage, 'ui.support.form.category')}</label>
                 <CustomSelect
                     value={category}
                     onChange={setCategory}
@@ -170,7 +175,7 @@ export default function SupportForm() {
             </div>
 
             <div className="grid gap-2">
-                <label className="text-sm font-medium">Message</label>
+                <label className="text-sm font-medium">{t(currentLanguage, 'ui.support.form.message')}</label>
                 <div
                     className={`relative ${isDragging ? 'bg-accent/50' : ''}`}
                     onDragOver={handleDragOver}
@@ -178,7 +183,7 @@ export default function SupportForm() {
                     onDrop={handleDrop}
                 >
                     <Textarea
-                        placeholder="How can we help you?"
+                        placeholder={t(currentLanguage, 'ui.support.form.message_placeholder')}
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         className="min-h-[100px] text-sm pr-8 rounded-none resize-none"
@@ -198,6 +203,7 @@ export default function SupportForm() {
                         size="icon"
                         className="absolute bottom-2 right-2 rounded-none"
                         onClick={() => fileInputRef.current?.click()}
+                        title={t(currentLanguage, 'ui.support.form.image.upload_prompt')}
                     >
                         <ImagePlus className="h-4 w-4" />
                     </Button>
@@ -224,11 +230,14 @@ export default function SupportForm() {
             )}
 
             <Button
-                type="submit"
+                onClick={handleSubmit}
                 disabled={isLoading}
                 className="rounded-none bg-emerald-500 hover:bg-emerald-600 text-white h-9 px-4 sm:h-10 sm:px-6 w-full sm:w-auto"
             >
-                {isLoading ? 'Submitting...' : 'Submit a support ticket'}
+                {isLoading
+                    ? t(currentLanguage, 'ui.support.form.submitting')
+                    : t(currentLanguage, 'ui.support.form.submit')
+                }
             </Button>
         </div>
     )

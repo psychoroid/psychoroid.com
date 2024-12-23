@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { ActivityIcon } from '@/components/dashboard/ActivityIcon'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 interface Activity {
     id: string
@@ -43,6 +45,7 @@ export function RecentActivity() {
     const [currentPage, setCurrentPage] = useState(1)
     const [totalCount, setTotalCount] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
+    const { currentLanguage } = useTranslation()
 
     const fetchActivities = useCallback(async () => {
         if (!user?.id) return
@@ -131,9 +134,11 @@ export function RecentActivity() {
                     type="empty_state"
                     className="h-8 w-8 text-muted-foreground mb-4"
                 />
-                <h3 className="text-sm font-medium text-foreground mb-1">No recent activity</h3>
+                <h3 className="text-sm font-medium text-foreground mb-1">
+                    {t(currentLanguage, 'ui.recentActivity.empty.title')}
+                </h3>
                 <p className="text-xs text-muted-foreground">
-                    Your activity will appear here
+                    {t(currentLanguage, 'ui.recentActivity.empty.description')}
                 </p>
             </div>
         )
@@ -141,17 +146,17 @@ export function RecentActivity() {
 
     const getActivityMessage = (activity: Activity) => {
         const messages = {
-            model_created: 'Created new model',
-            model_liked: 'Liked a model',
-            model_downloaded: 'Downloaded model',
-            credits_purchased: `Purchased ${activity.details?.amount || ''} ROIDS`,
-            credits_used: `Used ${activity.details?.amount || ''} ROIDS`,
-            model_updated: 'Updated model',
-            visibility_changed: 'Changed model visibility',
-            api_key_generated: 'Generated new API key',
-            api_key_revoked: 'Revoked API key',
-            subscription_updated: 'Updated subscription',
-            profile_updated: 'Updated profile'
+            model_created: t(currentLanguage, 'ui.recentActivity.actions.modelCreated'),
+            model_liked: t(currentLanguage, 'ui.recentActivity.actions.modelLiked'),
+            model_downloaded: t(currentLanguage, 'ui.recentActivity.actions.modelDownloaded'),
+            credits_purchased: t(currentLanguage, 'ui.recentActivity.actions.creditsPurchased').replace('{amount}', activity.details?.amount || ''),
+            credits_used: t(currentLanguage, 'ui.recentActivity.actions.creditsUsed').replace('{amount}', activity.details?.amount || ''),
+            model_updated: t(currentLanguage, 'ui.recentActivity.actions.modelUpdated'),
+            visibility_changed: t(currentLanguage, 'ui.recentActivity.actions.visibilityChanged'),
+            api_key_generated: t(currentLanguage, 'ui.recentActivity.actions.apiKeyGenerated'),
+            api_key_revoked: t(currentLanguage, 'ui.recentActivity.actions.apiKeyRevoked'),
+            subscription_updated: t(currentLanguage, 'ui.recentActivity.actions.subscriptionUpdated'),
+            profile_updated: t(currentLanguage, 'ui.recentActivity.actions.profileUpdated')
         }
         return messages[activity.activity_type as keyof typeof messages] || 'Unknown activity'
     }
@@ -159,8 +164,8 @@ export function RecentActivity() {
     const totalPages = Math.min(Math.ceil(totalCount / ITEMS_PER_PAGE), MAX_PAGES)
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="flex-1 space-y-2">
+        <div className="flex flex-col">
+            <div className="space-y-2">
                 {activities.map((activity) => (
                     <Button
                         key={activity.id}
@@ -187,7 +192,7 @@ export function RecentActivity() {
             </div>
 
             {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 pt-4 mt-auto">
+                <div className="flex justify-center items-center gap-2 pt-4">
                     <Button
                         variant="ghost"
                         size="icon"

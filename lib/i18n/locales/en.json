@@ -381,5 +381,299 @@
         "Vintage perfume bottle design"
       ]
     }
+  },
+  "ui": {
+    "create_help": "What can I help you create?",
+    "asset_description": "Describe your dream asset or just drop an image...",
+    "upload": {
+      "starting": "Starting upload...",
+      "failed": "Upload failed",
+      "preview_only": "Image uploaded (Preview only - Server offline)",
+      "complete": "Upload complete, generating 3D model...",
+      "processing": "Processing image...",
+      "success": "3D model generated successfully!",
+      "processing_failed": "3D processing failed - Server may be offline",
+      "error": "Upload error: ",
+      "error_multiple": "Error uploading images: ",
+      "ready": "Uploaded and ready, press ⏎ to continue"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome back {firstName}!",
+      "cards": {
+        "credits": {
+          "title": "Credits",
+          "description": "Available ROIDS"
+        },
+        "assets": {
+          "title": "Assets",
+          "description": "3D models created"
+        },
+        "activity": {
+          "title": "Activity",
+          "description": "Latest interaction"
+        }
+      },
+      "timeAgo": {
+        "justNow": "Just now",
+        "minutesAgo": "{minutes} minutes ago",
+        "oneHourAgo": "1 hour ago",
+        "hoursAgo": "{hours} hours ago",
+        "daysAgo": "{days} days ago"
+      },
+      "navigation": {
+        "overview": "Overview",
+        "assets": "Assets",
+        "settings": "Settings"
+      }
+    },
+    "recentActivity": {
+      "title": "Recent activity",
+      "empty": {
+        "title": "No recent activity",
+        "description": "Your activity will appear here"
+      },
+      "actions": {
+        "modelCreated": "Created new model",
+        "modelLiked": "Liked a model",
+        "modelDownloaded": "Downloaded model",
+        "creditsPurchased": "Purchased {amount} ROIDS",
+        "creditsUsed": "Used {amount} ROIDS",
+        "modelUpdated": "Updated model",
+        "visibilityChanged": "Changed model visibility",
+        "apiKeyGenerated": "Generated new API key",
+        "apiKeyRevoked": "Revoked API key",
+        "subscriptionUpdated": "Updated subscription",
+        "profileUpdated": "Updated profile"
+      }
+    },
+    "quickActions": {
+      "title": "Quick actions",
+      "newModel": {
+        "title": "New Model",
+        "description": "Create a new 3D model"
+      },
+      "community": {
+        "title": "Community",
+        "description": "Explore public assets"
+      },
+      "developers": {
+        "title": "Developers",
+        "description": "Learn how to leverage our API"
+      },
+      "support": {
+        "title": "Support",
+        "description": "Get fast assistance on any issues"
+      }
+    },
+    "assets": {
+      "search": "Search assets",
+      "noResults": "No assets found",
+      "loading": "Loading assets...",
+      "perPage": "per page",
+      "of": "of",
+      "page": "Page"
+    },
+    "settings": {
+      "title": "Settings",
+      "navigation": {
+        "account": {
+          "title": "Account",
+          "description": "Manage your personal data"
+        },
+        "billing": {
+          "title": "Billing",
+          "description": "Manage your subscription and payments"
+        },
+        "api": {
+          "title": "API",
+          "description": "Integration settings"
+        },
+        "support": {
+          "title": "Support",
+          "description": "Get help and contact us"
+        }
+      },
+      "account": {
+        "title": "Account settings",
+        "description": "Manage your account information",
+        "fields": {
+          "firstName": "First name",
+          "lastName": "Last name",
+          "email": "Email",
+          "username": "Username",
+          "organization": "Organization",
+          "birthdate": "Birthdate"
+        },
+        "hints": {
+          "nameManaged": {
+            "github": "Name managed by Github. Cannot be changed.",
+            "google": "Name managed by Google. Cannot be changed."
+          },
+          "emailManaged": {
+            "github": "Email managed by Github. Cannot be changed.",
+            "google": "Email managed by Google. Cannot be changed."
+          },
+          "emailUsage": "This will be used for notifications and login.",
+          "usernameHint": "Your unique username on the platform.",
+          "organizationHint": "This will be used for billing purposes.",
+          "organizationPlaceholder": "Your organization name",
+          "birthdateFormat": "DD/MM/YYYY",
+          "supportText": "If you need assistance to update these information you can contact dev@psychoroid.com or submit a ticket to "
+        },
+        "buttons": {
+          "update": "Update",
+          "updating": "Updating..."
+        },
+        "errors": {
+          "invalidBirthdate": "Invalid birthdate format. Please use DD/MM/YYYY",
+          "updateFailed": "Failed to update profile"
+        },
+        "success": {
+          "emailVerification": "Verification email sent",
+          "emailVerificationDesc": "Please check your new email inbox to confirm the change",
+          "profileUpdated": "Profile updated successfully"
+        },
+        "dangerZone": {
+          "title": "Danger zone",
+          "description": "Once you delete your account, there is no going back as we can't recover your data. Please be sure you want to do this.",
+          "deleteButton": "I want to delete my account",
+          "deleteConfirm": {
+            "title": "Are you sure?",
+            "description": "This action cannot be undone. This will:",
+            "consequences": "Permanently delete your account.\nDelete all your products and assets.\nCancel any active subscriptions.\nRemove all your data from our servers.",
+            "typeConfirm": "Type \"delete my account\" below to confirm.",
+            "buttons": {
+              "cancel": "Cancel",
+              "continue": "Continue",
+              "delete": "Delete",
+              "deleting": "Deleting your account..."
+            },
+            "success": "Account deleted successfully",
+            "error": "Failed to delete account"
+          }
+        }
+      },
+      "billing": {
+        "title": "Billing and subscription",
+        "description": "Your subscription details and credits balance",
+        "sections": {
+          "balance": "Current balance",
+          "subscription": "Subscription",
+          "freePlan": "Free Plan",
+          "paidPlan": {
+            "automate": "AUTOMATE Plan",
+            "scale": "SCALE Plan"
+          },
+          "nextBilling": {
+            "format": "Next billing on {date}",
+            "default": "Next billing on ..."
+          },
+          "endingSoon": "Subscription ending soon",
+          "upgradeMessage": "Upgrade to get more credits and features.",
+          "features": {
+            "standard": "Cancel anytime with prorated refund\nInstant access to enterprise features\nPriority support",
+            "scale": "Unlimited API calls\nEnterprise support\nCustom integrations\nDedicated account manager"
+          }
+        },
+        "buttons": {
+          "manageBilling": "Manage Billing",
+          "manageSubscription": "Manage Subscription",
+          "upgrade": "Upgrade",
+          "loading": "Loading...",
+          "processing": "Processing..."
+        },
+        "errors": {
+          "loadFailed": "Failed to load subscription details",
+          "portalAccess": "Failed to access billing portal",
+          "noPortalUrl": "No URL returned from billing portal"
+        }
+      },
+      "api": {
+        "title": "Developer settings",
+        "description": "Manage your API keys and integrations",
+        "sections": {
+          "keys": {
+            "title": "Your keys",
+            "noKeys": "No keys generated yet.",
+            "limitReached": {
+              "3": "You have reached the maximum number of active API keys (3)."
+            },
+            "generateButton": "Generate a key",
+            "created": "Created",
+            "expires": "Expires",
+            "status": {
+              "active": "Active"
+            },
+            "newKey": {
+              "title": "Generate New API Key",
+              "description": "Give your API key a name to help you identify it later.",
+              "successTitle": "New API Key Generated",
+              "successDescription": "Make sure to copy your API key now. You won't be able to see it again!",
+              "keyName": "Key Name",
+              "keyNamePlaceholder": "e.g., Development, Production",
+              "generateButton": "Generate a key",
+              "copyButton": "Copy key",
+              "copiedToClipboard": "API key copied to clipboard"
+            },
+            "keySuccess": {
+              "title": "API Key Generated",
+              "description": "Make sure to copy your API key now. You won't be able to see it again!",
+              "securityNotice": "Please store this key securely. Anybody can get full access to your account through the API.",
+              "copyButton": "Copy key",
+              "copiedToClipboard": "API key copied to clipboard",
+              "copyError": "Failed to copy API key"
+            }
+          }
+        },
+        "buttons": {
+          "revoke": "Revoke"
+        },
+        "errors": {
+          "fetchFailed": "Failed to fetch API keys",
+          "signInRequired": "Please sign in to generate API keys",
+          "limitReached": "API key limit reached",
+          "nameRequired": "Please enter a key name",
+          "nameRequiredDesc": "A name is required to generate a new API key",
+          "invalidResponse": "Invalid response format from server",
+          "generateFailed": "Failed to generate API key",
+          "revokeFailed": "Failed to revoke API key"
+        },
+        "success": {
+          "keyRevoked": "API key revoked",
+          "keyRevokedDesc": "The API key has been successfully revoked"
+        }
+      },
+      "support": {
+        "title": "Support",
+        "description": "Do you need assistance?"
+      }
+    },
+    "support": {
+      "categories": {
+        "account": "Account issues",
+        "billing": "Billing questions",
+        "technical": "Technical support",
+        "other": "Other"
+      },
+      "form": {
+        "category": "Category",
+        "select_category": "Select a category",
+        "message": "Message",
+        "message_placeholder": "How can we help you?",
+        "submit": "Submit a support ticket",
+        "submitting": "Submitting..."
+      },
+      "errors": {
+        "category_required": "Please select a category",
+        "message_required": "Please enter a message",
+        "submit_failed": "Failed to submit support request",
+        "invalid_file_type": "Please upload an image file",
+        "file_too_large": "Image size should be less than 5MB"
+      },
+      "success": {
+        "submitted": "Support request submitted successfully"
+      }
+    }
   }
 } 

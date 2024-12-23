@@ -193,7 +193,7 @@ export default function CommunityPage() {
                             {/* Right side - Search */}
                             <div className="md:col-span-8">
                                 <div className="relative md:pr-4 md:pt-2 mt-2">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-[25%] h-[14px] w-[14px] text-muted-foreground pointer-events-none" />
+                                    <Search className="absolute left-3 top-1/2 md:top-[60%] transform -translate-y-1/2 h-[14px] w-[14px] text-muted-foreground pointer-events-none" />
                                     <Input
                                         type="text"
                                         placeholder={t(currentLanguage, 'community.search.placeholder')}

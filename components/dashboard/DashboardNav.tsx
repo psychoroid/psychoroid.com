@@ -3,47 +3,46 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/actions/utils'
-import { Box, Settings, Home } from 'lucide-react'
+import { Box, Settings, Home, LayoutDashboard } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 export function DashboardNav() {
+    const { currentLanguage } = useTranslation()
     const pathname = usePathname()
 
-    const isSettingsRoute = (path: string) => {
-        return path.startsWith('/dashboard/settings')
-    }
-
-    const navItems = [
+    const items = [
         {
-            title: 'Overview',
+            title: t(currentLanguage, 'ui.dashboard.navigation.overview'),
             href: '/dashboard',
+            icon: LayoutDashboard,
             isActive: pathname === '/dashboard',
-            icon: Home,
             color: 'text-[#D73D57]'
         },
         {
-            title: 'Assets',
+            title: t(currentLanguage, 'ui.dashboard.navigation.assets'),
             href: '/dashboard/assets',
-            isActive: pathname === '/dashboard/assets',
             icon: Box,
+            isActive: pathname === '/dashboard/assets',
             color: 'text-cyan-500 dark:text-cyan-400'
         },
         {
-            title: 'Settings',
+            title: t(currentLanguage, 'ui.dashboard.navigation.settings'),
             href: '/dashboard/settings',
-            isActive: isSettingsRoute(pathname),
             icon: Settings,
+            isActive: pathname.startsWith('/dashboard/settings'),
             color: 'text-fuchsia-500 dark:text-fuchsia-400'
         }
     ]
 
-    const activeIndex = navItems.findIndex(item => item.isActive)
+    const activeIndex = items.findIndex(item => item.isActive)
 
     return (
         <div className="mb-8">
             <nav className="inline-flex border-b border-border relative">
                 <div className="flex space-x-6">
-                    {navItems.map((item) => {
+                    {items.map((item) => {
                         const Icon = item.icon
                         return (
                             <Link
@@ -66,8 +65,8 @@ export function DashboardNav() {
                     className="absolute bottom-0 h-[2px] bg-foreground"
                     initial={false}
                     animate={{
-                        left: `${activeIndex * (100 / navItems.length)}%`,
-                        right: `${(navItems.length - 1 - activeIndex) * (100 / navItems.length)}%`
+                        left: `${activeIndex * (100 / items.length)}%`,
+                        right: `${(items.length - 1 - activeIndex) * (100 / items.length)}%`
                     }}
                     transition={{
                         type: "spring",

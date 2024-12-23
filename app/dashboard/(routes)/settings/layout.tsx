@@ -4,33 +4,31 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/actions/utils'
 import { UserCircle, CreditCard, Key, HelpCircle } from 'lucide-react'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 const settingsNavItems = [
     {
-        title: 'Account',
+        key: 'account',
         href: '/dashboard/settings/account',
-        description: 'Manage your personal data',
         icon: UserCircle,
         color: 'text-foreground'
     },
     {
-        title: 'Billing',
+        key: 'billing',
         href: '/dashboard/settings/billing',
-        description: 'Manage your subscription and payments',
         icon: CreditCard,
         color: 'text-purple-500 dark:text-purple-400'
     },
     {
-        title: 'API',
+        key: 'api',
         href: '/dashboard/settings/api',
-        description: 'Integration settings',
         icon: Key,
         color: 'text-[#D73D57]'
     },
     {
-        title: 'Support',
+        key: 'support',
         href: '/dashboard/settings/support',
-        description: 'Get help and contact us',
         icon: HelpCircle,
         color: 'text-cyan-500 dark:text-cyan-400'
     }
@@ -42,6 +40,7 @@ export default function SettingsLayout({
     children: React.ReactNode
 }) {
     const pathname = usePathname()
+    const { currentLanguage } = useTranslation()
 
     return (
         <div className="space-y-8">
@@ -76,9 +75,11 @@ export default function SettingsLayout({
                                         )}
                                     />
                                     <div className="hidden sm:block">
-                                        <div className="font-medium">{item.title}</div>
+                                        <div className="font-medium">
+                                            {t(currentLanguage, `ui.settings.navigation.${item.key}.title`)}
+                                        </div>
                                         <div className="text-xs text-muted-foreground">
-                                            {item.description}
+                                            {t(currentLanguage, `ui.settings.navigation.${item.key}.description`)}
                                         </div>
                                     </div>
                                 </Link>

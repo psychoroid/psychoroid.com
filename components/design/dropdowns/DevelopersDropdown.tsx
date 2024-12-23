@@ -106,7 +106,7 @@ export function ResourcesDropdown() {
                         {t(currentLanguage, 'dropdowns.resources.integrations')}
                     </Link>
                     <Link
-                        href="https://developers.psychoroid.com/components"
+                        href="https://developers.psychoroid.com/recipes"
                         className="text-xs text-muted-foreground hover:text-[#D73D57] transition-colors flex items-center gap-2 px-4 py-1.5"
                     >
                         <Boxes className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />

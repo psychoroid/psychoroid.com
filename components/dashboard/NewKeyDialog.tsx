@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Copy } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 interface NewKeyDialogProps {
     isOpen: boolean
@@ -17,10 +19,12 @@ interface NewKeyDialogProps {
 }
 
 export function NewKeyDialog({ isOpen, onClose, newKey, keyName, onKeyNameChange, onGenerateKey }: NewKeyDialogProps) {
+    const { currentLanguage } = useTranslation()
+
     const handleCopyKey = () => {
         if (newKey) {
             navigator.clipboard.writeText(newKey)
-            toast.success('API key copied to clipboard')
+            toast.success(t(currentLanguage, 'ui.settings.api.sections.keys.newKey.copiedToClipboard'))
         }
     }
 
@@ -30,9 +34,9 @@ export function NewKeyDialog({ isOpen, onClose, newKey, keyName, onKeyNameChange
                 {newKey ? (
                     <>
                         <DialogHeader>
-                            <DialogTitle>New API Key Generated</DialogTitle>
+                            <DialogTitle>{t(currentLanguage, 'ui.settings.api.sections.keys.newKey.successTitle')}</DialogTitle>
                             <DialogDescription>
-                                Make sure to copy your API key now. You won&apos;t be able to see it again!
+                                {t(currentLanguage, 'ui.settings.api.sections.keys.newKey.successDescription')}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
@@ -57,24 +61,24 @@ export function NewKeyDialog({ isOpen, onClose, newKey, keyName, onKeyNameChange
                 ) : (
                     <>
                         <DialogHeader>
-                            <DialogTitle>Generate New API Key</DialogTitle>
+                            <DialogTitle>{t(currentLanguage, 'ui.settings.api.sections.keys.newKey.title')}</DialogTitle>
                             <DialogDescription>
-                                Give your API key a name to help you identify it later.
+                                {t(currentLanguage, 'ui.settings.api.sections.keys.newKey.description')}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label>Key Name</Label>
+                                <Label>{t(currentLanguage, 'ui.settings.api.sections.keys.newKey.keyName')}</Label>
                                 <Input
                                     value={keyName}
                                     onChange={(e) => onKeyNameChange(e.target.value)}
-                                    placeholder="e.g., Development, Production"
+                                    placeholder={t(currentLanguage, 'ui.settings.api.sections.keys.newKey.keyNamePlaceholder')}
                                 />
                             </div>
                         </div>
                         <DialogFooter>
                             <Button onClick={onGenerateKey} disabled={!keyName.trim()}>
-                                Generate a key
+                                {t(currentLanguage, 'ui.settings.api.sections.keys.newKey.generateButton')}
                             </Button>
                         </DialogFooter>
                     </>

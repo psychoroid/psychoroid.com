@@ -10,6 +10,8 @@ import { ProductDetails } from '@/types/product'
 import { PROGRESS_MESSAGES } from '@/lib/utils/progressMessages'
 import { ChatInstance } from './ChatInstance'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 interface SavedProgresses {
   [key: string]: number;
@@ -27,6 +29,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
   const [currentProgress, setCurrentProgress] = useState(0)
   const [processingImages, setProcessingImages] = useState<{ [key: string]: number }>({})
   const [isServerOffline, setIsServerOffline] = useState(false)
+  const { currentLanguage } = useTranslation()
 
   useEffect(() => {
     if (!selectedImage) return;
@@ -226,7 +229,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
         const filePath = `${fileName}`;
 
         // Show initial upload toast
-        const uploadToast = toast.loading('Starting upload...');
+        const uploadToast = toast.loading(t(currentLanguage, 'ui.upload.starting'));
 
         try {
           // Upload the image to Supabase storage regardless of server status
@@ -235,26 +238,26 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
             .upload(filePath, file);
 
           if (uploadError) {
-            toast.error('Upload failed', { id: uploadToast });
+            toast.error(t(currentLanguage, 'ui.upload.failed'), { id: uploadToast });
             throw uploadError;
           }
 
           if (uploadData) {
             // If server is offline, just show preview without 3D processing
             if (!isServerOnline) {
-              toast.success('Image uploaded (Preview only - Server offline)', { id: uploadToast });
+              toast.success(t(currentLanguage, 'ui.upload.preview_only'), { id: uploadToast });
               setImagePaths(prev => [...prev, filePath]);
               onImageUpload(filePath);
               return;
             }
 
             // Continue with 3D processing if server is online
-            toast.success('Upload complete, generating 3D model...', { id: uploadToast });
+            toast.success(t(currentLanguage, 'ui.upload.complete'), { id: uploadToast });
             setImagePaths(prev => [...prev, filePath]);
             onImageUpload(filePath);
 
             setIsLoading(true);
-            const processingToast = toast.loading('Processing image...');
+            const processingToast = toast.loading(t(currentLanguage, 'ui.upload.processing'));
 
             try {
               const modelUrl = await generate3DModel(filePath, (progress) => {
@@ -263,7 +266,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
               });
 
               setModelUrl(modelUrl);
-              toast.success('3D model generated successfully!', { id: processingToast });
+              toast.success(t(currentLanguage, 'ui.upload.success'), { id: processingToast });
 
               const { data: productData, error: productError } = await supabase
                 .rpc('create_product', {
@@ -283,7 +286,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
               return productData;
             } catch (error) {
               console.error('Error during 3D processing:', error);
-              toast.error('3D processing failed - Server may be offline', { id: processingToast });
+              toast.error(t(currentLanguage, 'ui.upload.processing_failed'), { id: processingToast });
 
               // Keep the image preview even if 3D processing fails
               setImagePaths(prev => [...prev, filePath]);
@@ -292,14 +295,14 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
           }
         } catch (error) {
           console.error('Error during upload:', error);
-          toast.error('Upload error: ' + String(error), { id: uploadToast });
+          toast.error(t(currentLanguage, 'ui.upload.error') + String(error), { id: uploadToast });
         }
       });
 
       await Promise.all(uploadPromises);
     } catch (error) {
       console.error('Error uploading images:', error);
-      toast.error('Error uploading images: ' + String(error));
+      toast.error(t(currentLanguage, 'ui.upload.error_multiple') + String(error));
     } finally {
       setUploading(false);
       setIsLoading(false);
@@ -307,7 +310,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
         event.target.value = '';
       }
     }
-  }, [onImageUpload, onProgressUpdate, generate3DModel, user]);
+  }, [onImageUpload, onProgressUpdate, generate3DModel, user, currentLanguage]);
 
   const getProgressMessage = (progress: number) => {
     const messageSet = PROGRESS_MESSAGES.find(set => progress <= set.threshold);

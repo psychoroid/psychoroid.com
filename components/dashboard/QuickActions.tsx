@@ -8,35 +8,38 @@ import {
     HelpCircle
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
 
 export function QuickActions() {
     const router = useRouter()
+    const { currentLanguage } = useTranslation()
 
     const actions = [
         {
-            label: 'New Model',
-            description: 'Create a new 3D model',
+            label: t(currentLanguage, 'ui.quickActions.newModel.title'),
+            description: t(currentLanguage, 'ui.quickActions.newModel.description'),
             icon: Plus,
             onClick: () => router.push('/'),
             color: 'text-foreground'
         },
         {
-            label: 'Community',
-            description: 'Explore public assets',
+            label: t(currentLanguage, 'ui.quickActions.community.title'),
+            description: t(currentLanguage, 'ui.quickActions.community.description'),
             icon: Users,
             onClick: () => router.push('/community'),
             color: 'text-purple-500 dark:text-purple-400'
         },
         {
-            label: 'Developers',
-            description: 'Learn how to leverage our API',
+            label: t(currentLanguage, 'ui.quickActions.developers.title'),
+            description: t(currentLanguage, 'ui.quickActions.developers.description'),
             icon: BookOpen,
             onClick: () => window.open('https://developers.psychoroid.com', '_blank'),
             color: 'text-[#D73D57]'
         },
         {
-            label: 'Support',
-            description: 'Get fast assistance on any issues',
+            label: t(currentLanguage, 'ui.quickActions.support.title'),
+            description: t(currentLanguage, 'ui.quickActions.support.description'),
             icon: HelpCircle,
             onClick: () => router.push('/dashboard/settings/support'),
             color: 'text-cyan-500 dark:text-cyan-400'

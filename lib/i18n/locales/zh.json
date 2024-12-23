@@ -101,7 +101,7 @@
         "content": "是的，我们非常重视数据安全。您的资产被安全存储，未经您明确同意，我们绝不会分享您的数据或将其用于训练。"
       },
       "commercial": {
-        "title": "可以商业用模型吗？",
+        "title": "可以商业使用模型吗？",
         "content": "可以。付费订阅者拥有其生成模型的完整权利。免费用户获得CC BY 4.0许可，允许在注明psychoroid.com来源的情况下进行商业使用。"
       },
       "subscription": {
@@ -326,6 +326,354 @@
       "join_community": "加入社区",
       "integrations": "集成 [即将推出]",
       "boilerplates": "样板 [即将推出]"
+    }
+  },
+  "model_suggestions": {
+    "categories": {
+      "gaming": "游戏与娱乐",
+      "jewelry": "珠宝与配饰",
+      "furniture": "家具与照明",
+      "decorative": "装饰物品",
+      "tech": "科技与小工具",
+      "containers": "容器与器皿"
+    },
+    "items": {
+      "gaming": [
+        "LED装饰复古街机柜",
+        "龙主题游戏鼠标",
+        "全息骰子套装带收纳盒",
+        "定制键帽机械键盘",
+        "带触觉反馈VR控制器"
+      ],
+      "jewelry": [
+        "水晶吊坠银丝缠绕",
+        "几何图案滑扣手链",
+        "星座耳环带星星",
+        "古董指南针黄铜细节"
+      ],
+      "furniture": [
+        "竹制悬浮灯罩台灯",
+        "折纸风格折叠椅",
+        "螺旋书架带隐藏抽屉",
+        "云朵形吸顶灯",
+        "模块化收纳咖啡桌",
+        "悬浮床头柜带灯"
+      ],
+      "decorative": [
+        "精雕细刻宝藏箱",
+        "盆景花盆带水景",
+        "金色日式茶具组",
+        "几何玻璃花房金属框"
+      ],
+      "tech": [
+        "悬浮蓝牙音箱",
+        "极简智能手表设计",
+        "折叠无人机带相机支架",
+        "便携投影仪带手柄",
+        "无线充电器带氛围灯",
+        "智能家居控制器带屏幕"
+      ],
+      "containers": [
+        "新艺术风格花瓶带花",
+        "拼图盒带滑动面板",
+        "魔药瓶带软木塞",
+        "几何花盆带排水",
+        "复古香水瓶设计"
+      ]
+    }
+  },
+  "ui": {
+    "create_help": "我能帮你创建什么？",
+    "asset_description": "描述你梦想中的资产或直接拖放图片...",
+    "upload": {
+      "starting": "开始上传...",
+      "failed": "上传失败",
+      "preview_only": "图片已上传（仅预览 - 服务器离线）",
+      "complete": "上传完成，正在生成3D模型...",
+      "processing": "正在处理图片...",
+      "success": "3D模型生成成功！",
+      "processing_failed": "3D处理失败 - 服务器可能离线",
+      "error": "上传错误：",
+      "error_multiple": "上传图片错误：",
+      "ready": "上传完成，按 ⏎ 继续"
+    },
+    "dashboard": {
+      "title": "仪表板",
+      "welcome": "欢迎回来，{firstName}！",
+      "cards": {
+        "credits": {
+          "title": "积分",
+          "description": "可用ROIDS"
+        },
+        "assets": {
+          "title": "资产",
+          "description": "已创建的3D模型"
+        },
+        "activity": {
+          "title": "活动",
+          "description": "最新操作"
+        }
+      },
+      "timeAgo": {
+        "justNow": "刚刚",
+        "minutesAgo": "{minutes}分钟前",
+        "oneHourAgo": "1小时前",
+        "hoursAgo": "{hours}小时前",
+        "daysAgo": "{days}天前"
+      },
+      "navigation": {
+        "overview": "概览",
+        "assets": "资源",
+        "settings": "设置"
+      }
+    },
+    "recentActivity": {
+      "title": "最近活动",
+      "empty": {
+        "title": "暂无活动",
+        "description": "您的活动将显示在这里"
+      },
+      "actions": {
+        "modelCreated": "创建了新模型",
+        "modelLiked": "点赞了模型",
+        "modelDownloaded": "下载了模型",
+        "creditsPurchased": "购买了 {amount} ROIDS",
+        "creditsUsed": "使用了 {amount} ROIDS",
+        "modelUpdated": "更新了模型",
+        "visibilityChanged": "更改了模型可见性",
+        "apiKeyGenerated": "生成了新的API密钥",
+        "apiKeyRevoked": "撤销了API密钥",
+        "subscriptionUpdated": "更新了订阅",
+        "profileUpdated": "更新了个人资料"
+      }
+    },
+    "quickActions": {
+      "title": "快捷操作",
+      "newModel": {
+        "title": "新建模型",
+        "description": "创建新的3D模型"
+      },
+      "community": {
+        "title": "社区",
+        "description": "浏览公共资产"
+      },
+      "developers": {
+        "title": "开发者",
+        "description": "了解如何使用我们的API"
+      },
+      "support": {
+        "title": "支持",
+        "description": "获取快速帮助"
+      }
+    },
+    "assets": {
+      "search": "搜索资源",
+      "noResults": "未找到资源",
+      "loading": "正在加载资源...",
+      "perPage": "每页",
+      "of": "/",
+      "page": "页"
+    },
+    "settings": {
+      "title": "设置",
+      "navigation": {
+        "account": {
+          "title": "账户",
+          "description": "管理个人资料"
+        },
+        "billing": {
+          "title": "账单",
+          "description": "管理订阅和付款"
+        },
+        "api": {
+          "title": "API",
+          "description": "集成设置"
+        },
+        "support": {
+          "title": "支持",
+          "description": "获取帮助和联系我们"
+        }
+      },
+      "account": {
+        "title": "账户设置",
+        "description": "管理账户信息",
+        "fields": {
+          "firstName": "名",
+          "lastName": "姓",
+          "email": "电子邮箱",
+          "username": "用户名",
+          "organization": "组织",
+          "birthdate": "出生日期"
+        },
+        "hints": {
+          "nameManaged": {
+            "github": "名字由Github管理。无法更改。",
+            "google": "名字由Google管理。无法更改。"
+          },
+          "emailManaged": {
+            "github": "电子邮箱由Github管理。无法更改。",
+            "google": "电子邮箱由Google管理。无法更改。"
+          },
+          "emailUsage": "此电子邮箱将用于通知和登录。",
+          "usernameHint": "您在平台上的唯一用户名。",
+          "organizationHint": "将用于账单。",
+          "organizationPlaceholder": "您的组织名称",
+          "birthdateFormat": "DD/MM/YYYY",
+          "supportText": "如果您需要帮助更新这些信息，可以联系dev@psychoroid.com或提交工单"
+        },
+        "buttons": {
+          "update": "更新",
+          "updating": "更新中..."
+        },
+        "errors": {
+          "invalidBirthdate": "日期格式无效。请使用DD/MM/YYYY格式",
+          "updateFailed": "个人资料更新失败"
+        },
+        "success": {
+          "emailVerification": "验证邮件已发送",
+          "emailVerificationDesc": "请检查您的新邮箱以确认更改",
+          "profileUpdated": "个人资料更新成功"
+        },
+        "dangerZone": {
+          "title": "危险区域",
+          "description": "一旦删除您的账户，由于我们无法恢复您的数据，因此无法撤销。请确保您要这样做。",
+          "deleteButton": "我要删除我的账户",
+          "deleteConfirm": {
+            "title": "您确定吗？",
+            "description": "此操作无法撤销。这将：",
+            "consequences": "永久删除您的账户。\n删除您的所有产品和资源。\n取消任何活动订阅。\n从我们的服务器中删除您的所有数据。",
+            "typeConfirm": "在下方输入\"delete my account\"以确认。",
+            "buttons": {
+              "cancel": "取消",
+              "continue": "继续",
+              "delete": "删除",
+              "deleting": "正在删除账户..."
+            },
+            "success": "账户删除成功",
+            "error": "账户删除失败"
+          }
+        }
+      },
+      "billing": {
+        "title": "账单和订阅",
+        "description": "您的订阅详情和积分余额",
+        "sections": {
+          "balance": "当前余额",
+          "subscription": "订阅",
+          "freePlan": "免费计划",
+          "paidPlan": {
+            "automate": "AUTOMATE计划",
+            "scale": "SCALE计划"
+          },
+          "nextBilling": {
+            "format": "下次账单日期：{date}",
+            "default": "下次账单日期：..."
+          },
+          "endingSoon": "订阅即将到期",
+          "upgradeMessage": "升级以获取更多积分和功能。",
+          "features": {
+            "standard": "随时可取消并按比例退款\n即时访问企业功能\n优先支持",
+            "scale": "无限API调用\n企业支持\n自定义集成\n专属账户经理"
+          }
+        },
+        "buttons": {
+          "manageBilling": "管理账单",
+          "manageSubscription": "管理订阅",
+          "upgrade": "升级",
+          "loading": "加载中...",
+          "processing": "处理中..."
+        },
+        "errors": {
+          "loadFailed": "加载订阅详情失败",
+          "portalAccess": "访问账单门户失败",
+          "noPortalUrl": "账单门户未返回URL"
+        }
+      },
+      "api": {
+        "title": "开发者设置",
+        "description": "管理您的API密钥和集成",
+        "sections": {
+          "keys": {
+            "title": "您的密钥",
+            "noKeys": "尚未生成密钥。",
+            "limitReached": {
+              "3": "您已达到活动API密钥的最大数量（3个）。"
+            },
+            "generateButton": "生成密钥",
+            "created": "创建于",
+            "expires": "过期于",
+            "status": {
+              "active": "活动"
+            },
+            "newKey": {
+              "title": "生成新的API密钥",
+              "description": "为您的API密钥命名，以便日后识别。",
+              "successTitle": "新API密钥已生成",
+              "successDescription": "请立即复制您的API密钥。您将无法再次查看它！",
+              "keyName": "密钥名称",
+              "keyNamePlaceholder": "例如：开发环境、生产环境",
+              "generateButton": "生成密钥",
+              "copyButton": "复制密钥",
+              "copiedToClipboard": "API密钥已复制到剪贴板"
+            },
+            "keySuccess": {
+              "title": "API密钥已生成",
+              "description": "请立即复制您的API密钥。您将无法再次查看它！",
+              "securityNotice": "请安全保存此密钥。任何人都可以通过API完全访问您的账户。",
+              "copyButton": "复制密钥",
+              "copiedToClipboard": "API密钥已复制到剪贴板",
+              "copyError": "复制API密钥失败"
+            }
+          }
+        },
+        "buttons": {
+          "revoke": "撤销"
+        },
+        "errors": {
+          "fetchFailed": "获取API密钥失败",
+          "signInRequired": "请登录以生成API密钥",
+          "limitReached": "已达到API密钥限制",
+          "nameRequired": "请输入密钥名称",
+          "nameRequiredDesc": "生成新的API密钥需要名称",
+          "invalidResponse": "服务器响应格式无效",
+          "generateFailed": "生成API密钥失败",
+          "revokeFailed": "撤销API密钥失败"
+        },
+        "success": {
+          "keyRevoked": "API密钥已撤销",
+          "keyRevokedDesc": "API密钥已成功撤销"
+        }
+      },
+      "support": {
+        "title": "支持",
+        "description": "需要帮助吗？"
+      }
+    },
+    "support": {
+      "categories": {
+        "account": "账户问题",
+        "billing": "账单咨询",
+        "technical": "技术支持",
+        "other": "其他"
+      },
+      "form": {
+        "category": "类别",
+        "select_category": "选择类别",
+        "message": "消息",
+        "message_placeholder": "我们如何帮助您？",
+        "submit": "提交支持工单",
+        "submitting": "提交中..."
+      },
+      "errors": {
+        "category_required": "请选择类别",
+        "message_required": "请输入消息",
+        "submit_failed": "提交支持请求失败",
+        "invalid_file_type": "请上传图片文件",
+        "file_too_large": "图片大小必须小于5MB"
+      },
+      "success": {
+        "submitted": "支持请求提交成功"
+      }
     }
   }
 } 

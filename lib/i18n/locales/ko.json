@@ -327,5 +327,353 @@
       "integrations": "통합 [출시 예정]",
       "boilerplates": "보일러플레이트 [출시 예정]"
     }
+  },
+  "model_suggestions": {
+    "categories": {
+      "gaming": "게임 & 엔터테인먼트",
+      "jewelry": "주얼리 & 액세서리",
+      "furniture": "가구 & 조명",
+      "decorative": "장식용품",
+      "tech": "테크 & 가젯",
+      "containers": "용기 & 그릇"
+    },
+    "items": {
+      "gaming": [
+        "LED 트림 레트로 아케이드 캐비닛",
+        "드래곤 테마 게이밍 마우스",
+        "홀로그래픽 주사위 세트 케이스 포함",
+        "커스텀 키캡 기계식 키보드",
+        "햅틱 피드백 VR 컨트롤러"
+      ],
+      "jewelry": [
+        "실버 와이어 랩 크리스탈 펜던트",
+        "기하학적 슬라이딩 클래스프 팔찌",
+        "별이 있는 별자리 귀걸이",
+        "황동 디테일 앤틱 나침반"
+      ],
+      "furniture": [
+        "플로팅 쉐이드 대나무 책상 램프",
+        "종이접기 영감 접이식 의자",
+        "숨겨진 서랍이 있는 나선형 책장",
+        "구름 모양 천장 조명",
+        "수납공간이 있는 모듈형 커피 테이블",
+        "조명이 있는 플로팅 침대 사이드 테이블"
+      ],
+      "decorative": [
+        "정교한 조각이 있는 보물상자",
+        "물 기능이 있는 분재 화분",
+        "금색 일본 다기 세트",
+        "금속 프레임 기하학적 테라리움"
+      ],
+      "tech": [
+        "공중부양 블루투스 스피커",
+        "미니멀리스트 스마트워치 디자인",
+        "카메라 마운트 접이식 드론",
+        "핸들이 있는 휴대용 프로젝터",
+        "앰비언트 라이트 무선 충전기",
+        "스크린이 있는 스마트홈 컨트롤러"
+      ],
+      "containers": [
+        "꽃이 있는 아르누보 꽃병",
+        "슬라이딩 패널이 있는 퍼즐 박스",
+        "코르크 마개가 있는 포션 병",
+        "배수구가 있는 기하학적 화분",
+        "빈티지 향수병 디자인"
+      ]
+    }
+  },
+  "ui": {
+    "create_help": "무엇을 만드는 것을 도와드릴까요?",
+    "asset_description": "꿈꾸는 에셋을 설명하거나 이미지를 드롭하세요...",
+    "upload": {
+      "starting": "업로드 시작 중...",
+      "failed": "업로드 실패",
+      "preview_only": "이미지 업로드됨 (미리보기만 가능 - 서버 오프라인)",
+      "complete": "업로드 완료, 3D 모델 생성 중...",
+      "processing": "이미지 처리 중...",
+      "success": "3D 모델 생성 성공!",
+      "processing_failed": "3D 처리 실패 - 서버가 오프라인일 수 있습니다",
+      "error": "업로드 오류: ",
+      "error_multiple": "이미지 업로드 오류: ",
+      "ready": "업로드 완료, ⏎ 키를 눌러 계속하세요"
+    },
+    "dashboard": {
+      "title": "대시보드",
+      "welcome": "다시 오신 것을 환영합니다, {firstName}님!",
+      "cards": {
+        "credits": {
+          "title": "크레딧",
+          "description": "사용 가능한 ROIDS"
+        },
+        "assets": {
+          "title": "에셋",
+          "description": "생성된 3D 모델"
+        },
+        "activity": {
+          "title": "활동",
+          "description": "최근 상호작용"
+        }
+      },
+      "timeAgo": {
+        "justNow": "방금 전",
+        "minutesAgo": "{minutes}분 전",
+        "oneHourAgo": "1시간 전",
+        "hoursAgo": "{hours}시간 전",
+        "daysAgo": "{days}일 전"
+      },
+      "navigation": {
+        "overview": "개요",
+        "assets": "자산",
+        "settings": "설정"
+      }
+    },
+    "recentActivity": {
+      "title": "최근 활동",
+      "empty": {
+        "title": "최근 활동 없음",
+        "description": "여기에 활동이 표시됩니다"
+      },
+      "actions": {
+        "modelCreated": "새 모델 생성됨",
+        "modelLiked": "모델 좋아요",
+        "modelDownloaded": "모델 다운로드됨",
+        "creditsPurchased": "ROIDS {amount}개 구매됨",
+        "creditsUsed": "ROIDS {amount}개 사용됨",
+        "modelUpdated": "모델 업데이트됨",
+        "visibilityChanged": "모델 공개 설정 변경됨",
+        "apiKeyGenerated": "새 API 키 생성됨",
+        "apiKeyRevoked": "API 키 취소됨",
+        "subscriptionUpdated": "구독 업데이트됨",
+        "profileUpdated": "프로필 업데이트됨"
+      }
+    },
+    "quickActions": {
+      "title": "빠른 작업",
+      "newModel": {
+        "title": "새 모델",
+        "description": "새로운 3D 모델 만들기"
+      },
+      "community": {
+        "title": "커뮤니티",
+        "description": "공개 에셋 탐색"
+      },
+      "developers": {
+        "title": "개발자",
+        "description": "API 활용 방법 알아보기"
+      },
+      "support": {
+        "title": "지원",
+        "description": "빠른 도움 받기"
+      }
+    },
+    "assets": {
+      "search": "에셋 검색",
+      "noResults": "에셋을 찾을 수 없습니다",
+      "loading": "에셋 로딩 중...",
+      "perPage": "페이지당",
+      "of": "/",
+      "page": "페이지"
+    },
+    "settings": {
+      "title": "설정",
+      "navigation": {
+        "account": {
+          "title": "계정",
+          "description": "개인 정보 관리"
+        },
+        "billing": {
+          "title": "결제",
+          "description": "구독 및 결제 관리"
+        },
+        "api": {
+          "title": "API",
+          "description": "통합 설정"
+        },
+        "support": {
+          "title": "지원",
+          "description": "도움이 필요하신가요?"
+        }
+      },
+      "account": {
+        "title": "계정 설정",
+        "description": "계정 정보 관리",
+        "fields": {
+          "firstName": "이름",
+          "lastName": "성",
+          "email": "이메일",
+          "username": "사용자 이름",
+          "organization": "조직",
+          "birthdate": "생년월일"
+        },
+        "hints": {
+          "nameManaged": {
+            "github": "Github에서 관리되는 이름입니다. 변경할 수 없습니다.",
+            "google": "Google에서 관리되는 이름입니다. 변경할 수 없습니다."
+          },
+          "emailManaged": {
+            "github": "Github에서 관리되는 이메일입니다. 변경할 수 없습니다.",
+            "google": "Google에서 관리되는 이메일입니다. 변경할 수 없습니다."
+          },
+          "emailUsage": "이 이메일은 알림 및 로그인에 사용됩니다.",
+          "usernameHint": "플랫폼에서 사용할 고유한 사용자 이름입니다.",
+          "organizationHint": "결제에 사용됩니다.",
+          "organizationPlaceholder": "조직 이름",
+          "birthdateFormat": "DD/MM/YYYY",
+          "supportText": "이 정보 업데이트에 도움이 필요하시면 dev@psychoroid.com으로 문의하거나 티켓을 제출하세요"
+        },
+        "buttons": {
+          "update": "업데이트",
+          "updating": "업데이트 중..."
+        },
+        "errors": {
+          "invalidBirthdate": "날짜 형식이 잘못되었습니다. DD/MM/YYYY 형식을 사용하세요",
+          "updateFailed": "프로필 업데이트 실패"
+        },
+        "success": {
+          "emailVerification": "확인 이메일 발송됨",
+          "emailVerificationDesc": "변경 사항을 확인하려면 새 이메일함을 확인하세요",
+          "profileUpdated": "프로필이 성공적으로 업데이트되었습니다"
+        },
+        "dangerZone": {
+          "title": "위험 구역",
+          "description": "계정을 삭제하면 데이터를 복구할 수 없으므로 되돌릴 수 없습니다. 이 작업을 수행할 것인지 확인하세요.",
+          "deleteButton": "계정 삭제하기",
+          "deleteConfirm": {
+            "title": "정말 삭제하시겠습니까?",
+            "description": "이 작업은 취소할 수 없습니다. 다음과 같은 결과가 발생합니다:",
+            "consequences": "계정이 영구적으로 삭제됩니다.\n모든 제품과 리소스가 삭제됩니다.\n활성화된 구독이 취소됩니다.\n서버에서 모든 데이터가 삭제됩니다.",
+            "typeConfirm": "확인을 위해 \"delete my account\"를 입력하세요.",
+            "buttons": {
+              "cancel": "취소",
+              "continue": "계속",
+              "delete": "삭제",
+              "deleting": "계정 삭제 중..."
+            },
+            "success": "계정이 성공적으로 삭제되었습니다",
+            "error": "계정 삭제 실패"
+          }
+        }
+      },
+      "billing": {
+        "title": "결제 및 구독",
+        "description": "구독 세부 정보 및 크레딧 잔액",
+        "sections": {
+          "balance": "현재 잔액",
+          "subscription": "구독",
+          "freePlan": "무료 플랜",
+          "paidPlan": {
+            "automate": "AUTOMATE 플랜",
+            "scale": "SCALE 플랜"
+          },
+          "nextBilling": {
+            "format": "다음 결제일: {date}",
+            "default": "다음 결제일: ..."
+          },
+          "endingSoon": "구독이 곧 만료됩니다",
+          "upgradeMessage": "더 많은 크레딧과 기능을 이용하려면 업그레이드하세요.",
+          "features": {
+            "standard": "언제든지 환불 가능한 취소\n엔터프라이즈 기능 즉시 이용\n우선 지원",
+            "scale": "무제한 API 호출\n엔터프라이즈 지원\n맞춤형 통합\n전담 계정 관리자"
+          }
+        },
+        "buttons": {
+          "manageBilling": "결제 관리",
+          "manageSubscription": "구독 관리",
+          "upgrade": "업그레이드",
+          "loading": "로딩 중...",
+          "processing": "처리 중..."
+        },
+        "errors": {
+          "loadFailed": "구독 세부 정보 로드 실패",
+          "portalAccess": "결제 포털 접근 실패",
+          "noPortalUrl": "결제 포털에서 URL이 반환되지 않았습니다"
+        }
+      },
+      "api": {
+        "title": "개발자 설정",
+        "description": "API 키 및 통합 관리",
+        "sections": {
+          "keys": {
+            "title": "API 키",
+            "noKeys": "생성된 키가 없습니다.",
+            "limitReached": {
+              "3": "활성 API 키의 최대 개수(3개)에 도달했습니다."
+            },
+            "generateButton": "키 생성",
+            "created": "생성일",
+            "expires": "만료일",
+            "status": {
+              "active": "활성"
+            },
+            "newKey": {
+              "title": "새 API 키 생성",
+              "description": "나중에 식별할 수 있도록 API 키의 이름을 지정하세요.",
+              "successTitle": "새 API 키가 생성되었습니다",
+              "successDescription": "지금 API 키를 복사하세요. 다시는 볼 수 없습니다!",
+              "keyName": "키 이름",
+              "keyNamePlaceholder": "예: 개발 환경, 프로덕션",
+              "generateButton": "키 생성",
+              "copyButton": "키 복사",
+              "copiedToClipboard": "API 키가 클립보드에 복사되었습니다"
+            },
+            "keySuccess": {
+              "title": "API 키가 생성되었습니다",
+              "description": "지금 API 키를 복사하세요. 다시는 볼 수 없습니다!",
+              "securityNotice": "이 키를 안전하게 보관하세요. API를 통해 계정에 완전히 접근할 수 있습니다.",
+              "copyButton": "키 복사",
+              "copiedToClipboard": "API 키가 클립보드에 복사되었습니다",
+              "copyError": "API 키 복사 실패"
+            }
+          }
+        },
+        "buttons": {
+          "revoke": "취소"
+        },
+        "errors": {
+          "fetchFailed": "API 키 가져오기 실패",
+          "signInRequired": "API 키를 생성하려면 로그인하세요",
+          "limitReached": "API 키 한도에 도달했습니다",
+          "nameRequired": "키 이름을 입력하세요",
+          "nameRequiredDesc": "새 API 키를 생성하려면 이름이 필요합니다",
+          "invalidResponse": "서버에서 잘못된 응답 형식",
+          "generateFailed": "API 키 생성 실패",
+          "revokeFailed": "API 키 취소 실패"
+        },
+        "success": {
+          "keyRevoked": "API 키가 취소되었습니다",
+          "keyRevokedDesc": "API 키가 성공적으로 취소되었습니다"
+        }
+      },
+      "support": {
+        "title": "지원",
+        "description": "도움이 필요하신가요?"
+      }
+    },
+    "support": {
+      "categories": {
+        "account": "계정 문제",
+        "billing": "결제 문의",
+        "technical": "기술 지원",
+        "other": "기타"
+      },
+      "form": {
+        "category": "카테고리",
+        "select_category": "카테고리 선택",
+        "message": "메시지",
+        "message_placeholder": "어떻게 도와드릴까요?",
+        "submit": "지원 티켓 제출",
+        "submitting": "제출 중..."
+      },
+      "errors": {
+        "category_required": "카테고리를 선택해 주세요",
+        "message_required": "메시지를 입력해 주세요",
+        "submit_failed": "지원 요청 제출 실패",
+        "invalid_file_type": "이미지 파일을 업로드해 주세요",
+        "file_too_large": "이미지 크기는 5MB 미만이어야 합니다"
+      },
+      "success": {
+        "submitted": "지원 요청이 성공적으로 제출되었습니다"
+      }
+    }
   }
 }

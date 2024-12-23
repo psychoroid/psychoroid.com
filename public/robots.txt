@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
+# Sitemaps
 Sitemap: https://psychoroid.com/sitemap.xml
