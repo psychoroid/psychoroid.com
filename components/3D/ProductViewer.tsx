@@ -162,7 +162,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
 
     const renderCanvas = (expanded: boolean) => (
         <>
-            {isServerOffline && (
+            {/* {isServerOffline && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
                     <div className="bg-background/80 backdrop-blur-sm p-4 rounded-none border border-border/40 shadow-lg">
                         <p className="text-sm text-muted-foreground">
@@ -170,7 +170,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                         </p>
                     </div>
                 </div>
-            )}
+            )} */}
             <Canvas
                 gl={{ preserveDrawingBuffer: true }}
                 camera={{ position: cameraPositionVector }}

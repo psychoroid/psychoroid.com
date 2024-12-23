@@ -143,10 +143,6 @@ export function ImagePreview({
                 exit={{ opacity: 0 }}
                 className="space-y-4"
             >
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Library</h2>
-                </div>
-
                 <div className="grid grid-cols-3 gap-4">
                     {displayedImages.map((imagePath, index) => {
                         const imageUrl = imagePath ?
@@ -158,13 +154,13 @@ export function ImagePreview({
                         return (
                             <div
                                 key={index}
-                                className={`relative cursor-pointer ${selectedImage === imagePath ? 'ring-2 ring-blue-500 rounded-lg' : ''}`}
+                                className={`relative cursor-pointer ${selectedImage === imagePath ? 'ring-2 ring-blue-500' : ''}`}
                                 onClick={() => !isProcessing && handleImageClick(imagePath)}
                                 onMouseEnter={() => setHoveredImage(imagePath)}
                                 onMouseLeave={() => setHoveredImage(null)}
                             >
                                 {isProcessing ? (
-                                    <div className="w-full h-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                                    <div className="w-full h-full aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                                         <span className="text-2xl font-bold text-gray-500 dark:text-gray-400">
                                             {Math.round(progress)}%
                                         </span>
@@ -176,13 +172,13 @@ export function ImagePreview({
                                             alt={`Uploaded Image ${index + 1}`}
                                             width={200}
                                             height={200}
-                                            className="object-cover rounded-lg"
+                                            className="object-cover"
                                         />
                                     )
                                 )}
                                 {selectedImage === imagePath && hoveredImage === imagePath && (
                                     <button
-                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-tr-lg rounded-bl-md w-5 h-5 flex items-center justify-center text-xs"
+                                        className="absolute top-0 right-0 bg-red-500 text-white w-5 h-5 flex items-center justify-center text-xs"
                                         onClick={(e) => handleImageRemove(imagePath, e)}
                                     >
                                         &times;

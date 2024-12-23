@@ -3,12 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { ProductViewer } from '@/components/3D/ProductViewer'
-import { ProductControls } from '@/components/3D/ProductControls'
-import { ImagePreview } from '@/components/3D/ImagePreview'
-import { WorkspaceChat } from './components/WorkspaceChat'
+import { AssetLibrary } from '@/components/3D/AssetLibrary'
+import { ModelGenerator } from '@/components/3D/ModelGenerator'
 import { useUser } from '@/lib/contexts/UserContext'
 import { supabase } from '@/lib/supabase/supabase'
-import { AuthModal } from '@/components/auth/AuthModal'
+import { Footer } from '@/components/design/Footer'
 
 export default function WorkspacePage() {
     const searchParams = useSearchParams()
@@ -21,8 +20,13 @@ export default function WorkspacePage() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
     const [modelUrl, setModelUrl] = useState<string | null>(null)
     const [processingImages, setProcessingImages] = useState<{ [key: string]: number }>({})
-    const [showAuthModal, setShowAuthModal] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('')
+    const [assetGroups, setAssetGroups] = useState<{
+        id: string;
+        title: string;
+        assets: string[];
+    }[]>([])
 
     // Get initial image and model from URL params
     useEffect(() => {
@@ -57,7 +61,6 @@ export default function WorkspacePage() {
 
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (!user) {
-            setShowAuthModal(true)
             return
         }
 
@@ -75,7 +78,6 @@ export default function WorkspacePage() {
 
     const handlePromptSubmit = async (prompt: string) => {
         if (!user) {
-            setShowAuthModal(true)
             return
         }
 
@@ -89,7 +91,6 @@ export default function WorkspacePage() {
 
     const handleGenerateVariation = async () => {
         if (!user) {
-            setShowAuthModal(true)
             return
         }
 
@@ -104,78 +105,42 @@ export default function WorkspacePage() {
     if (!user) return null
 
     return (
-        <div className="min-h-screen bg-background">
-            <main className="container mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Left Panel - Asset Preview & Chat */}
-                    <div className="lg:col-span-4 space-y-8">
-                        {/* Asset Preview */}
-                        <div className="rounded-lg border border-border bg-card p-4">
-                            <ImagePreview
-                                imagePaths={selectedImage ? [selectedImage] : []}
-                                selectedImage={selectedImage}
-                                onImageClick={(image, model) => {
-                                    setSelectedImage(image)
-                                    setModelUrl(model)
-                                }}
-                                onImageRemove={() => {
-                                    setSelectedImage(null)
-                                    setModelUrl(null)
-                                }}
-                                currentPage={1}
-                                onPageChange={() => { }}
-                                isLoading={false}
-                                processingImages={processingImages}
-                            />
-                        </div>
+        <div className="min-h-svh bg-background relative pb-8">
+            <div className="container mx-auto p-4 pt-10">
+                {/* Main Content */}
+                <div className="flex gap-2 h-[calc(100vh-10rem)]">
+                    <AssetLibrary
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        assetGroups={assetGroups}
+                    />
 
-                        {/* Workspace Chat */}
-                        <div className="rounded-lg border border-border bg-card p-4">
-                            <WorkspaceChat
-                                onFileSelect={handleFileSelect}
-                                isUploading={isUploading}
-                                onPromptSubmit={handlePromptSubmit}
-                                user={user}
-                                setShowAuthModal={setShowAuthModal}
-                                onGenerateVariation={handleGenerateVariation}
+                    <div className="flex-1 flex flex-col">
+                        <div className="flex-1 border border-border bg-card/50">
+                            <ProductViewer
+                                key={modelUrl}
+                                imagePath={selectedImage}
+                                modelUrl={modelUrl}
+                                isRotating={isRotating}
+                                zoom={zoom}
+                                isExpanded={isExpanded}
+                                onClose={handleClose}
                             />
                         </div>
                     </div>
 
-                    {/* Right Panel - 3D Viewer */}
-                    <div className="lg:col-span-8">
-                        <div className="rounded-lg border border-border bg-card p-4">
-                            <div className="relative h-[600px] flex gap-4">
-                                <div className="flex-grow">
-                                    <ProductViewer
-                                        key={modelUrl}
-                                        imagePath={selectedImage}
-                                        modelUrl={modelUrl}
-                                        isRotating={isRotating}
-                                        zoom={zoom}
-                                        isExpanded={isExpanded}
-                                        onClose={handleClose}
-                                    />
-                                </div>
-                                <div className="flex flex-col justify-center space-y-2">
-                                    <ProductControls
-                                        isRotating={isRotating}
-                                        onRotateToggle={() => setIsRotating(!isRotating)}
-                                        onZoomIn={handleZoomIn}
-                                        onZoomOut={handleZoomOut}
-                                        onExpand={handleExpand}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <ModelGenerator
+                        onFileSelect={handleFileSelect}
+                        isUploading={isUploading}
+                        onPromptSubmit={handlePromptSubmit}
+                        user={user}
+                        onGenerateVariation={handleGenerateVariation}
+                    />
                 </div>
-            </main>
-
-            <AuthModal
-                isOpen={showAuthModal}
-                onClose={() => setShowAuthModal(false)}
-            />
+            </div>
+            <div className="fixed bottom-0 left-0 right-0 z-50">
+                <Footer />
+            </div>
         </div>
     )
 } 

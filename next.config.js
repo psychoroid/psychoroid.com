@@ -17,7 +17,6 @@ const nextConfig = {
     // Enable HTTP/2 Push
     experimental: {
         optimizeCss: true, // Enable CSS optimization
-        optimizeImages: true, // Enable image optimization
         scrollRestoration: true,
     },
 
