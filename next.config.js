@@ -1,4 +1,5 @@
 const WebpackObfuscator = require('webpack-obfuscator');
+const CompressionPlugin = require('compression-webpack-plugin');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -13,8 +14,15 @@ const nextConfig = {
     // Font optimization
     optimizeFonts: true,
 
+    // Enable HTTP/2 Push
+    experimental: {
+        optimizeCss: true, // Enable CSS optimization
+        optimizeImages: true, // Enable image optimization
+        scrollRestoration: true,
+    },
+
     webpack: (config, { dev, isServer }) => {
-        // Asset handling
+        // Existing asset handling rules...
         config.module.rules.push({
             test: /\.(woff|woff2|eot|ttf|otf)$/i,
             type: 'asset/resource',
@@ -23,7 +31,6 @@ const nextConfig = {
             }
         });
 
-        // Enhanced 3D model file handling
         config.module.rules.push({
             test: /\.(glb|gltf|obj|stl|usdz|fbx|step)$/,
             type: 'asset/resource',
@@ -34,7 +41,27 @@ const nextConfig = {
 
         // Production-only optimizations
         if (!dev && !isServer) {
-            // Only apply obfuscation to production client-side code
+            // Add compression plugin
+            config.plugins.push(
+                new CompressionPlugin({
+                    filename: '[path][base].gz',
+                    algorithm: 'gzip',
+                    test: /\.(js|css|html|svg)$/,
+                    threshold: 10240,
+                    minRatio: 0.8,
+                    deleteOriginalAssets: false // Keep original files
+                }),
+                new CompressionPlugin({
+                    filename: '[path][base].br',
+                    algorithm: 'brotliCompress',
+                    test: /\.(js|css|html|svg)$/,
+                    threshold: 10240,
+                    minRatio: 0.8,
+                    deleteOriginalAssets: false // Keep original files
+                })
+            );
+
+            // Existing obfuscation
             config.plugins.push(
                 new WebpackObfuscator({
                     compact: true,
@@ -54,6 +81,7 @@ const nextConfig = {
             );
         }
 
+        // Enable WebAssembly
         config.experiments = {
             ...config.experiments,
             asyncWebAssembly: true,
@@ -62,6 +90,7 @@ const nextConfig = {
         return config;
     },
 
+    // Enhanced image optimization
     images: {
         remotePatterns: [
             {
@@ -82,8 +111,11 @@ const nextConfig = {
         ],
         unoptimized: false,
         minimumCacheTTL: 60,
+        deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+        imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     },
 
+    // Enhanced headers with better caching strategy
     async headers() {
         const headers = [
             {
@@ -96,7 +128,6 @@ const nextConfig = {
             }
         ];
 
-        // Only add aggressive caching in production
         if (process.env.NODE_ENV === 'production') {
             headers.push({
                 key: 'Cache-Control',
