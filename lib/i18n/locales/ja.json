@@ -24,6 +24,15 @@
       "per_year": "/ 年",
       "currency": "¥"
     },
+    "on_demand": {
+      "title": "オンデマンドクレジット",
+      "rate": "1 roid = $0.01",
+      "min_credits": "最小 100",
+      "roids": "roids",
+      "purchase": "購入",
+      "processing": "処理中...",
+      "subscribe_first": "先に購読してください"
+    },
     "plans": {
       "explore": {
         "name": "エクスプローラー",

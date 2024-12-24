@@ -24,6 +24,15 @@
       "per_year": "/ 년",
       "currency": "₩"
     },
+    "on_demand": {
+      "title": "온디맨드 크레딧",
+      "rate": "1 roid = $0.01",
+      "min_credits": "최소 100",
+      "roids": "roids",
+      "purchase": "구매",
+      "processing": "처리 중...",
+      "subscribe_first": "먼저 구독해주세요"
+    },
     "plans": {
       "explore": {
         "name": "탐색",

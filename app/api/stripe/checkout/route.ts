@@ -16,13 +16,14 @@ const baseUrl = process.env.NODE_ENV === 'production'
 
 export async function POST(req: Request) {
   try {
-    const clonedReq = req.clone();
-    const { package: packageName, userId } = await clonedReq.json();
+    const body = await req.json();
+    const { package: packageName, userId } = body;
     
-    console.log('Received request:', { packageName, userId });
-    console.log('Available price IDs:', SUBSCRIPTION_PRICES);
+    console.log('📦 Checkout Request:', { packageName, userId, body });
+    console.log('💰 Price IDs:', SUBSCRIPTION_PRICES);
 
     if (!userId) {
+      console.error('❌ Missing userId in request');
       return NextResponse.json(
         { message: 'User ID is required' },
         { status: 400 }
@@ -35,10 +36,10 @@ export async function POST(req: Request) {
       const planName = packageName.replace('sub_', '') as keyof typeof SUBSCRIPTION_PRICES;
       const priceId = SUBSCRIPTION_PRICES[planName];
 
-      console.log('Creating session for plan:', { planName, priceId });
+      console.log('🔄 Creating subscription session:', { planName, priceId });
 
       if (!priceId) {
-        console.error('Price ID not found for plan:', planName);
+        console.error('❌ Invalid price ID for plan:', planName);
         return NextResponse.json(
           { message: `Invalid subscription plan: ${planName}` },
           { status: 400 }
@@ -65,12 +66,13 @@ export async function POST(req: Request) {
           allow_promotion_codes: true,
           automatic_tax: { enabled: false },
           payment_method_types: ['card'],
-          after_expiration: {
-            recovery: {
-              enabled: true,
-              allow_promotion_codes: true
-            }
-          }
+          billing_address_collection: 'required',
+          customer_email: body.email,
+        });
+
+        console.log('✅ Session created successfully:', { 
+          sessionId: session.id,
+          url: session.url 
         });
       } catch (stripeError) {
         console.error('❌ Stripe session creation error:', stripeError);
@@ -79,54 +81,63 @@ export async function POST(req: Request) {
     }
 
     if (packageName === 'custom') {
-      const { credits, price } = await req.json();
+      const { credits, price } = body;
       
-      session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        line_items: [
-          {
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: `${credits} Credits`,
-                description: 'Custom credit purchase for psychoroid.com',
+      console.log('🔄 Creating custom credits session:', { credits, price });
+
+      try {
+        session = await stripe.checkout.sessions.create({
+          mode: 'payment',
+          line_items: [
+            {
+              price_data: {
+                currency: 'usd',
+                product_data: {
+                  name: `${credits} Credits`,
+                  description: 'Custom credit purchase for psychoroid.com',
+                },
+                unit_amount: Math.round(parseFloat(price) * 100),
               },
-              unit_amount: Math.round(parseFloat(price) * 100),
+              quantity: 1,
             },
-            quantity: 1,
+          ],
+          success_url: `${baseUrl}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/roids/cancel?session_id={CHECKOUT_SESSION_ID}`,
+          metadata: {
+            userId,
+            type: 'custom_purchase',
+            credits: credits.toString()
           },
-        ],
-        success_url: `${baseUrl}/roids/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/roids/cancel?session_id={CHECKOUT_SESSION_ID}`,
-        metadata: {
-          userId,
-          type: 'custom_purchase',
-          credits: credits.toString()
-        },
-        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-        customer_creation: 'always',
-        allow_promotion_codes: true,
-        automatic_tax: { enabled: false },
-        payment_method_types: ['card'],
-        after_expiration: {
-          recovery: {
-            enabled: true,
-            allow_promotion_codes: true
-          }
-        }
-      });
+          expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+          customer_email: body.email,
+          billing_address_collection: 'required',
+          payment_method_types: ['card'],
+        });
+
+        console.log('✅ Custom credits session created:', { 
+          sessionId: session.id,
+          url: session.url 
+        });
+      } catch (stripeError) {
+        console.error('❌ Stripe session creation error:', stripeError);
+        throw stripeError;
+      }
     }
 
-    if (!session) {
+    if (!session?.url) {
+      console.error('❌ No session URL generated');
       return NextResponse.json(
         { message: 'Failed to create checkout session' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ sessionId: session.id });
+    return NextResponse.json({ 
+      sessionId: session.id,
+      url: session.url 
+    });
   } catch (error) {
-    console.error('Detailed error:', error);
+    console.error('❌ Checkout error:', error);
     return NextResponse.json(
       { message: error instanceof Error ? error.message : 'Error creating checkout session' },
       { status: 500 }

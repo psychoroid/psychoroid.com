@@ -12,6 +12,7 @@ import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
+import { useTheme } from 'next-themes'
 
 interface ChatInstanceProps {
     onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
@@ -34,6 +35,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const submitButtonRef = useRef<HTMLButtonElement>(null)
     const { currentLanguage } = useTranslation()
+    const { theme } = useTheme()
 
     // Check if device is desktop on mount
     useEffect(() => {
@@ -375,12 +377,20 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                         <div className="flex gap-2 z-50 ml-auto">
                             <Button
                                 variant="ghost"
-                                onClick={() => router.push('/workspace')}
+                                onClick={() => {
+                                    if (!user && setShowAuthModal) {
+                                        setShowAuthModal(true)
+                                        return
+                                    }
+                                    router.push('/workspace')
+                                }}
                                 className={cn(
                                     "h-7 sm:h-6 px-3",
-                                    "border border-dashed border-muted-foreground/50",
-                                    "text-xs text-muted-foreground",
-                                    "hover:bg-background/50 hover:text-foreground",
+                                    "border border-dashed",
+                                    "text-xs",
+                                    theme === 'dark'
+                                        ? "border-blue-400 text-blue-400 hover:text-blue-400/90 hover:border-blue-400/90"
+                                        : "border-[#D73D57] text-[#D73D57] hover:text-[#D73D57]/90 hover:border-[#D73D57]/90",
                                     "transition-colors rounded-none"
                                 )}
                             >

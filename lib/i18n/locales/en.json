@@ -24,6 +24,15 @@
       "per_year": "/ year",
       "currency": "$"
     },
+    "on_demand": {
+      "title": "On-demand credits",
+      "rate": "1 roid = $0.01",
+      "min_credits": "Min. 100",
+      "roids": "roids",
+      "purchase": "Purchase",
+      "processing": "Processing...",
+      "subscribe_first": "Subscribe first"
+    },
     "plans": {
       "explore": {
         "name": "Explore",
@@ -54,7 +63,7 @@
         "features": [
           "**5,000 credits per month**",
           "Top queue priority",
-          "20 tasks waiting in queue",
+          "10 tasks waiting in queue",
           "Assets are private & customer owned",
           "Download community assets",
           "AI texture editing",

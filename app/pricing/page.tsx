@@ -73,9 +73,9 @@ export default function PricingPage() {
             name: 'Automate',
             price: 12,
             period: 'month',
-            credits: 2000,
+            credits: 1000,
             features: [
-                '**2,000 credits per month**',
+                '**1,000 credits per month**',
                 'Standard queue priority',
                 '5 tasks waiting in queue',
                 'Assets are private & customer owned',
@@ -88,44 +88,12 @@ export default function PricingPage() {
         },
         {
             name: 'Scale',
-            price: 69,
+            price: 59,
             period: 'month',
-            credits: 6000,
-            features: [
-                '**6,000 credits per month**',
-                'Top queue priority',
-                '20 tasks waiting in queue',
-                'Assets are private & customer owned',
-                'Download community assets',
-                'AI texture editing',
-                'API access',
-                'Free retries',
-                'Animate your creations',
-            ],
-            description: 'Unlock psychoroid.com\'s full potential',
-            type: 'subscription' as const
-        }
-    ];
-
-    // Add one-time purchase options
-    const roidsPacks = [
-        {
-            name: 'Starter Pack',
-            price: 9.99,
-            credits: 600,
-            type: 'one_time'
-        },
-        {
-            name: 'Plus Pack',
-            price: 29.99,
-            credits: 2000,
-            type: 'one_time'
-        },
-        {
-            name: 'Max Pack',
-            price: 59.99,
             credits: 5000,
-            type: 'one_time'
+            features: t(currentLanguage, 'pricing.plans.scale.features'),
+            description: t(currentLanguage, 'pricing.plans.scale.description'),
+            type: 'subscription' as const
         }
     ];
 
@@ -155,6 +123,7 @@ export default function PricingPage() {
                 body: JSON.stringify({
                     package: packageName,
                     userId: user.id,
+                    email: user.email,
                 }),
             });
 
@@ -163,19 +132,11 @@ export default function PricingPage() {
                 throw new Error(error.message || 'Failed to create checkout session');
             }
 
-            const { sessionId } = await response.json();
-            console.log('Got session ID:', sessionId);
+            const { url } = await response.json();
+            console.log('✅ Got checkout URL:', url);
 
-            const stripe = await getStripe();
-            if (!stripe) {
-                throw new Error('Failed to load Stripe');
-            }
-
-            const { error } = await stripe.redirectToCheckout({ sessionId });
-            if (error) {
-                console.error('❌ Stripe checkout error:', error);
-                throw error;
-            }
+            // Redirect to Stripe Checkout
+            window.location.href = url;
         } catch (error) {
             console.error('❌ Error initiating checkout:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to start checkout');
@@ -285,9 +246,11 @@ export default function PricingPage() {
                                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                             <div className="space-y-2 md:space-y-1">
                                                 <h3 className="text-sm font-medium text-foreground">
-                                                    On-demand credits
+                                                    {t(currentLanguage, 'pricing.on_demand.title')}
                                                 </h3>
-                                                <p className="text-xs text-muted-foreground">1 roid = $0.01</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {t(currentLanguage, 'pricing.on_demand.rate')}
+                                                </p>
                                             </div>
                                             <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                                                 <div className="relative w-full md:w-auto">
@@ -307,10 +270,10 @@ export default function PricingPage() {
                                                             }
                                                         }}
                                                         className="w-full md:w-32 text-xs font-medium pr-12 h-8 rounded-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                        placeholder="Min. 100"
+                                                        placeholder={t(currentLanguage, 'pricing.on_demand.min_credits')}
                                                     />
                                                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                                        roids
+                                                        {t(currentLanguage, 'pricing.on_demand.roids')}
                                                     </span>
                                                 </div>
                                                 <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -325,12 +288,12 @@ export default function PricingPage() {
                                                 >
                                                     {loadingPlan === 'custom' ? (
                                                         <span className="flex items-center justify-center">
-                                                            Processing...
+                                                            {t(currentLanguage, 'pricing.on_demand.processing')}
                                                         </span>
                                                     ) : !isUserSubscribed ? (
-                                                        'Subscribe first'
+                                                        t(currentLanguage, 'pricing.on_demand.subscribe_first')
                                                     ) : (
-                                                        'Purchase'
+                                                        t(currentLanguage, 'pricing.on_demand.purchase')
                                                     )}
                                                 </Button>
                                             </div>

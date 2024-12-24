@@ -24,6 +24,15 @@
       "per_year": "/ año",
       "currency": "€"
     },
+    "on_demand": {
+      "title": "Créditos bajo demanda",
+      "rate": "1 roid = $0.01",
+      "min_credits": "Mín. 100",
+      "roids": "roids",
+      "purchase": "Comprar",
+      "processing": "Procesando...",
+      "subscribe_first": "Suscríbete primero"
+    },
     "plans": {
       "explore": {
         "name": "Explorar",

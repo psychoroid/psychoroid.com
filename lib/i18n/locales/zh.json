@@ -22,7 +22,16 @@
       "processing": "处理中...",
       "per_month": "/ 月",
       "per_year": "/ 年",
-      "currency": "元"
+      "currency": "¥"
+    },
+    "on_demand": {
+      "title": "按需信用点数",
+      "rate": "1 roid = $0.01",
+      "min_credits": "最少 100",
+      "roids": "roids",
+      "purchase": "购买",
+      "processing": "处理中...",
+      "subscribe_first": "请先订阅"
     },
     "plans": {
       "explore": {
