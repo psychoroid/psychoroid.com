@@ -9,7 +9,7 @@ Enterprise-grade 3D asset creation and processing engine powered by AI.
 ## Core Features
 
 ### 3D Processing
-- 2D to 3D conversion pipeline
+- Prompt and 2D to 3D conversion
 - Batch processing capabilities
 - Multiple export formats support
 - Quality validation tools
@@ -20,12 +20,6 @@ Enterprise-grade 3D asset creation and processing engine powered by AI.
 - Custom pipeline development
 - Enterprise authentication
 
-### Deployment Options
-- Cloud-based SaaS
-- On-premise installation
-- Hybrid deployment
-- Custom requirements
-
 ## Quick Start
 
 ### Prerequisites
@@ -33,5 +27,5 @@ Enterprise-grade 3D asset creation and processing engine powered by AI.
 - Node.js
 
 ### Installation
-- npm or yarn
+- npm
 - git
