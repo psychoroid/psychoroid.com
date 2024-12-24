@@ -8,7 +8,7 @@ import Image from 'next/image'
 import RippleButton from "@/components/ui/magic/ripple-button"
 import { Textarea } from "@/components/ui/textarea"
 
-interface WorkspaceChatProps {
+interface StudioChatProps {
     onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
     isUploading: boolean
     onPromptSubmit?: (prompt: string) => void
@@ -17,14 +17,14 @@ interface WorkspaceChatProps {
     onInputChange?: (value: string) => void
 }
 
-export function WorkspaceChat({
+export function StudioChat({
     onFileSelect,
     isUploading,
     onPromptSubmit,
     user,
     onGenerateVariation,
     onInputChange
-}: WorkspaceChatProps) {
+}: StudioChatProps) {
     const [inputValue, setInputValue] = useState('')
     const [isFocused, setIsFocused] = useState(false)
     const [isDragging, setIsDragging] = useState(false)

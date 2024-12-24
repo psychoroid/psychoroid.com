@@ -1,7 +1,7 @@
 'use client'
 
 import { Box } from "lucide-react"
-import { WorkspaceChat } from "./WorkspaceChat"
+import { StudioChat } from "./StudioChat"
 import RippleButton from "@/components/ui/magic/ripple-button"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -79,7 +79,7 @@ export function ModelGenerator({
                                 className="overflow-hidden"
                             >
                                 <div className="border border-border bg-background/50 p-1">
-                                    <WorkspaceChat
+                                    <StudioChat
                                         onFileSelect={onFileSelect}
                                         isUploading={isUploading}
                                         onPromptSubmit={onPromptSubmit}

@@ -382,7 +382,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                         setShowAuthModal(true)
                                         return
                                     }
-                                    router.push('/workspace')
+                                    router.push('/studio')
                                 }}
                                 className={cn(
                                     "h-7 sm:h-6 px-3",
@@ -394,7 +394,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                     "transition-colors rounded-none"
                                 )}
                             >
-                                Workspace
+                                Studio
                             </Button>
 
                             <RippleButton

@@ -32,13 +32,13 @@ export default function Home() {
 
     const handleImageUpload = (imagePath: string) => {
         // Redirect to workspace with image parameter
-        router.push(`/workspace?image=${encodeURIComponent(imagePath)}`)
+        router.push(`/studio?image=${encodeURIComponent(imagePath)}`)
     }
 
     const handleModelUrlChange = (modelUrl: string | null) => {
         if (modelUrl) {
             // Update URL with model parameter if available
-            router.push(`/workspace?model=${encodeURIComponent(modelUrl)}`)
+            router.push(`/studio?model=${encodeURIComponent(modelUrl)}`)
         }
     }
 

@@ -141,7 +141,7 @@ export default function DashboardPage() {
                         description={t(currentLanguage, 'ui.dashboard.welcome').replace('{firstName}', firstName)}
                     />
                     <RippleButton
-                        onClick={() => router.push('/workspace')}
+                        onClick={() => router.push('/studio')}
                         className={`rounded-none h-10 px-6 transition-colors
                             ${theme === 'dark'
                                 ? 'border-blue-400 text-blue-400 hover:text-blue-400/90 hover:border-blue-400/90'
@@ -152,7 +152,7 @@ export default function DashboardPage() {
                             : "rgba(215, 61, 87, 0.1)"   // #D73D57 with opacity
                         }
                     >
-                        Workspace
+                        Studio
                     </RippleButton>
                 </div>
 
