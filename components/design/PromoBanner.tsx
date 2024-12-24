@@ -8,7 +8,7 @@ interface PromoBannerProps {
 }
 
 export const PromoBanner = ({
-    message = "🚀 Dear Product Hunters: We apologize for the early launch. Please revisit in 48h to try our one-click 3D asset creation! Thank you so much for your understanding as we made a mistake on the launch date.",
+    message = "🚀 Use code PSYCHOHUNT50 for 50% off! A limited time offer for early adopters.",
     backgroundColor = "bg-blue-600",
     textColor = "text-white"
 }: PromoBannerProps) => {
@@ -32,7 +32,7 @@ export const PromoBanner = ({
     if (!isVisible || hasBeenClosed) return null
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-[100]">
+        <div className="fixed top-0 left-0 right-0 z-[100] hidden md:block">
             <div className={`w-full ${backgroundColor} ${textColor} h-8 text-center shadow-md`}>
                 <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-center">
                     <p className="text-xs font-medium tracking-wide">

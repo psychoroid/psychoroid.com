@@ -28,11 +28,11 @@ export function Footer() {
                             href="https://github.com/psychoroid"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hidden lg:inline-flex text-muted-foreground hover:text-foreground transition-colors"
+                            className="inline-flex text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <GitHubIcon className="h-3 w-3 -translate-y-[2px]" />
                         </Link>
-                        <div className="hidden lg:block h-4 w-px bg-border"></div>
+                        <div className="h-4 w-px bg-border"></div>
                         <Link
                             href="https://www.producthunt.com/products/psychoroid-com"
                             target="_blank"
