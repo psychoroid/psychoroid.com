@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
 import { PromoBanner } from '@/components/design/PromoBanner'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
     const [mounted, setMounted] = useState(false)
@@ -31,8 +32,10 @@ export default function Home() {
     }, [processingImages])
 
     const handleImageUpload = (imagePath: string) => {
-        // Redirect to workspace with image parameter
-        router.push(`/studio?image=${encodeURIComponent(imagePath)}`)
+        // Add a small delay to allow for exit animation
+        setTimeout(() => {
+            router.push(`/studio?image=${encodeURIComponent(imagePath)}`)
+        }, 100)
     }
 
     const handleModelUrlChange = (modelUrl: string | null) => {
@@ -64,8 +67,16 @@ export default function Home() {
     }
 
     return (
-        <div className="min-h-svh flex flex-col bg-gray-50 dark:bg-background">
-            <PromoBanner />
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="min-h-svh flex flex-col bg-gray-50 dark:bg-background"
+        >
+            <AnimatePresence>
+                <PromoBanner />
+            </AnimatePresence>
             <div className="h-8" />
 
             <div className="fixed inset-0 pointer-events-none z-0 hidden md:block">
@@ -76,22 +87,46 @@ export default function Home() {
                 <Navbar />
             </div>
 
-            <main className="flex-grow p-0 md:p-8 pt-20 md:pt-28 overflow-auto relative z-10">
+            <motion.main
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{
+                    duration: 0.6,
+                    ease: [0.22, 1, 0.36, 1]
+                }}
+                className="flex-grow p-0 md:p-8 pt-20 md:pt-28 overflow-auto relative z-10"
+            >
                 <div className="max-w-7xl mx-auto text-gray-900 dark:text-white pb-2">
-                    <h1 className="text-2xl md:text-4xl font-bold text-center text-foreground translate-y-[30px] md:translate-y-[50px] mb-6 md:mb-8 px-4">
+                    <motion.h1
+                        initial={{ y: 60, opacity: 0 }}
+                        animate={{ y: 30, opacity: 1 }}
+                        transition={{
+                            duration: 0.8,
+                            ease: [0.22, 1, 0.36, 1]
+                        }}
+                        className="text-2xl md:text-4xl font-bold text-center text-foreground translate-y-[30px] md:translate-y-[50px] mb-6 md:mb-8 px-4"
+                    >
                         {mounted ? t(currentLanguage, 'ui.create_help') : ''}
-                    </h1>
+                    </motion.h1>
 
-                    <div className="px-2 md:px-4">
+                    <motion.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{
+                            duration: 0.8,
+                            ease: [0.22, 1, 0.36, 1]
+                        }}
+                        className="px-2 md:px-4"
+                    >
                         <ImageUpload
                             onImageUpload={handleImageUpload}
                             onModelUrlChange={handleModelUrlChange}
                             onProgressUpdate={handleProgressUpdate}
                         />
-                    </div>
+                    </motion.div>
                 </div>
-            </main>
+            </motion.main>
             <Footer />
-        </div>
+        </motion.div>
     )
 } 

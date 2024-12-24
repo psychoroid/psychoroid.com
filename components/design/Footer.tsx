@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import FeedbackForm from './feedback-form';
 import { XIcon } from '@/components/icons/XIcon';
-import { DiscordIcon } from '@/components/icons/DiscordIcon';
 import { GitHubIcon } from '@/components/icons/GitHubIcon';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
@@ -42,7 +41,7 @@ export function Footer() {
                         >
                             <PHIcon className="h-4 w-4 fill-current -translate-y-[1.5px]" />
                         </Link>
-                        <div className="h-4 w-px bg-border"></div>
+                        {/* <div className="h-4 w-px bg-border"></div>
                         <Link
                             href="https://discord.gg/hVFZ3Wq2Hh"
                             target="_blank"
@@ -50,7 +49,7 @@ export function Footer() {
                             className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <DiscordIcon className="h-4 w-4 -translate-y-[1px]" />
-                        </Link>
+                        </Link> */}
                         <div className="h-4 w-px bg-border"></div>
                         <Link
                             href="https://x.com/psychoroidx"
