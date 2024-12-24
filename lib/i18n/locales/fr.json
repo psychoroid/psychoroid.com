@@ -222,6 +222,7 @@
       "email_placeholder": "Adresse e-mail**",
       "password_placeholder": "Mot de passe**",
       "submit_button": "Créer un compte",
+      "creating": "Création en cours...",
       "processing": "Création du compte...",
       "continue_with": "Ou continuer avec",
       "google": "Google",
@@ -232,6 +233,14 @@
         "invalid_email": "Veuillez entrer une adresse e-mail valide.",
         "invalid_password": "Le mot de passe doit contenir au moins 8 caractères.",
         "invalid_name": "Veuillez entrer votre nom et prénom."
+      },
+      "resend_email": {
+        "title": "E-mail renvoyé",
+        "success": "Un nouvel e-mail a été envoyé à votre boîte de réception.",
+        "error": {
+          "title": "Erreur",
+          "description": "Un problème est survenu lors du renvoi de l'e-mail. Veuillez réessayer."
+        }
       }
     },
     "forgot_password": {
@@ -241,7 +250,8 @@
       "sending": "Envoi...",
       "success": "Succès",
       "success_message": "E-mail de réinitialisation envoyé. Veuillez vérifier votre boîte de réception.",
-      "error": "Un problème est survenu lors de l'envoi de l'e-mail. Veuillez réessayer."
+      "error": "Un problème est survenu lors de l'envoi de l'e-mail. Veuillez réessayer.",
+      "rate_limit_error": "Trop de requêtes. Veuillez patienter quelques minutes avant de réessayer."
     },
     "check_email": {
       "title": "Vérifiez votre e-mail",
@@ -315,7 +325,8 @@
         },
         "error": {
           "title": "Erreur",
-          "description": "Un problème est survenu lors de la réinitialisation de votre mot de passe. Veuillez réessayer."
+          "description": "Un problème est survenu lors de la réinitialisation de votre mot de passe. Veuillez réessayer.",
+          "invalid_link": "Lien de réinitialisation invalide ou expiré. Veuillez en demander un nouveau."
         }
       }
     }

@@ -1,76 +1,96 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/supabase';
-import Loader from '@/components/design/loader';
+import { toast } from '@/lib/hooks/use-toast';
+import { useTranslation } from '@/lib/contexts/TranslationContext';
+import { t } from '@/lib/i18n/translations';
 
-function CallbackContent() {
+export default function AuthCallbackPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { currentLanguage } = useTranslation();
 
     useEffect(() => {
         const handleAuthCallback = async () => {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
+            const token = searchParams.get('token');
+            const type = searchParams.get('type');
 
-                if (error) {
-                    console.error('Error during auth callback:', error);
-                    router.push('/auth/sign-in');
-                    return;
+            if (!token) {
+                console.error('No token found in URL');
+                router.push('/auth/sign-in');
+                return;
+            }
+
+            try {
+                if (type === 'recovery') {
+                    // For password reset, verify the token directly
+                    const { data, error } = await supabase.auth.verifyOtp({
+                        token_hash: token,
+                        type: 'recovery',
+                    });
+                    if (error) throw error;
+
+                    // After successful verification, get the session
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                    if (sessionError) throw sessionError;
+
+                    if (session) {
+                        // Redirect to reset password page
+                        router.push('/auth/reset-password');
+                        return;
+                    }
+                    throw new Error('No session after recovery verification');
                 }
 
+                // Handle email verification
+                const { error } = await supabase.auth.verifyOtp({
+                    token_hash: token,
+                    type: 'signup',
+                });
+                if (error) throw error;
+
+                // Get the session
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError) throw sessionError;
+
                 if (session) {
-                    // Use RPC function to get profile
-                    const { data: profile, error: profileError } = await supabase
-                        .rpc('get_user_profile', {
-                            p_user_id: session.user.id
-                        });
+                    // Initialize user profile if needed
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', session.user.id)
+                        .single();
 
-                    if (profileError) {
-                        console.error('Error fetching profile:', profileError);
-                    }
-
-                    // Initialize profile if it doesn't exist
                     if (!profile) {
-                        const { error: initError } = await supabase.rpc('initialize_user_profile', {
-                            p_user_id: session.user.id,
-                            p_email: session.user.email
-                        });
-
-                        if (initError) {
-                            console.error('Error initializing profile:', initError);
-                        }
+                        const { error: insertError } = await supabase.from('profiles').insert([
+                            {
+                                id: session.user.id,
+                                email: session.user.email,
+                                full_name: session.user.user_metadata.full_name,
+                            },
+                        ]);
+                        if (insertError) throw insertError;
                     }
 
                     router.push('/');
-                    router.refresh();
                 } else {
-                    // Check if this is a sign-out redirect
-                    const signOutRedirectPath = sessionStorage.getItem('signOutRedirectPath');
-                    if (signOutRedirectPath) {
-                        sessionStorage.removeItem('signOutRedirectPath');
-                        router.push(signOutRedirectPath);
-                    } else {
-                        router.push('/auth/sign-in');
-                    }
+                    router.push('/auth/sign-in');
                 }
             } catch (error) {
-                console.error('Unexpected error during auth callback:', error);
+                console.error('Error in auth callback:', error);
+                toast({
+                    title: t(currentLanguage, 'auth.pages.reset_password.error.title'),
+                    description: t(currentLanguage, 'auth.pages.reset_password.error.description'),
+                    variant: "destructive",
+                });
                 router.push('/auth/sign-in');
             }
         };
 
         handleAuthCallback();
-    }, [router, searchParams]);
+    }, [router, searchParams, currentLanguage]);
 
-    return <Loader />;
-}
-
-export default function AuthCallbackPage() {
-    return (
-        <Suspense fallback={<Loader />}>
-            <CallbackContent />
-        </Suspense>
-    );
+    return null;
 } 

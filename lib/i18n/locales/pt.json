@@ -222,6 +222,7 @@
       "email_placeholder": "E-mail**",
       "password_placeholder": "Senha**",
       "submit_button": "Criar conta",
+      "creating": "Criando conta...",
       "processing": "Criando conta...",
       "continue_with": "Ou continuar com",
       "google": "Google",
@@ -231,7 +232,15 @@
         "email_in_use": "Este e-mail já está em uso. Por favor, use outro ou faça login.",
         "invalid_email": "Por favor, insira um e-mail válido.",
         "invalid_password": "A senha deve ter pelo menos 8 caracteres.",
-        "invalid_name": "Por favor, insira seu nome e sobrenome."
+        "invalid_name": "Por favor, insira seu nome completo."
+      },
+      "resend_email": {
+        "title": "E-mail reenviado",
+        "success": "Um novo e-mail foi enviado para sua caixa de entrada.",
+        "error": {
+          "title": "Erro",
+          "description": "Houve um problema ao reenviar o e-mail. Por favor, tente novamente."
+        }
       }
     },
     "forgot_password": {
@@ -241,7 +250,8 @@
       "sending": "Enviando...",
       "success": "Sucesso",
       "success_message": "E-mail de redefinição enviado. Por favor, verifique sua caixa de entrada.",
-      "error": "Houve um problema ao enviar o e-mail. Por favor, tente novamente."
+      "error": "Houve um problema ao enviar o e-mail. Por favor, tente novamente.",
+      "rate_limit_error": "Muitas solicitações. Por favor, aguarde alguns minutos antes de tentar novamente."
     },
     "check_email": {
       "title": "Verifique seu e-mail",
@@ -315,7 +325,8 @@
         },
         "error": {
           "title": "Erro",
-          "description": "Houve um problema ao redefinir sua senha. Por favor, tente novamente."
+          "description": "Houve um problema ao redefinir sua senha. Por favor, tente novamente.",
+          "invalid_link": "Link de redefinição inválido ou expirado. Por favor, solicite um novo."
         }
       }
     }

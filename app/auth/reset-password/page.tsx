@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase'
 import { toast } from '@/lib/hooks/use-toast'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -16,9 +16,26 @@ import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
 
 export default function ResetPassword() {
-    const { currentLanguage } = useTranslation();
+    const { currentLanguage } = useTranslation()
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
+
+    // Check if user has a valid session from password reset
+    useEffect(() => {
+        const checkSession = async () => {
+            const { data: { session }, error } = await supabase.auth.getSession()
+            if (error || !session) {
+                console.error('No valid session for password reset:', error)
+                toast({
+                    title: t(currentLanguage, 'auth.pages.reset_password.error.title'),
+                    description: t(currentLanguage, 'auth.pages.reset_password.error.invalid_link'),
+                    variant: "destructive",
+                })
+                router.push('/auth/forgot-password')
+            }
+        }
+        checkSession()
+    }, [router, currentLanguage])
 
     const formSchema = z.object({
         password: z.string().min(8, {
@@ -42,6 +59,9 @@ export default function ResetPassword() {
             })
 
             if (error) throw error
+
+            // Sign out after password reset
+            await supabase.auth.signOut()
 
             toast({
                 title: t(currentLanguage, 'auth.pages.reset_password.success.title'),

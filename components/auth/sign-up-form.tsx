@@ -32,6 +32,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
   const [isValidEmail, setIsValidEmail] = useState(false)
   const [isValidPassword, setIsValidPassword] = useState(false)
   const [isValidFullName, setIsValidFullName] = useState(false)
+  const [isResending, setIsResending] = useState(false)
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
@@ -72,18 +73,36 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
     }
   }
 
+  const handleResendEmail = async () => {
+    try {
+      setIsResending(true)
+      await onResendEmail()
+    } finally {
+      setIsResending(false)
+    }
+  }
+
   if (isConfirmationSent) {
+    const message = t(currentLanguage, 'auth.check_email.message').replace(
+      '<email>',
+      `<span class="font-bold text-primary">${email}</span>`
+    );
+
     return (
       <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-all duration-300 hover:scale-105">
-        <h2 className="text-2xl font-semibold mb-4">{t(currentLanguage, 'auth.sign_up.confirmation.title')}</h2>
-        <p className="mb-4">{t(currentLanguage, 'auth.sign_up.confirmation.message')}</p>
+        <h2 className="text-2xl font-semibold mb-4">{t(currentLanguage, 'auth.check_email.title')}</h2>
+        <p
+          className="mb-4"
+          dangerouslySetInnerHTML={{ __html: message }}
+        />
         <p className="text-sm text-muted-foreground">
-          {t(currentLanguage, 'auth.sign_up.confirmation.resend')}{' '}
+          {t(currentLanguage, 'auth.check_email.resend')}{' '}
           <button
-            className="text-primary hover:underline"
-            onClick={onResendEmail}
+            className="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleResendEmail}
+            disabled={isResending}
           >
-            {t(currentLanguage, 'auth.sign_up.confirmation.resend_link')}
+            {isResending ? t(currentLanguage, 'auth.sign_up.processing') : t(currentLanguage, 'auth.check_email.resend_link')}
           </button>
         </p>
       </div>
@@ -147,7 +166,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
             disabled={isLoading || !isValidEmail || !isValidPassword || !isValidFullName}
           >
             <span className="text-base font-semibold">
-              {isLoading ? t(currentLanguage, 'auth.sign_up.creating') : t(currentLanguage, 'auth.sign_up.submit_button')}
+              {isLoading ? t(currentLanguage, 'auth.sign_up.processing') : t(currentLanguage, 'auth.sign_up.submit_button')}
             </span>
           </Button>
           {errorMessage && (

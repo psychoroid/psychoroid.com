@@ -216,21 +216,30 @@
       }
     },
     "sign_up": {
-      "title": "创建账号",
-      "full_name_placeholder": "姓名**",
+      "title": "创建账户",
+      "full_name_placeholder": "全名**",
       "email_placeholder": "电子邮箱**",
       "password_placeholder": "密码**",
-      "submit_button": "创建账号",
-      "processing": "创建中...",
+      "submit_button": "创建账户",
+      "creating": "正在创建账户...",
+      "processing": "正在创建账户...",
       "continue_with": "或继续使用",
       "google": "Google",
       "github": "GitHub",
       "error": {
-        "default": "创建账号时出现错误。请重试。",
-        "email_in_use": "该邮箱已被使用。请使用其他邮箱或登录。",
-        "invalid_email": "请输入有效的邮箱地址。",
-        "invalid_password": "密码须至少包含8个字符。",
-        "invalid_name": "请输入您的姓名。"
+        "default": "创建账户时出错。请重试。",
+        "email_in_use": "此电子邮箱已被使用。请使用其他邮箱或登录。",
+        "invalid_email": "请输入有效的电子邮箱。",
+        "invalid_password": "密码必须至少包含8个字符。",
+        "invalid_name": "请输入您的全名。"
+      },
+      "resend_email": {
+        "title": "邮件已重发",
+        "success": "新的验证邮件已发送到您的邮箱。",
+        "error": {
+          "title": "错误",
+          "description": "重发验证邮件时出现问题。请重试。"
+        }
       }
     },
     "forgot_password": {
@@ -240,7 +249,8 @@
       "sending": "发送中...",
       "success": "成功",
       "success_message": "重置密码邮件已发送。请检查您的收件箱。",
-      "error": "发送邮件时出现问题。请重试。"
+      "error": "发送邮件时出现问题。请重试。",
+      "rate_limit_error": "请求过于频繁。请等待几分钟后再试。"
     },
     "check_email": {
       "title": "检查您的邮箱",
@@ -314,7 +324,8 @@
         },
         "error": {
           "title": "错误",
-          "description": "重置密码时出现问题。请重试。"
+          "description": "重置密码时出现问题。请重试。",
+          "invalid_link": "重置链接无效或已过期。请重新申请。"
         }
       }
     }

@@ -40,10 +40,25 @@ export function ForgotForm({ className, onSuccess, ...props }: ForgotFormProps) 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      const callbackUrl = `${baseUrl}/auth/callback`
+
+      console.log('Reset password callback URL:', callbackUrl)
+
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: callbackUrl,
       })
-      if (error) throw error
+      if (error) {
+        if (error.message === 'over_email_send_rate_limit') {
+          toast({
+            title: t(currentLanguage, 'auth.forgot_password.error'),
+            description: t(currentLanguage, 'auth.forgot_password.rate_limit_error'),
+            variant: "destructive",
+          })
+          return
+        }
+        throw error
+      }
       toast({
         title: t(currentLanguage, 'auth.forgot_password.success'),
         description: t(currentLanguage, 'auth.forgot_password.success_message'),

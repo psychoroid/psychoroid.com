@@ -217,20 +217,29 @@
     },
     "sign_up": {
       "title": "アカウント作成",
-      "full_name_placeholder": "氏名**",
+      "full_name_placeholder": "フルネーム**",
       "email_placeholder": "メールアドレス**",
       "password_placeholder": "パスワード**",
       "submit_button": "アカウント作成",
-      "processing": "作成中...",
+      "creating": "アカウントを作成中...",
+      "processing": "アカウントを作成中...",
       "continue_with": "または以下で続ける",
       "google": "Google",
       "github": "GitHub",
       "error": {
-        "default": "アカウント作成中にエラーが発生しました。もう一度お試しください。",
+        "default": "アカウントの作成中にエラーが発生しました。もう一度お試しください。",
         "email_in_use": "このメールアドレスは既に使用されています。別のメールアドレスを使用するか、ログインしてください。",
         "invalid_email": "有効なメールアドレスを入力してください。",
         "invalid_password": "パスワードは8文字以上である必要があります。",
-        "invalid_name": "姓名を入力してください。"
+        "invalid_name": "名前と姓を入力してください。"
+      },
+      "resend_email": {
+        "title": "メール再送信",
+        "success": "新しい確認メールが送信されました。",
+        "error": {
+          "title": "エラー",
+          "description": "確認メールの再送信中に問題が発生しました。もう一度お試しください。"
+        }
       }
     },
     "forgot_password": {
@@ -240,7 +249,8 @@
       "sending": "送信中...",
       "success": "成功",
       "success_message": "パスワードリセットメールを送信しました。受信トレイをご確認ください。",
-      "error": "メール送信中に問題が発生しました。もう一度お試しください。"
+      "error": "メール送信中に問題が発生しました。もう一度お試しください。",
+      "rate_limit_error": "リクエストが多すぎます。数分待ってから再度お試しください。"
     },
     "check_email": {
       "title": "メールをご確認ください",
@@ -314,7 +324,8 @@
         },
         "error": {
           "title": "エラー",
-          "description": "パスワードのリセット中に問題が発生しました。もう一度お試しください。"
+          "description": "パスワードのリセット中に問題が発生しました。もう一度お試しください。",
+          "invalid_link": "リセットリンクが無効または期限切れです。新しいリンクをリクエストしてください。"
         }
       }
     }

@@ -29,7 +29,7 @@ export function DashboardNav() {
         },
         {
             title: t(currentLanguage, 'ui.dashboard.navigation.settings'),
-            href: '/dashboard/settings',
+            href: '/dashboard/settings/account',
             icon: Settings,
             isActive: pathname.startsWith('/dashboard/settings'),
             color: 'text-fuchsia-500 dark:text-fuchsia-400'

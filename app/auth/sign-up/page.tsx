@@ -68,14 +68,14 @@ export default function SignUp() {
             })
             if (error) throw error
             toast({
-                title: "Email Resent",
-                description: "A new verification email has been sent to your inbox.",
+                title: t(currentLanguage, 'auth.sign_up.resend_email.title'),
+                description: t(currentLanguage, 'auth.sign_up.resend_email.success'),
             })
         } catch (error) {
             console.error('Error resending email:', error)
             toast({
-                title: "Error",
-                description: "There was a problem resending the verification email. Please try again.",
+                title: t(currentLanguage, 'auth.sign_up.resend_email.error.title'),
+                description: t(currentLanguage, 'auth.sign_up.resend_email.error.description'),
                 variant: "destructive",
             })
         }

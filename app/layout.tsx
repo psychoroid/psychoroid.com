@@ -25,7 +25,7 @@ export const viewport = {
 }
 
 export const metadata: Metadata = {
-    title: 'psychoroid.com | Open Source Generative AI 3D Engine',
+    title: 'psychoroid.com',
     description: 'Generate and customize 3D assets with AI. Convert text and images to high-quality models, optimize for games, 3D printing, and e-commerce. Chat, download, ship.',
     metadataBase: new URL('https://psychoroid.com'),
     keywords: '3D viewer, AI 3D, open source, product visualization, 3D modeling, game development, WebGL, Blender, Unity, Unreal Engine, Godot, generative AI, 3D engine, interactive 3D, 3D scan, AR, VR, metaverse, 3D print, CAD, mesh, texturing, rigging, animation, opensource',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
         type: 'website',
         locale: 'en_US',
         url: 'https://psychoroid.com',
-        title: 'psychoroid.com | Open Source Generative AI 3D Engine',
+        title: 'psychoroid.com | The Open Source Generative AI 3D Engine',
         description: 'The open source generative AI, 3D engine for product visualization, 3D modeling, and game development. Chat, download, ship.',
         siteName: 'psychoroid.com',
         images: [
@@ -55,13 +55,13 @@ export const metadata: Metadata = {
                 url: '/psychoroid.png',
                 width: 575,
                 height: 575,
-                alt: 'psychoroid.com | Open Source Generative AI 3D Engine',
+                alt: 'psychoroid.com | The Open Source Generative AI 3D Engine',
             }
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'psychoroid.com | Open Source Generative AI 3D Engine',
+        title: 'psychoroid.com | The Open Source Generative AI 3D Engine',
         description: 'The open source generative AI, 3D engine for product visualization, 3D modeling, and game development. Chat, download, ship.',
         creator: '@Princemuichkine',
         images: [
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
                 url: '/psychoroid.png',
                 width: 575,
                 height: 575,
-                alt: 'psychoroid.com | Open Source Generative AI 3D Engine',
+                alt: 'psychoroid.com | The Open Source Generative AI 3D Engine',
             }
         ],
     },
