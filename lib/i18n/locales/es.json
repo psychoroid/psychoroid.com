@@ -39,11 +39,11 @@
         "name": "Automatizar",
         "description": "Ideal para estudios y equipos",
         "features": [
-          "**2.000 créditos por mes**",
+          "**1.000 créditos por mes**",
           "Prioridad estándar en la cola",
           "5 tareas en cola",
           "Los activos son privados y propiedad del cliente",
-          "Descarga de activos comunitarios",
+          "Acceso a activos comunitarios",
           "Edición de texturas con IA",
           "Acceso a API"
         ]
@@ -52,11 +52,11 @@
         "name": "Escalar",
         "description": "Libera todo el potencial",
         "features": [
-          "**6.000 créditos por mes**",
+          "**5.000 créditos por mes**",
           "Máxima prioridad en la cola",
           "20 tareas en cola",
           "Los activos son privados y propiedad del cliente",
-          "Descarga de activos comunitarios",
+          "Acceso a activos comunitarios",
           "Edición de texturas con IA",
           "Acceso a API",
           "Reintentos gratuitos",
@@ -384,7 +384,7 @@
   },
   "ui": {
     "create_help": "¿Qué puedo ayudarte a crear?",
-    "asset_description": "Describe tu asset soñado o simplemente arrastra una imagen...",
+    "asset_description": "Describe el modelo que deseas crear o simplemente arrastra una imagen...",
     "upload": {
       "starting": "Iniciando subida...",
       "failed": "Error en la subida",

@@ -39,7 +39,7 @@
         "name": "Automatizar",
         "description": "Ideal para estúdios e equipes",
         "features": [
-          "**2.000 créditos por mês**",
+          "**1.000 créditos por mês**",
           "Prioridade padrão na fila",
           "5 tarefas na fila",
           "Ativos são privados e de propriedade do cliente",
@@ -52,7 +52,7 @@
         "name": "Escalar",
         "description": "Libere todo o potencial",
         "features": [
-          "**6.000 créditos por mês**",
+          "**5.000 créditos por mês**",
           "Prioridade máxima na fila",
           "20 tarefas na fila",
           "Ativos são privados e de propriedade do cliente",
@@ -385,7 +385,7 @@
   },
   "ui": {
     "create_help": "O que posso ajudar você a criar?",
-    "asset_description": "Descreva seu asset dos sonhos ou simplesmente solte uma imagem...",
+    "asset_description": "Descreva o modelo desejado ou simplesmente solte uma imagem...",
     "upload": {
       "starting": "Iniciando upload...",
       "failed": "Falha no upload",

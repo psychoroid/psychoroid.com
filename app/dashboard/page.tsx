@@ -195,7 +195,6 @@ export default function DashboardPage() {
         </div>
     )
 }
-
 // Helper function to format time
 function formatTimeAgo(date: string, currentLanguage: string) {
     const now = new Date()
@@ -209,3 +208,4 @@ function formatTimeAgo(date: string, currentLanguage: string) {
     if (diffInHours < 24) return t(currentLanguage, 'ui.dashboard.timeAgo.hoursAgo').replace('{hours}', diffInHours.toString())
     return t(currentLanguage, 'ui.dashboard.timeAgo.daysAgo').replace('{days}', Math.floor(diffInHours / 24).toString())
 }
+

@@ -71,7 +71,7 @@ export default function PricingPage() {
         },
         {
             name: 'Automate',
-            price: 24,
+            price: 12,
             period: 'month',
             credits: 2000,
             features: [
@@ -88,7 +88,7 @@ export default function PricingPage() {
         },
         {
             name: 'Scale',
-            price: 79,
+            price: 69,
             period: 'month',
             credits: 6000,
             features: [

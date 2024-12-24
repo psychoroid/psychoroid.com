@@ -30,7 +30,7 @@
         "description": "Essayez notre technologie",
         "features": [
           "**200 crédits à l'inscription**",
-          "Priorité limitée dans la file d'attente",
+          "Priorité limitée en file d'attente",
           "1 tâche en simultané",
           "Les modèles sont sous licence publique"
         ]
@@ -39,8 +39,8 @@
         "name": "Automate",
         "description": "Idéal pour les studios et les équipes",
         "features": [
-          "**2 000 crédits par mois**",
-          "Priorité standard dans la file d'attente",
+          "**1 000 crédits par mois**",
+          "Priorité standard en file d'attente",
           "5 tâches en simultané",
           "Les modèles sont privés et appartiennent au client",
           "Téléchargement des modèles communautaires",
@@ -52,8 +52,8 @@
         "name": "Scale",
         "description": "Tout le potentiel de psychoroid.com",
         "features": [
-          "**6 000 crédits par mois**",
-          "Priorité maximale dans la file d'attente",
+          "**5 000 crédits par mois**",
+          "Priorité maximale en file d'attente",
           "20 tâches en simultané",
           "Les modèles sont privés et appartiennent au client",
           "Téléchargement des modèles communautaires",
@@ -385,7 +385,7 @@
   },
   "ui": {
     "create_help": "Que puis-je vous aider à créer ?",
-    "asset_description": "Décrivez votre modèle de rêve ou partagez simplement une image...",
+    "asset_description": "Décrivez le modèle souhaité ou importez simplement une image...",
     "upload": {
       "starting": "Démarrage du téléchargement...",
       "failed": "Échec du téléchargement",

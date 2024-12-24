@@ -2,11 +2,11 @@ type CurrencyCode = '$' | '€' | '¥' | '₩' | '元';
 type PlanType = 'automate' | 'scale';
 
 const CURRENCY_CONVERSIONS: Record<CurrencyCode, {automate: number, scale: number}> = {
-  '$': { automate: 24, scale: 79 },
-  '€': { automate: 24, scale: 79 },
-  '¥': { automate: 3_500, scale: 12_000},
-  '₩': { automate: 32_000, scale: 110_000 },
-  '元': { automate: 170, scale: 570 }
+  '$': { automate: 12, scale: 59 },
+  '€': { automate: 12, scale: 59 },
+  '¥': { automate: 1_900, scale: 9_250},
+  '₩': { automate: 17_250, scale:85_500 },
+  '元': { automate: 90, scale: 435 }
 };
 
 export const getLocalizedPrice = (currencySymbol: CurrencyCode, plan: PlanType): number | string => {

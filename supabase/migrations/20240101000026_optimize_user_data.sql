@@ -25,7 +25,9 @@ BEGIN
          WHERE user_id = p_user_id), 0),
         COALESCE((SELECT COUNT(*)::BIGINT 
          FROM products 
-         WHERE user_id = p_user_id), 0);
+         WHERE user_id = p_user_id
+         AND model_path IS NOT NULL
+         AND model_path != ''), 0);
 END;
 $$;
 
