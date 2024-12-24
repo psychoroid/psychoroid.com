@@ -131,7 +131,7 @@ export function Navbar() {
     const handleCompanyMenuLeave = () => {
         companyTimeoutRef.current = setTimeout(() => {
             setCompanyMenuOpen(false);
-        }, 140); // Reduced from 300ms to 100ms
+        }, 120); // Reduced from 300ms to 100ms
     };
 
     const handleEngineMenuEnter = () => {
@@ -157,7 +157,7 @@ export function Navbar() {
     const handleResourcesMenuLeave = () => {
         resourcesTimeoutRef.current = setTimeout(() => {
             setResourcesMenuOpen(false);
-        }, 140); // Reduced from 300ms to 100ms
+        }, 120); // Reduced from 300ms to 100ms
     };
 
     return (
@@ -195,12 +195,15 @@ export function Navbar() {
 
                             {session && (
                                 <div className="hidden md:flex items-center">
-                                    <div className="flex items-center text-xs font-medium translate-y-[2px]">
+                                    <Link
+                                        href="/dashboard/settings/billing"
+                                        className="flex items-center text-xs font-medium translate-y-[2px] hover:opacity-80 transition-opacity"
+                                    >
                                         <Coins className="h-3 w-3 mr-1 text-[#D73D57]" />
                                         <span className="text-[#D73D57]">
                                             {roidsBalance ?? '—'}
                                         </span>
-                                    </div>
+                                    </Link>
                                     <Link
                                         href="/dashboard"
                                         className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium ml-3 translate-y-[2px]"
@@ -311,12 +314,15 @@ export function Navbar() {
                             {session && (
                                 <>
                                     <div>
-                                        <div className="flex items-center text-sm font-medium">
+                                        <Link
+                                            href="/dashboard/settings/billing"
+                                            className="flex items-center text-sm font-medium hover:opacity-80 transition-opacity"
+                                        >
                                             <Coins className="h-4 w-4 mr-2 text-[#D73D57]" />
                                             <span className="text-[#D73D57]">
                                                 {roidsBalance ?? '—'}
                                             </span>
-                                        </div>
+                                        </Link>
                                         <div className="h-px w-full bg-border mt-5"></div>
                                     </div>
                                     <Link

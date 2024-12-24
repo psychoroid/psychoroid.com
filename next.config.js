@@ -14,11 +14,6 @@ const nextConfig = {
     // Font optimization
     optimizeFonts: true,
 
-    // Enable HTTP/2 Push
-    experimental: {
-        scrollRestoration: true,
-    },
-
     webpack: (config, { dev, isServer }) => {
         // Existing asset handling rules...
         config.module.rules.push({

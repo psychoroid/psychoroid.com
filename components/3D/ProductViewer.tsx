@@ -7,14 +7,22 @@ import { Product } from './Product';
 import { ProductViewerProps, ModelState } from '@/types/components';
 import { Vector3 } from 'three';
 import { ProductControls } from './ProductControls';
+import { DownloadModal } from '@/components/community/DownloadModal';
+import type { CommunityProduct } from '@/types/community';
 
 // Update initial state constants for better front view
-const INITIAL_CAMERA_POSITION: [number, number, number] = [0, 0, 3]; // Moved camera closer and at eye level
+const ANGLE = Math.PI * (90 / 180); // Convert 40 degrees to radians
+const DISTANCE = Math.sqrt(30); // Distance from origin (4 * sqrt(2))
+const INITIAL_CAMERA_POSITION: [number, number, number] = [
+    DISTANCE * Math.cos(ANGLE), // X position
+    4, // Y position stays the same
+    DISTANCE * Math.sin(ANGLE)  // Z position
+];
 const INITIAL_TARGET: [number, number, number] = [0, 0, 0];
-const INITIAL_ZOOM = 1.5; // Increased initial zoom
+const INITIAL_ZOOM = 1;
 
 // Add initial model rotation to face forward
-const INITIAL_MODEL_ROTATION: [number, number, number] = [0, Math.PI, 0]; // Rotate 180 degrees around Y axis
+const INITIAL_MODEL_ROTATION: [number, number, number] = [0, Math.PI, 0];
 
 export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1, isExpanded = false, onClose }: ProductViewerProps) {
     const controlsRef = useRef<any>(null);
@@ -160,29 +168,28 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         checkServerStatus();
     }, []);
 
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
+
     const renderCanvas = (expanded: boolean) => (
-        <>
-            {/* {isServerOffline && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
-                    <div className="bg-background/80 backdrop-blur-sm p-4 rounded-none border border-border/40 shadow-lg">
-                        <p className="text-sm text-muted-foreground">
-                            Server is currently offline. 3D preview unavailable.
-                        </p>
-                    </div>
-                </div>
-            )} */}
+        <div className="relative w-full h-full">
             <Canvas
-                gl={{ preserveDrawingBuffer: true }}
+                gl={{
+                    preserveDrawingBuffer: true,
+                    alpha: true
+                }}
                 camera={{ position: cameraPositionVector }}
                 style={{ width: '100%', height: '100%' }}
+                className="bg-slate-600 dark:bg-zinc-900/50"
             >
-                <PerspectiveCamera
-                    makeDefault
-                    position={cameraPositionVector}
-                    zoom={controlsState.zoom}
+                <ambientLight intensity={0.4} />
+                <directionalLight position={[5, 5, 5]} intensity={0.3} castShadow />
+                <directionalLight position={[-5, 5, -5]} intensity={0.2} castShadow />
+                <hemisphereLight
+                    intensity={0.2}
+                    groundColor="rgb(5 5 5)"
+                    color="#fafafa"
                 />
-                <ambientLight intensity={0.5} />
-                <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
+
                 <Suspense fallback={null}>
                     <Product
                         imageUrl={imageUrl}
@@ -199,16 +206,28 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                     enableZoom={true}
                     enablePan={true}
                     enableRotate={true}
-                    autoRotate={isAutoRotating}
-                    autoRotateSpeed={1}
+                    autoRotate={false}
+                    autoRotateSpeed={0}
                     onChange={handleControlsChange}
                     target={targetVector}
                     minDistance={MIN_DISTANCE}
                     maxDistance={MAX_DISTANCE}
                     zoomSpeed={1}
+                    maxPolarAngle={Math.PI / 1.5}
+                    minPolarAngle={Math.PI / 6}
                 />
             </Canvas>
-        </>
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <ProductControls
+                    isRotating={isAutoRotating}
+                    onRotateToggle={handleRotateToggle}
+                    onZoomIn={handleZoomIn}
+                    onZoomOut={handleZoomOut}
+                    onDownload={() => setShowDownloadModal(true)}
+                    hideExpand
+                />
+            </div>
+        </div>
     );
 
     const handleModelStateChange = (newState: ModelState) => {
@@ -246,28 +265,19 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
     return (
         <>
             {isExpanded ? (
-                <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={handleClose}>
-                    <div className="absolute inset-0 bg-black"></div>
-                    <div className="relative w-full h-full max-w-7xl mx-auto cursor-default" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-8" onClick={handleClose}>
+                    <div className="absolute inset-0 bg-black bg-opacity-80"></div>
+                    <div className="relative w-full h-[500px] max-w-2xl mx-auto cursor-default bg-background border border-border rounded-none shadow-lg p-4" onClick={(e) => e.stopPropagation()}>
                         <div className="w-full h-full flex items-center justify-center">
                             {renderCanvas(true)}
                         </div>
-                        <div className="absolute top-4 right-4 flex items-center space-x-2">
+                        <div className="absolute top-2 right-3 flex items-center space-x-2">
                             <button
                                 className="rounded-none border-2 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm px-2 py-1 text-sm focus:outline-none"
                                 onClick={handleClose}
                             >
                                 ESC
                             </button>
-                        </div>
-                        <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
-                            <ProductControls
-                                isRotating={isAutoRotating}
-                                onRotateToggle={handleRotateToggle}
-                                onZoomIn={handleZoomIn}
-                                onZoomOut={handleZoomOut}
-                                hideExpand
-                            />
                         </div>
                     </div>
                 </div>
@@ -276,6 +286,30 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                     {renderCanvas(false)}
                 </div>
             )}
+
+            <DownloadModal
+                isOpen={showDownloadModal}
+                onClose={() => setShowDownloadModal(false)}
+                product={{
+                    id: 'temp-id',
+                    name: 'Model',
+                    description: 'Temporary model preview',
+                    model_path: fullModelUrl || '',
+                    image_path: imageUrl || '',
+                    visibility: 'public',
+                    likes_count: 0,
+                    downloads_count: 0,
+                    views_count: 0,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    user_id: '',
+                    tags: [],
+                    username: ''
+                } as CommunityProduct}
+                onDownload={() => {
+                    setShowDownloadModal(false);
+                }}
+            />
         </>
     );
 }

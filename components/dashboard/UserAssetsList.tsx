@@ -90,7 +90,7 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle }: {
             <div className="w-full h-full bg-accent/10 flex items-center justify-center">
                 <div className="relative w-24 h-24">
                     <Image
-                        src={asset.image_path}
+                        src={`https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${asset.image_path}`}
                         alt={asset.name || 'Asset preview'}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

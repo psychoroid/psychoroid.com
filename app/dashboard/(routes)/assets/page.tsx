@@ -26,6 +26,8 @@ export default function AssetsPage() {
                     .from('products')
                     .select('*')
                     .eq('user_id', user.id)
+                    .not('model_path', 'is', null)
+                    .not('model_path', 'eq', '')
                     .ilike('name', `%${search}%`)
                     .order('created_at', { ascending: false })
                     .range(from, to),
@@ -34,6 +36,8 @@ export default function AssetsPage() {
                     .from('products')
                     .select('id', { count: 'exact' })
                     .eq('user_id', user.id)
+                    .not('model_path', 'is', null)
+                    .not('model_path', 'eq', '')
                     .ilike('name', `%${search}%`)
             ]);
 

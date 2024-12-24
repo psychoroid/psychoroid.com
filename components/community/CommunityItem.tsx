@@ -118,24 +118,14 @@ export function CommunityItem({
                     className="aspect-[4/3] cursor-pointer overflow-hidden bg-transparent"
                     onClick={handleSelect}
                 >
-                    {product.model_path ? (
-                        <div className="w-full h-full bg-transparent">
-                            <ModelPreview
-                                modelUrl={product.model_path}
-                                imageUrl={product.image_path}
-                                bucket={product.tags?.includes('starter') ? 'default-assets' : 'product-models'}
-                                canvasId={`preview-canvas-${product.id}`}
-                            />
-                        </div>
-                    ) : (
-                        <Image
-                            src={product.image_path}
-                            alt={product.name}
-                            width={500}
-                            height={300}
-                            className="w-full h-auto object-cover"
+                    <div className="w-full h-full bg-transparent">
+                        <ModelPreview
+                            modelUrl={product.model_path}
+                            imageUrl={product.image_path}
+                            bucket={product.tags?.includes('starter') ? 'default-assets' : 'product-models'}
+                            canvasId={`preview-canvas-${product.id}`}
                         />
-                    )}
+                    </div>
                 </div>
 
                 {/* Content */}

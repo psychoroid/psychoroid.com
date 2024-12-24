@@ -1,14 +1,15 @@
 'use client'
 
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Folder, Grid, Menu, Box, Search, Image as ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
 import { ImagePreview } from "./ImagePreview"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/actions/utils"
+import { supabase } from '@/lib/supabase/supabase'
 
-type ViewType = 'folder' | 'grid' | 'list' | 'box' | 'image';
+type ViewType = 'list' | 'models' | 'textured' | 'images';
 
 interface AssetLibraryProps {
     searchQuery: string
@@ -23,18 +24,80 @@ interface AssetLibraryProps {
 export function AssetLibrary({ searchQuery, onSearchChange, assetGroups }: AssetLibraryProps) {
     const [showLibrary, setShowLibrary] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
-    const [selectedView, setSelectedView] = useState<ViewType>('grid')
+    const [selectedView, setSelectedView] = useState<ViewType>('list')
+    const [imagePaths, setImagePaths] = useState<string[]>([])
+    const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Fetch products from Supabase
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const { data: products, error } = await supabase
+                    .from('products')
+                    .select('image_path')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Error fetching products:', error);
+                    return;
+                }
+
+                const paths = products
+                    .filter(product => product.image_path)
+                    .map(product => product.image_path);
+
+                setImagePaths(paths);
+            } catch (error) {
+                console.error('Error in fetchProducts:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
+
+    const handleImageClick = (imagePath: string) => {
+        setSelectedImage(imagePath);
+    };
+
+    const handleImageRemove = (imagePath: string) => {
+        setImagePaths(prev => prev.filter(path => path !== imagePath));
+        if (selectedImage === imagePath) {
+            setSelectedImage(null);
+        }
+    };
 
     const viewButtons = [
-        { type: 'folder' as ViewType, icon: Folder },
-        { type: 'grid' as ViewType, icon: Grid },
-        { type: 'list' as ViewType, icon: Menu },
-        { type: 'box' as ViewType, icon: Box },
-        { type: 'image' as ViewType, icon: ImageIcon },
+        {
+            type: 'list' as ViewType,
+            icon: Menu,
+            description: 'All',
+            iconClass: "text-[#D73D57]"
+        },
+        {
+            type: 'models' as ViewType,
+            icon: Box,
+            description: 'Models',
+            iconClass: "text-purple-500"
+        },
+        {
+            type: 'textured' as ViewType,
+            icon: Grid,
+            description: 'Textured',
+            iconClass: "text-cyan-500"
+        },
+        {
+            type: 'images' as ViewType,
+            icon: ImageIcon,
+            description: 'Images',
+            iconClass: "text-emerald-500 dark:text-emerald-400"
+        },
     ]
 
     const handleViewChange = (view: ViewType) => {
-        if (view === 'image') {
+        if (view === 'images') {
             setShowLibrary(!showLibrary)
         } else {
             setShowLibrary(false)
@@ -56,25 +119,53 @@ export function AssetLibrary({ searchQuery, onSearchChange, assetGroups }: Asset
                         />
                     </div>
                 </div>
-                <div className="flex border-b border-border justify-center px-2">
-                    <div className="flex items-center">
-                        {viewButtons.map(({ type, icon: Icon }) => (
+                <div className="flex border-b border-border">
+                    <div className="flex items-center w-full">
+                        {viewButtons.map(({ type, icon: Icon, description, iconClass }) => (
                             <Button
                                 key={type}
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
-                                    "w-10 h-10 rounded-none",
-                                    selectedView === type && "bg-accent"
+                                    "w-full h-10 rounded-none sm:h-10 relative group",
+                                    selectedView === type && "bg-accent",
+                                    type === 'images' && cn(
+                                        "border-emerald-500 text-emerald-500",
+                                        "hover:text-emerald-500/90 hover:border-emerald-500/90",
+                                        "dark:border-emerald-400 dark:text-emerald-400",
+                                        "dark:hover:text-emerald-400/90 dark:hover:border-emerald-400/90",
+                                        "transition-colors"
+                                    )
                                 )}
                                 onClick={() => handleViewChange(type)}
                             >
-                                <Icon className="w-4 h-4" />
+                                <Icon className={cn(
+                                    "w-5 h-5 sm:w-5 sm:h-5",
+                                    iconClass,
+                                    type === 'images' && "text-emerald-500 dark:text-emerald-400"
+                                )} />
+                                <span className="sr-only">{description}</span>
+                                <div
+                                    className={cn(
+                                        "absolute -top-8 left-1/2 transform -translate-x-1/2",
+                                        "px-2 py-1 text-xs",
+                                        "bg-background/80 backdrop-blur-[2px]",
+                                        "text-muted-foreground/80",
+                                        "rounded-sm border border-border/50",
+                                        "opacity-0 group-hover:opacity-100",
+                                        "transition-opacity duration-200 delay-[750ms]",
+                                        "pointer-events-none whitespace-nowrap",
+                                        "shadow-sm",
+                                        type === 'images' && "border-emerald-500/20 dark:border-emerald-400/20"
+                                    )}
+                                >
+                                    {description}
+                                </div>
                             </Button>
                         ))}
                     </div>
                 </div>
-                <div className="flex-1 p-2 overflow-auto">
+                <div className="flex-1 p-2 overflow-auto scrollbar-hide">
                     <AnimatePresence mode="wait">
                         {showLibrary ? (
                             <motion.div
@@ -82,17 +173,20 @@ export function AssetLibrary({ searchQuery, onSearchChange, assetGroups }: Asset
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
+                                className="flex justify-center w-full"
                             >
-                                <ImagePreview
-                                    imagePaths={[]}
-                                    selectedImage={null}
-                                    onImageClick={() => { }}
-                                    onImageRemove={() => { }}
-                                    currentPage={currentPage}
-                                    onPageChange={setCurrentPage}
-                                    isLoading={false}
-                                    processingImages={{}}
-                                />
+                                <div className="w-[260px] min-h-[580px]">
+                                    <ImagePreview
+                                        imagePaths={imagePaths}
+                                        selectedImage={selectedImage}
+                                        onImageClick={handleImageClick}
+                                        onImageRemove={handleImageRemove}
+                                        currentPage={currentPage}
+                                        onPageChange={setCurrentPage}
+                                        isLoading={isLoading}
+                                        processingImages={{}}
+                                    />
+                                </div>
                             </motion.div>
                         ) : (
                             <motion.div

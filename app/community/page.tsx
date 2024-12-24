@@ -53,13 +53,18 @@ export default function CommunityPage() {
             if (error) throw error;
 
             if (data && Array.isArray(data)) {
+                // Filter out products without model_path
+                const validProducts = data.filter(product =>
+                    product.model_path && product.model_path.trim() !== ''
+                );
+
                 // Store with timestamp for cache validation
                 localStorage.setItem('community_products', JSON.stringify({
-                    data,
+                    data: validProducts,
                     timestamp: Date.now()
                 }));
 
-                setProducts(data.map(product => ({
+                setProducts(validProducts.map(product => ({
                     ...product,
                     views_count: product.views_count || 0  // Ensure views_count is initialized
                 })));

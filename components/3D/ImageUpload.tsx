@@ -246,6 +246,23 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
             // If server is offline, just show preview without 3D processing
             if (!isServerOnline) {
               toast.success(t(currentLanguage, 'ui.upload.preview_only'), { id: uploadToast });
+
+              // Create initial product record
+              const { data: productData, error: productError } = await supabase
+                .rpc('create_product', {
+                  p_name: 'New Product',
+                  p_description: 'Product description',
+                  p_image_path: filePath,
+                  p_model_path: '',  // Empty for now, will be updated after 3D processing
+                  p_user_id: user.id
+                });
+
+              if (productError) {
+                console.error('Error creating product:', productError);
+                toast.error(t(currentLanguage, 'ui.upload.error'), { id: uploadToast });
+                return;
+              }
+
               setImagePaths(prev => [...prev, filePath]);
               onImageUpload(filePath);
               return;
@@ -253,6 +270,23 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
 
             // Continue with 3D processing if server is online
             toast.success(t(currentLanguage, 'ui.upload.complete'), { id: uploadToast });
+
+            // Create initial product record
+            const { data: productData, error: productError } = await supabase
+              .rpc('create_product', {
+                p_name: 'New Product',
+                p_description: 'Product description',
+                p_image_path: filePath,
+                p_model_path: '',  // Empty for now, will be updated after 3D processing
+                p_user_id: user.id
+              });
+
+            if (productError) {
+              console.error('Error creating product:', productError);
+              toast.error(t(currentLanguage, 'ui.upload.error'), { id: uploadToast });
+              return;
+            }
+
             setImagePaths(prev => [...prev, filePath]);
             onImageUpload(filePath);
 

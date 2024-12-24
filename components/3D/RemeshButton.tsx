@@ -24,7 +24,7 @@ export function RemeshButton({ isOpen, onClick }: RemeshButtonProps) {
                 rippleColor="rgba(0, 0, 0, 0.1)"
             >
                 <div className="flex items-center gap-3">
-                    <Wand2 className="h-5 w-5 shrink-0 text-foreground" />
+                    <Wand2 className="h-5 w-5 shrink-0 text-purple-500" />
                     <div className="flex flex-col items-start">
                         <span className="font-medium">Remesh</span>
                         <span className="text-xs text-muted-foreground">
@@ -86,8 +86,8 @@ export function RemeshButton({ isOpen, onClick }: RemeshButtonProps) {
                                 )}
                             </div>
                             <RippleButton
-                                className="w-full h-10 rounded-none border-2 border-border hover:bg-accent"
-                                rippleColor="rgba(0, 0, 0, 0.1)"
+                                className="w-full h-10 rounded-none border-2 border-border bg-purple-500 hover:bg-purple-600 text-white"
+                                rippleColor="rgba(255, 255, 255, 0.2)"
                             >
                                 <div className="flex items-center justify-center gap-2">
                                     <Check className="h-4 w-4" />

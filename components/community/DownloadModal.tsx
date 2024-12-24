@@ -384,7 +384,7 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80">
             <div
                 ref={modalRef}
-                className="bg-background border border-border shadow-lg w-[300px] max-h-[400px] overflow-y-auto"
+                className="bg-background border border-border shadow-lg w-[300px] max-h-[400px] overflow-y-auto scrollbar-hide"
             >
                 {conversionStatus.isConverting ? (
                     <div className="p-4">

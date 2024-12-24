@@ -10,6 +10,8 @@ import RippleButton from "@/components/ui/magic/ripple-button"
 import { Textarea } from "@/components/ui/textarea"
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
+import { useRouter } from 'next/navigation'
+import { Button } from "@/components/ui/button"
 
 interface ChatInstanceProps {
     onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
@@ -21,6 +23,7 @@ interface ChatInstanceProps {
 }
 
 export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPreview = false, user, setShowAuthModal }: ChatInstanceProps) {
+    const router = useRouter()
     const [inputValue, setInputValue] = useState('')
     const [mounted, setMounted] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
@@ -325,7 +328,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                         />
                     </div>
 
-                    <div className="h-[40px] sm:h-[30px] flex items-center justify-between controls-area interactive">
+                    <div className="h-[40px] sm:h-[30px] flex items-center justify-between controls-area interactive mb-12">
                         <div className="flex flex-wrap gap-1 z-50 preview-images-area">
                             <AnimatePresence mode="popLayout">
                                 {previewImages.map((img, index) => (
@@ -370,6 +373,20 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                         </div>
 
                         <div className="flex gap-2 z-50 ml-auto">
+                            <Button
+                                variant="ghost"
+                                onClick={() => router.push('/workspace')}
+                                className={cn(
+                                    "h-7 sm:h-6 px-3",
+                                    "border border-dashed border-muted-foreground/50",
+                                    "text-xs text-muted-foreground",
+                                    "hover:bg-background/50 hover:text-foreground",
+                                    "transition-colors rounded-none"
+                                )}
+                            >
+                                Workspace
+                            </Button>
+
                             <RippleButton
                                 type="button"
                                 onClick={(e) => {
