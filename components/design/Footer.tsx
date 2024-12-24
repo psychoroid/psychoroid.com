@@ -21,6 +21,15 @@ export function Footer() {
                         <div className="h-4 w-px bg-border mx-4" />
                         <FeedbackForm />
                         <div className="h-4 w-px bg-border mx-4" />
+                        <Link
+                            href="https://www.producthunt.com/products/psychoroid-com/reviews"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                        >
+                            {t(currentLanguage, 'footer.recommend')}
+                        </Link>
+                        <div className="h-4 w-px bg-border mx-4" />
                         <LanguageSwitcher />
                     </div>
                     <div className="flex items-center space-x-6 py-2 lg:py-0 ml-auto">

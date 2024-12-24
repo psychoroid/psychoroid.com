@@ -179,7 +179,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                 }}
                 camera={{ position: cameraPositionVector }}
                 style={{ width: '100%', height: '100%' }}
-                className="bg-slate-600 dark:bg-zinc-900/50"
+                className="bg-slate-300/90 dark:bg-zinc-900/50"
             >
                 <ambientLight intensity={0.4} />
                 <directionalLight position={[5, 5, 5]} intensity={0.3} castShadow />

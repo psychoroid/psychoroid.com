@@ -85,9 +85,10 @@
   },
   "footer": {
     "copyright": "Copyright © 2025 — psychoroid.com",
-    "faq": "자주 묻는 질문",
-    "privacy": "개인정보 보호",
-    "terms": "이용약관"
+    "faq": "FAQ",
+    "privacy": "개인정보",
+    "terms": "이용약관",
+    "recommend": "추천하기"
   },
   "faq": {
     "title": "FAQ",
