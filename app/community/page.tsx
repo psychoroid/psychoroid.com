@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Navbar } from '@/components/design/Navbar';
+import { CommunityNavbar } from '@/components/design/CommunityNavbar';
 import { Footer } from '@/components/design/Footer';
 import { Input } from "@/components/ui/input";
 import { supabase } from '@/lib/supabase/supabase';
@@ -177,8 +177,8 @@ export default function CommunityPage() {
     };
 
     return (
-        <div className="h-svh flex flex-col bg-background">
-            <Navbar />
+        <div className="h-svh bg-background flex flex-col overflow-hidden">
+            <CommunityNavbar />
             <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24 overflow-auto">
                 <div className="px-0 md:px-4">
                     <div className="max-w-3xl mx-auto mb-8">

@@ -75,9 +75,10 @@
     }
   },
   "navbar": {
-    "dashboard": "Dashboard",
+    "dashboard": "대시보드",
     "engine": "3D Engine",
     "community": "커뮤니티",
+    "studio": "스튜디오",
     "resources": "리소스",
     "pricing": "가격",
     "sign_in": "로그인",

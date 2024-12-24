@@ -152,7 +152,7 @@ export default function DashboardPage() {
                             : "rgba(215, 61, 87, 0.1)"   // #D73D57 with opacity
                         }
                     >
-                        Studio
+                        {t(currentLanguage, 'navbar.studio')}
                     </RippleButton>
                 </div>
 

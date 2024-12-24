@@ -75,9 +75,10 @@
     }
   },
   "navbar": {
-    "dashboard": "Dashboard",
+    "dashboard": "仪表板",
     "engine": "3D Engine",
     "community": "社区",
+    "studio": "工作室",
     "resources": "开发者",
     "pricing": "定价",
     "sign_in": "登录",
