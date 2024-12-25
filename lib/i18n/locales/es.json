@@ -411,9 +411,7 @@
       "starting": "Iniciando subida...",
       "failed": "Error en la subida",
       "preview_only": "Imagen subida (Solo vista previa - Servidor fuera de línea)",
-      "complete": "Subida completa, generando modelo 3D...",
       "processing": "Procesando imagen...",
-      "success": "¡Modelo 3D generado con éxito!",
       "processing_failed": "Error en el procesamiento 3D - El servidor puede estar fuera de línea",
       "error": "Error de subida: ",
       "error_multiple": "Error al subir imágenes: ",
@@ -696,6 +694,13 @@
       "success": {
         "submitted": "Solicitud de soporte enviada exitosamente"
       }
+    },
+    "server": {
+      "offline": "El servidor está fuera de línea",
+      "offline_description": "Lo sentimos, nuestro servidor no está disponible actualmente. Estamos trabajando en ello — por favor, inténtelo de nuevo más tarde."
+    },
+    "model": {
+      "generation_failed": "Error al generar el modelo 3D"
     }
   }
 }

@@ -412,9 +412,7 @@
       "starting": "Iniciando upload...",
       "failed": "Falha no upload",
       "preview_only": "Imagem carregada (Apenas visualização - Servidor offline)",
-      "complete": "Upload completo, gerando modelo 3D...",
       "processing": "Processando imagem...",
-      "success": "Modelo 3D gerado com sucesso!",
       "processing_failed": "Falha no processamento 3D - Servidor pode estar offline",
       "error": "Erro no upload: ",
       "error_multiple": "Erro ao fazer upload das imagens: ",
@@ -697,6 +695,13 @@
       "success": {
         "submitted": "Solicitação de suporte enviada com sucesso"
       }
+    },
+    "server": {
+      "offline": "Servidor está offline",
+      "offline_description": "Desculpe, nosso servidor está indisponível no momento. Estamos trabalhando nisso — por favor, tente novamente mais tarde."
+    },
+    "model": {
+      "generation_failed": "Falha ao gerar modelo 3D"
     }
   }
 }

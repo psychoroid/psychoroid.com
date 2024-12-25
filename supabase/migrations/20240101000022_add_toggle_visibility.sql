@@ -1,7 +1,7 @@
--- Function to toggle product visibility
-CREATE OR REPLACE FUNCTION toggle_product_visibility(
-    p_product_path TEXT,
-    p_user_id UUID
+-- Function to toggle model public/private visibility
+CREATE OR REPLACE FUNCTION toggle_model_visibility(
+    p_product_id UUID,
+    p_visibility visibility_type_enum
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -9,51 +9,49 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 DECLARE
-    v_product_id UUID;
+    v_owner_id UUID;
 BEGIN
-    -- Get the product ID and verify ownership
-    SELECT id INTO v_product_id
-    FROM products
-    WHERE image_path = p_product_path
-    AND user_id = p_user_id;
-
-    IF v_product_id IS NULL THEN
-        RETURN FALSE;
+    IF p_product_id IS NULL THEN
+        RAISE EXCEPTION 'Product ID cannot be null';
+    END IF;
+    
+    IF p_visibility IS NULL THEN
+        RAISE EXCEPTION 'Visibility cannot be null';
     END IF;
 
-    -- Toggle visibility between public and private
+    -- Check if user owns the product
+    SELECT user_id INTO v_owner_id
+    FROM products
+    WHERE id = p_product_id;
+    
+    IF v_owner_id != auth.uid() THEN
+        RETURN FALSE;
+    END IF;
+    
+    -- Update visibility
     UPDATE products
     SET 
-        visibility = CASE 
-            WHEN visibility = 'public' THEN 'private'::visibility_type_enum
-            ELSE 'public'::visibility_type_enum
-        END,
+        visibility = p_visibility,
         updated_at = NOW()
-    WHERE id = v_product_id;
-
-    -- Record the activity
+    WHERE id = p_product_id
+    AND user_id = auth.uid();
+    
+    -- Record activity with correct enum value
     INSERT INTO user_activity (
         user_id,
         activity_type,
         product_id,
         details
     ) VALUES (
-        p_user_id,
+        auth.uid(),
         'visibility_changed',
-        v_product_id,
-        jsonb_build_object(
-            'new_visibility', 
-            CASE 
-                WHEN (SELECT visibility FROM products WHERE id = v_product_id) = 'public' 
-                THEN 'public' 
-                ELSE 'private' 
-            END
-        )
+        p_product_id,
+        jsonb_build_object('new_visibility', p_visibility)
     );
-
-    RETURN TRUE;
+    
+    RETURN FOUND;
 END;
 $$;
 
 -- Grant execute permission
-GRANT EXECUTE ON FUNCTION toggle_product_visibility(TEXT, UUID) TO authenticated; 
+GRANT EXECUTE ON FUNCTION toggle_model_visibility(UUID, visibility_type_enum) TO authenticated; 

@@ -7,13 +7,14 @@ export interface ImageUploadProps {
 export interface ImagePreviewProps {
   imagePaths: string[];
   selectedImage: string | null;
-  onImageClick: (imagePath: string, modelUrl: string) => void;
+  onImageClick: (imagePath: string | null, modelUrl: string | null) => void;
   onImageRemove: (imagePath: string) => void;
   currentPage: number;
   onPageChange: (page: number) => void;
   isLoading: boolean;
   isExpanded?: boolean;
   processingImages: { [key: string]: number };
+  setImagePaths: (paths: string[]) => void;
 }
 
 export interface ProductViewerProps {

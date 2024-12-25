@@ -7,7 +7,7 @@ export interface ProductDetails {
   user_id: string;
   created_at: string;
   updated_at: string;
-  is_visible: boolean;
+  is_featured: boolean;
 }
 
 export interface UserUpload {
@@ -29,4 +29,5 @@ export interface Asset {
   tags: string[];
   created_at: string;
   updated_at: string;
+  is_featured: boolean;
 } 

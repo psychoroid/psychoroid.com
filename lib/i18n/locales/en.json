@@ -411,9 +411,7 @@
       "starting": "Starting upload...",
       "failed": "Upload failed",
       "preview_only": "Image uploaded (Preview only - Server offline)",
-      "complete": "Upload complete, generating 3D model...",
       "processing": "Processing image...",
-      "success": "3D model generated successfully!",
       "processing_failed": "3D processing failed - Server may be offline",
       "error": "Upload error: ",
       "error_multiple": "Error uploading images: ",
@@ -698,6 +696,13 @@
       "success": {
         "submitted": "Support request submitted successfully"
       }
+    },
+    "server": {
+      "offline": "Server is offline",
+      "offline_description": "Sorry, our server is currently unavailable. We're working on it — please try again later."
+    },
+    "model": {
+      "generation_failed": "Failed to generate 3D model"
     }
   }
 } 

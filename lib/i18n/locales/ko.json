@@ -411,9 +411,7 @@
       "starting": "업로드 시작 중...",
       "failed": "업로드 실패",
       "preview_only": "이미지 업로드됨 (미리보기만 가능 - 서버 오프라인)",
-      "complete": "업로드 완료, 3D 모델 생성 중...",
       "processing": "이미지 처리 중...",
-      "success": "3D 모델 생성 성공!",
       "processing_failed": "3D 처리 실패 - 서버가 오프라인일 수 있습니다",
       "error": "업로드 오류: ",
       "error_multiple": "이미지 업로드 오류: ",
@@ -696,6 +694,13 @@
       "success": {
         "submitted": "지원 요청이 성공적으로 제출되었습니다"
       }
+    },
+    "server": {
+      "offline": "서버가 오프라인입니다",
+      "offline_description": "죄송합니다. 현재 서버를 사용할 수 없습니다. 복구 작업 중입니다 — 나중에 다시 시도해 주세요."
+    },
+    "model": {
+      "generation_failed": "3D 모델 생성 실패"
     }
   }
 }

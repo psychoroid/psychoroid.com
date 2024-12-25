@@ -412,9 +412,7 @@
       "starting": "Démarrage du téléchargement...",
       "failed": "Échec du téléchargement",
       "preview_only": "Image téléchargée (Aperçu uniquement - Serveur hors ligne)",
-      "complete": "Téléchargement terminé, génération du modèle 3D...",
       "processing": "Traitement de l'image...",
-      "success": "Modèle 3D généré avec succès !",
       "processing_failed": "Échec du traitement 3D - Le serveur est peut-être hors ligne",
       "error": "Erreur de téléchargement : ",
       "error_multiple": "Erreur lors du téléchargement des images : ",
@@ -697,6 +695,13 @@
       "success": {
         "submitted": "Demande de support envoyée avec succès"
       }
+    },
+    "server": {
+      "offline": "Le serveur est hors ligne",
+      "offline_description": "Désolé, notre serveur est actuellement indisponible. Nous y travaillons — veuillez réessayer plus tard."
+    },
+    "model": {
+      "generation_failed": "Échec de la génération du modèle 3D"
     }
   }
 } 

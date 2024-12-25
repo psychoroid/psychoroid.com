@@ -411,9 +411,7 @@
       "starting": "开始上传...",
       "failed": "上传失败",
       "preview_only": "图片已上传（仅预览 - 服务器离线）",
-      "complete": "上传完成，正在生成3D模型...",
       "processing": "正在处理图片...",
-      "success": "3D模型生成成功！",
       "processing_failed": "3D处理失败 - 服务器可能离线",
       "error": "上传错误：",
       "error_multiple": "上传图片错误：",
@@ -696,6 +694,13 @@
       "success": {
         "submitted": "支持请求提交成功"
       }
+    },
+    "server": {
+      "offline": "服务器离线",
+      "offline_description": "抱歉，我们的服务器目前不可用。我们正在处理中 — 请稍后再试。"
+    },
+    "model": {
+      "generation_failed": "3D模型生成失败"
     }
   }
 } 

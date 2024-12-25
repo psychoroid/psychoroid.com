@@ -1,57 +1,24 @@
--- Function to toggle model visibility
-CREATE OR REPLACE FUNCTION toggle_model_visibility(
-    p_product_id UUID,
-    p_visibility visibility_type_enum
+-- Function to toggle product visibility
+CREATE OR REPLACE FUNCTION public.toggle_product_visibility(
+    p_product_path TEXT,
+    p_user_id UUID
 )
-RETURNS BOOLEAN
+RETURNS SETOF products
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
-DECLARE
-    v_owner_id UUID;
 BEGIN
-    IF p_product_id IS NULL THEN
-        RAISE EXCEPTION 'Product ID cannot be null';
-    END IF;
-    
-    IF p_visibility IS NULL THEN
-        RAISE EXCEPTION 'Visibility cannot be null';
-    END IF;
-
-    -- Check if user owns the product
-    SELECT user_id INTO v_owner_id
-    FROM products
-    WHERE id = p_product_id;
-    
-    IF v_owner_id != auth.uid() THEN
-        RETURN FALSE;
-    END IF;
-    
-    -- Update visibility
+    RETURN QUERY
     UPDATE products
     SET 
-        visibility = p_visibility,
+        is_featured = NOT is_featured,
         updated_at = NOW()
-    WHERE id = p_product_id
-    AND user_id = auth.uid();
-    
-    -- Record activity with correct enum value
-    INSERT INTO user_activity (
-        user_id,
-        activity_type,
-        product_id,
-        details
-    ) VALUES (
-        auth.uid(),
-        'visibility_changed',
-        p_product_id,
-        jsonb_build_object('new_visibility', p_visibility)
-    );
-    
-    RETURN FOUND;
+    WHERE 
+        image_path = p_product_path
+        AND user_id = p_user_id
+    RETURNING *;
 END;
 $$;
 
--- Grant permission
-GRANT EXECUTE ON FUNCTION toggle_model_visibility(UUID, visibility_type_enum) TO authenticated; 
+GRANT EXECUTE ON FUNCTION toggle_product_visibility(TEXT, UUID) TO authenticated; 

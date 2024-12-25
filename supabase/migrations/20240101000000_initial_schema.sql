@@ -54,7 +54,7 @@ CREATE TABLE products (
     likes_count integer default 0,
     downloads_count integer default 0,
     tags text[],
-    is_featured boolean default false,
+    is_featured boolean default true,
     created_at timestamptz default now(),
     updated_at timestamptz default now(),
     views_count integer default 0
