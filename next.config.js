@@ -100,6 +100,11 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'api.producthunt.com',
                 pathname: '/widgets/embed-image/v1/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'fal.media',
+                pathname: '/files/**',
             }
         ],
         unoptimized: false,

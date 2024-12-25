@@ -61,7 +61,7 @@ export default function PricingPage() {
             price: 0,
             credits: 200,
             features: [
-                '**200 credits on signup**',
+                '**100 credits on signup**',
                 'Limited queue priority',
                 '1 task waiting in queue',
                 'Assets are under public license',

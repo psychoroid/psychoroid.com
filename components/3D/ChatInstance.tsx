@@ -23,15 +23,17 @@ interface ChatInstanceProps {
     showPreview?: boolean
     user?: any
     setShowAuthModal?: (show: boolean) => void
+    value?: string
+    onChange?: (value: string) => void
 }
 
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png']
 const MAX_FILES = 5
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB in bytes
 
-export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPreview = false, user, setShowAuthModal }: ChatInstanceProps) {
+export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPreview = false, user, setShowAuthModal, value, onChange }: ChatInstanceProps) {
     const router = useRouter()
-    const [inputValue, setInputValue] = useState('')
+    const [inputValue, setInputValue] = useState(value || '')
     const [mounted, setMounted] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
     const [isDragging, setIsDragging] = useState(false)
@@ -186,7 +188,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         }
     }
 
-    const handleProcessImages = () => {
+    const handleProcessImages = useCallback(() => {
         if (previewImages.length > 0) {
             const event = {
                 target: {
@@ -198,7 +200,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
             previewImages.forEach(img => URL.revokeObjectURL(img.url))
             setPreviewImages([])
         }
-    }
+    }, [previewImages, onFileSelect]);
 
     const handleRemovePreview = (index: number) => {
         setPreviewImages(prev => {
@@ -214,7 +216,24 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         setPreviewImages([])
     }
 
-    const handleSubmit = () => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const newValue = e.target.value;
+        setInputValue(newValue);
+        onChange?.(newValue);
+
+        // Only adjust height on desktop
+        if (window.innerWidth >= 640) {
+            requestAnimationFrame(() => {
+                if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto';
+                    const newHeight = Math.min(textareaRef.current.scrollHeight, 60); // 60px max height for desktop
+                    textareaRef.current.style.height = `${newHeight}px`;
+                }
+            });
+        }
+    };
+
+    const handleSubmit = useCallback(() => {
         // Check if user is authenticated before proceeding
         if (!user && setShowAuthModal) {
             setShowAuthModal(true)
@@ -231,20 +250,44 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         if (inputValue.trim() && onPromptSubmit && !showPreview) {
             onPromptSubmit(inputValue)
             setInputValue('')
+            onChange?.('')
         }
-    }
+    }, [user, setShowAuthModal, previewImages.length, handleProcessImages, inputValue, onPromptSubmit, showPreview, onChange]);
+
+    // Add key repeat handling
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
+            e.preventDefault();
+            handleSubmit();
+            return;
+        }
+
+        // Enable IME composition for better international text input
+        if (e.nativeEvent.isComposing) {
+            return;
+        }
+
+        // Enable key repeat by not preventing default behavior
+        // The browser's native key repeat behavior will work
+    }, [showPreview, handleSubmit]);
+
+    // Add composition handling for better IME support
+    const handleCompositionStart = () => {
+        if (textareaRef.current) {
+            textareaRef.current.style.backgroundColor = 'rgba(var(--primary-rgb), 0.05)';
+        }
+    };
+
+    const handleCompositionEnd = () => {
+        if (textareaRef.current) {
+            textareaRef.current.style.backgroundColor = 'transparent';
+        }
+    };
 
     const handleSuggestionSelect = (suggestion: string) => {
         if (!showPreview) {
             setInputValue(suggestion)
-            // Check authentication before submitting
-            if (!user && setShowAuthModal) {
-                setShowAuthModal(true)
-                return
-            }
-            if (onPromptSubmit) {
-                onPromptSubmit(suggestion)
-            }
+            onChange?.(suggestion)
         }
     }
 
@@ -287,6 +330,13 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
             submitButtonRef.current.focus()
         }
     }, [previewImages.length])
+
+    // Update internal value when external value changes
+    useEffect(() => {
+        if (value !== undefined) {
+            setInputValue(value)
+        }
+    }, [value])
 
     return (
         <div
@@ -345,16 +395,19 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                             value={inputValue}
                             onChange={(e) => {
                                 if (!showPreview) {
-                                    setInputValue(e.target.value)
-                                    if (window.innerWidth >= 640) {
-                                        adjustTextareaHeight()
-                                    }
+                                    handleInputChange(e);
                                 }
                             }}
                             onFocus={() => !showPreview && setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
+                            onCompositionStart={handleCompositionStart}
+                            onCompositionEnd={handleCompositionEnd}
+                            onKeyDown={mounted ? handleKeyDown : undefined}
                             disabled={showPreview || previewImages.length > 0}
                             autoFocus={isDesktop}
+                            spellCheck="true"
+                            autoCapitalize="sentences"
+                            autoCorrect="on"
                             className={cn(
                                 "w-full border-0 bg-transparent px-0 pl-0 text-sm",
                                 "text-muted-foreground placeholder:text-muted-foreground/60 placeholder:text-sm",
@@ -362,7 +415,8 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                 "border-none focus:border-none active:border-none",
                                 "selection:bg-primary/20 selection:text-muted-foreground",
                                 "transition-all duration-200 ease-in-out",
-                                "h-full sm:h-auto",
+                                "h-full sm:h-auto max-h-[100px] sm:max-h-[60px]",
+                                "scrollbar-hide pt-1 pr-[50px]",
                                 (showPreview || previewImages.length > 0) && "opacity-50 cursor-not-allowed"
                             )}
                             style={{
@@ -370,19 +424,17 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                 outline: 'none',
                                 boxShadow: 'none',
                                 resize: 'none',
-                                lineHeight: '1.5',
-                                letterSpacing: '0.01em'
+                                lineHeight: '1.6',
+                                letterSpacing: '0.01em',
+                                overflowY: 'auto',
+                                caretColor: 'var(--primary)',
+                                WebkitFontSmoothing: 'antialiased',
+                                MozOsxFontSmoothing: 'grayscale',
                             }}
                             placeholder={previewImages.length > 0
                                 ? t(currentLanguage, 'ui.upload.ready')
                                 : mounted ? t(currentLanguage, 'ui.asset_description') : ''
                             }
-                            onKeyDown={mounted ? (e) => {
-                                if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
-                                    e.preventDefault()
-                                    handleSubmit()
-                                }
-                            } : undefined}
                             rows={1}
                         />
                     </div>

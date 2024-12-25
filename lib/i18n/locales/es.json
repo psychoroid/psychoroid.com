@@ -22,7 +22,8 @@
       "processing": "Procesando...",
       "per_month": "/ mes",
       "per_year": "/ año",
-      "currency": "€"
+      "currency": "€",
+      "credits_tooltip": "Use 25 créditos para generación de imágenes o 30 créditos para generación por prompt"
     },
     "on_demand": {
       "title": "Créditos bajo demanda",
@@ -38,7 +39,7 @@
         "name": "Explorar",
         "description": "Prueba nuestra tecnología",
         "features": [
-          "**200 créditos al registrarse**",
+          "**100 créditos por mes**",
           "Prioridad limitada en la cola",
           "1 tarea en cola",
           "Los activos están bajo licencia pública"
@@ -50,7 +51,7 @@
         "features": [
           "**1.000 créditos por mes**",
           "Prioridad estándar en la cola",
-          "5 tareas en cola",
+          "3 tareas en cola",
           "Los activos son privados y propiedad del cliente",
           "Acceso a activos comunitarios",
           "Edición de texturas con IA",
@@ -63,7 +64,7 @@
         "features": [
           "**5.000 créditos por mes**",
           "Máxima prioridad en la cola",
-          "20 tareas en cola",
+          "8 tareas en cola",
           "Los activos son privados y propiedad del cliente",
           "Acceso a activos comunitarios",
           "Edición de texturas con IA",
@@ -332,7 +333,7 @@
   },
   "dropdowns": {
     "psychoroid": {
-      "description": "psychoroid.com es un programa de inteligencia artificial avanzado que crea modelos 3D a partir de texto e imágenes en ~20 segundos. Las mallas generadas están completamente optimizadas para su uso inmediato en desarrollo de juegos, comercio electrónico y flujos de trabajo de fabricación.",
+      "description": "psychoroid.com es un programa de inteligencia artificial avanzado que crea modelos 3D a partir de texto e imágenes en ~40 segundos. Las mallas generadas están completamente optimizadas para su uso inmediato en desarrollo de juegos, comercio electrónico y flujos de trabajo de fabricación.",
       "overview": "Descripción general",
       "features": "Características"
     },
@@ -361,45 +362,42 @@
     },
     "items": {
       "gaming": [
-        "Máquina arcade retro con LED",
+        "Gabinete arcade retro",
         "Ratón gaming tema dragón",
-        "Set de dados holográficos con estuche",
-        "Teclado mecánico con teclas personalizadas",
-        "Controlador de realidad virtual con hápticos"
+        "Teclado mecánico",
+        "Casco de realidad virtual"
       ],
       "jewelry": [
-        "Colgante de cristal con alambre de plata",
-        "Pulsera geométrica con cierre deslizante",
-        "Pendientes constelación con estrellas",
-        "Brújula antigua con detalles en latón"
+        "Colgante de cristal con gema",
+        "Brazalete geométrico",
+        "Brújula antigua con detalles en latón",
+        "Corona real medieval"
       ],
       "furniture": [
-        "Lámpara de escritorio de bambú con pantalla flotante",
-        "Silla plegable inspirada en origami",
-        "Estantería espiral con cajón oculto",
-        "Lámpara de techo en forma de nube",
-        "Mesa de café modular con almacenamiento",
-        "Mesa de noche flotante con luz"
+        "Lámpara de escritorio de bambú diseño moderno",
+        "Silla inspirada en origami",
+        "Estantería en espiral",
+        "Lámpara de techo forma de nube",
+        "Mesa de noche flotante"
       ],
       "decorative": [
         "Cofre del tesoro con grabados intrincados",
-        "Maceta bonsái con fuente de agua",
-        "Juego de té japonés dorado",
-        "Terrario geométrico con marco metálico"
+        "Taza de té japonesa dorada",
+        "Máscara ceremonial etíope",
+        "Jarrón antiguo con patrones intrincados"
       ],
       "tech": [
-        "Altavoz bluetooth levitante",
+        "Altavoz levitante",
         "Diseño minimalista de reloj inteligente",
-        "Dron plegable con soporte para cámara",
-        "Proyector portátil con asa",
-        "Cargador inalámbrico con luz ambiental",
-        "Controlador domótico con pantalla"
+        "Dron compacto con cámara",
+        "Proyector holográfico",
+        "Cargador inalámbrico"
       ],
       "containers": [
         "Jarrón art nouveau con flores",
-        "Caja puzzle con paneles deslizantes",
-        "Botella de poción con tapón de corcho",
-        "Maceta geométrica con drenaje",
+        "Caja de rompecabezas antigua con paneles deslizantes",
+        "Botella de poción de cristal",
+        "Macetero geométrico",
         "Diseño de frasco de perfume vintage"
       ]
     }
@@ -733,6 +731,17 @@
     },
     "model": {
       "generation_failed": "Error al generar el modelo 3D"
+    },
+    "imageGeneration": {
+      "generating": "Generando...",
+      "processing": "Procesando...",
+      "useSelectedImage": "Generar",
+      "closeConfirm": {
+        "title": "¿Estás seguro de que quieres cerrar?",
+        "description": "Tus imágenes generadas se perderán antes del procesamiento 3D. Esta acción no se puede deshacer.",
+        "cancel": "Cancelar",
+        "close": "Cerrar"
+      }
     }
   }
 }

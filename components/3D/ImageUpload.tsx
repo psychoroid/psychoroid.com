@@ -7,14 +7,13 @@ import { AuthModal } from '@/components/auth/AuthModal'
 import { useUser } from '@/lib/contexts/UserContext'
 import { ImageUploadProps } from '@/types/components'
 import { ProductDetails } from '@/types/product'
-import { PROGRESS_MESSAGES, AVERAGE_PROCESSING_TIME, ProgressMessage } from '@/lib/utils/progressMessages'
-import { ChatInstance } from './ChatInstance'
-import { motion, AnimatePresence } from 'framer-motion'
+import { PROGRESS_MESSAGES } from '@/lib/utils/progressMessages'
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { generateAssetMetadata } from '@/lib/utils/assetNaming'
+import { ImageGeneration } from './ImageGeneration'
 
 interface SavedProgresses {
   [key: string]: number;
@@ -405,24 +404,38 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
     return () => clearInterval(intervalId);
   }, [uploading, processingStartTime, currentTimeRange]);
 
-  const handlePromptSubmit = async (prompt: string) => {
-    if (!user) {
-      setShowAuthModal(true)
-      return
-    }
+  const handleGeneratedImageSelect = async (imageUrl: string) => {
+    try {
+      setUploading(true);
 
-    // TODO: Implement prompt-based 3D mesh generation
-    console.log('Generating 3D mesh from prompt:', prompt)
-  }
+      // Download the image from the URL
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `generated-${Date.now()}.png`, { type: 'image/png' });
+
+      // Create a synthetic event
+      const event = {
+        target: {
+          files: [file]
+        }
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+
+      // Process the file using existing upload logic
+      await handleFileUpload(event);
+    } catch (error) {
+      console.error('Error processing generated image:', error);
+      toast.error('Failed to process the generated image');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <>
       <div className="max-w-3xl mx-auto px-2 sm:px-0 relative">
-        <ChatInstance
-          onFileSelect={handleFileUpload}
-          isUploading={uploading}
-          onPromptSubmit={handlePromptSubmit}
-          showPreview={false}
+        <ImageGeneration
+          onImageSelect={handleGeneratedImageSelect}
+          numImages={4}
           user={user}
           setShowAuthModal={setShowAuthModal}
         />

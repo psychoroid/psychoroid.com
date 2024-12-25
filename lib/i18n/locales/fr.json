@@ -22,7 +22,8 @@
       "processing": "En cours...",
       "per_month": "/ mois",
       "per_year": "/ an",
-      "currency": "€"
+      "currency": "€",
+      "credits_tooltip": "Utilisez 25 crédits pour la génération par image ou 30 crédits pour la génération par prompt"
     },
     "on_demand": {
       "title": "Crédits à la demande",
@@ -38,7 +39,7 @@
         "name": "Explore",
         "description": "Essayez notre technologie",
         "features": [
-          "**200 crédits à l'inscription**",
+          "**100 crédits par mois**",
           "Priorité limitée en file d'attente",
           "1 tâche en simultané",
           "Les modèles sont sous licence publique"
@@ -50,7 +51,7 @@
         "features": [
           "**1 000 crédits par mois**",
           "Priorité standard en file d'attente",
-          "5 tâches en simultané",
+          "3 tâches en simultané",
           "Les modèles sont privés et vous appartiennent",
           "Téléchargement des modèles communautaires",
           "Édition de texture par IA",
@@ -63,7 +64,7 @@
         "features": [
           "**5 000 crédits par mois**",
           "Priorité maximale en file d'attente",
-          "20 tâches en simultané",
+          "8 tâches en simultané",
           "Les modèles sont privés et vous appartiennent",
           "Téléchargement des modèles communautaires",
           "Édition de texture par IA",
@@ -333,7 +334,7 @@
   },
   "dropdowns": {
     "psychoroid": {
-      "description": "psychoroid.com est un programme avancé d'intelligence artificielle qui crée des modèles 3D à partir de textes et d'images en ~20 secondes. Les maillages générés sont entièrement optimisés pour une utilisation immédiate dans le développement de jeux-vidéos, de visualisation de produits e-commerce et les flux de travail de fabrication.",
+      "description": "psychoroid.com est un programme avancé d'intelligence artificielle qui crée des modèles 3D à partir de textes et d'images en ~40 secondes. Les maillages générés sont entièrement optimisés pour une utilisation immédiate dans le développement de jeux-vidéos, de visualisation de produits e-commerce et les flux de travail de fabrication.",
       "overview": "Aperçu",
       "features": "Fonctionnalités"
     },
@@ -362,46 +363,43 @@
     },
     "items": {
       "gaming": [
-        "Borne d'arcade rétro avec LED",
+        "Borne d'arcade rétro",
         "Souris gaming thème dragon",
-        "Set de dés holographiques avec étui",
-        "Clavier mécanique avec touches personnalisées",
-        "Contrôleur VR avec retour haptique"
+        "Clavier mécanique",
+        "Casque de réalité virtuelle"
       ],
       "jewelry": [
-        "Pendentif cristal avec fil d'argent tressé",
-        "Bracelet géométrique avec fermoir coulissant",
-        "Boucles d'oreilles constellation avec étoiles",
-        "Boussole ancienne avec détails en laiton"
+        "Pendentif en cristal avec pierre précieuse",
+        "Bracelet géométrique",
+        "Boussole ancienne avec détails en laiton",
+        "Couronne royale médiévale"
       ],
       "furniture": [
-        "Lampe de bureau en bambou avec abat-jour flottant",
-        "Chaise pliante inspiration origami",
-        "Bibliothèque spirale avec tiroir secret",
-        "Plafonnier en forme de nuage",
-        "Table basse modulaire avec rangement",
-        "Table de chevet flottante avec lumière"
+        "Lampe de bureau en bambou design moderne",
+        "Chaise inspirée de l'origami",
+        "Bibliothèque en spirale",
+        "Lustre en forme de nuage",
+        "Table de chevet flottante"
       ],
       "decorative": [
         "Coffre au trésor avec gravures complexes",
-        "Pot bonsaï avec fontaine",
-        "Service à thé japonais en or",
-        "Terrarium géométrique avec cadre métallique"
+        "Tasse à thé japonaise en or",
+        "Masque cérémoniel éthiopien",
+        "Vase ancien avec motifs complexes"
       ],
       "tech": [
-        "Enceinte bluetooth lévitante",
+        "Enceinte en lévitation",
         "Design de montre connectée minimaliste",
-        "Drone pliable avec support caméra",
-        "Projecteur portable avec poignée",
-        "Chargeur sans fil avec lumière ambiante",
-        "Contrôleur domotique avec écran"
+        "Drone compact avec caméra",
+        "Projecteur holographique",
+        "Chargeur sans fil"
       ],
       "containers": [
         "Vase art nouveau avec fleurs",
-        "Boîte puzzle avec panneaux coulissants",
-        "Fiole de potion avec bouchon en liège",
-        "Pot géométrique avec drainage",
-        "Flacon de parfum vintage"
+        "Boîte à énigmes ancienne avec panneaux coulissants",
+        "Flacon de potion en cristal",
+        "Jardinière géométrique",
+        "Design de flacon de parfum vintage"
       ]
     }
   },
@@ -417,6 +415,17 @@
       "error": "Erreur de téléchargement : ",
       "error_multiple": "Erreur lors du téléchargement des images : ",
       "ready": "Téléchargé et prêt, appuyez sur ⏎ pour continuer"
+    },
+    "imageGeneration": {
+      "generating": "Génération en cours...",
+      "processing": "Traitement en cours...",
+      "useSelectedImage": "Générer",
+      "closeConfirm": {
+        "title": "Êtes-vous sûr de vouloir fermer ?",
+        "description": "Vos images générées seront perdues avant le traitement 3D. Cette action ne peut pas être annulée.",
+        "cancel": "Annuler",
+        "close": "Fermer"
+      }
     },
     "dashboard": {
       "title": "Tableau de bord",

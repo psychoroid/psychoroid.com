@@ -22,7 +22,8 @@
       "processing": "Processing...",
       "per_month": "/ month",
       "per_year": "/ year",
-      "currency": "$"
+      "currency": "$",
+      "credits_tooltip": "Use 25 credits for image-to-3D generation or 30 credits for prompt generation"
     },
     "on_demand": {
       "title": "On-demand credits",
@@ -38,7 +39,7 @@
         "name": "Explore",
         "description": "Try our technology",
         "features": [
-          "**200 credits on signup**",
+          "**100 credits per month**",
           "Limited queue priority",
           "1 task waiting in queue",
           "Assets are under public license"
@@ -50,7 +51,7 @@
         "features": [
           "**1,000 credits per month**",
           "Standard queue priority",
-          "5 tasks waiting in queue",
+          "3 tasks waiting in queue",
           "Assets are private & customer owned",
           "Download community assets",
           "AI texture editing",
@@ -63,7 +64,7 @@
         "features": [
           "**5,000 credits per month**",
           "Top queue priority",
-          "10 tasks waiting in queue",
+          "8 tasks waiting in queue",
           "Assets are private & customer owned",
           "Download community assets",
           "AI texture editing",
@@ -332,7 +333,7 @@
   },
   "dropdowns": {
     "psychoroid": {
-      "description": "psychoroid.com is an advanced artificial intelligence program that creates 3D models from text and image prompts in ~20 seconds. Generated meshes are fully optimized for immediate use in game development, e-commerce, and manufacturing workflows.",
+      "description": "psychoroid.com is an advanced artificial intelligence program that creates 3D models from text and image prompts in ~40 seconds. Generated meshes are fully optimized for immediate use in game development, e-commerce, and manufacturing workflows.",
       "overview": "Overview",
       "features": "Features"
     },
@@ -361,45 +362,42 @@
     },
     "items": {
       "gaming": [
-        "Retro arcade cabinet with LED trim",
+        "Retro arcade cabinet",
         "Dragon-themed gaming mouse",
-        "Holographic dice set with case",
-        "Mechanical keyboard with custom keycaps",
-        "Virtual reality controller with haptics"
+        "Mechanical keyboard",
+        "Virtual reality headset"
       ],
       "jewelry": [
-        "Crystal pendant with silver wire wrap",
-        "Geometric bracelet with sliding clasp",
-        "Constellation earrings with stars",
-        "Ancient compass with brass details"
+        "Crystal pendant with gemstone",
+        "Geometric bracelet",
+        "Ancient compass with brass details",
+        "Medieval royal crown"
       ],
       "furniture": [
-        "Bamboo desk lamp with floating shade",
-        "Origami-inspired folding chair",
-        "Spiral bookshelf with hidden drawer",
-        "Cloud-shaped ceiling light",
-        "Modular coffee table with storage",
-        "Floating bedside table with light"
+        "Modern design bamboo desk lamp",
+        "Origami-inspired chair",
+        "Spiral bookshelf",
+        "Cloud-shaped chandelier",
+        "Floating bedside table"
       ],
       "decorative": [
         "Treasure chest with intricate carvings",
-        "Bonsai planter with water feature",
-        "Gold Japanese tea set",
-        "Geometric terrarium with metal frame"
+        "Gold Japanese tea cup",
+        "Ethiopian ceremonial mask",
+        "Ancient vase with intricate patterns"
       ],
       "tech": [
-        "Levitating bluetooth speaker",
+        "Levitating speaker",
         "Minimalist smart watch design",
-        "Foldable drone with camera mount",
-        "Portable projector with handle",
-        "Wireless charger with ambient light",
-        "Smart home controller with screen"
+        "Compact drone with camera",
+        "Holographic projector",
+        "Wireless charging pad"
       ],
       "containers": [
         "Art nouveau vase with flowers",
-        "Puzzle box with sliding panels",
-        "Potion bottle with cork stopper",
-        "Geometric planter with drainage",
+        "Ancient puzzle box with sliding panels",
+        "Crystal potion bottle",
+        "Geometric planter",
         "Vintage perfume bottle design"
       ]
     }
@@ -418,6 +416,17 @@
       "ready": "Uploaded and ready, press ⏎ to continue",
       "invalid_format_msg": "Unsupported file format. Please use JPG or PNG files only.",
       "file_too_large": "File size exceeds 5MB limit. Please upload a smaller file."
+    },
+    "imageGeneration": {
+      "generating": "Generating...",
+      "processing": "Processing...",
+      "useSelectedImage": "Generate",
+      "closeConfirm": {
+        "title": "Are you sure you want to close?",
+        "description": "Your generated images will be lost before 3D processing. This action cannot be undone.",
+        "cancel": "Cancel",
+        "close": "Close"
+      }
     },
     "dashboard": {
       "title": "Dashboard",

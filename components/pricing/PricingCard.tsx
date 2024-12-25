@@ -5,6 +5,8 @@ import { PricingCardProps } from '@/types/components';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
 import { getLocalizedPrice } from '@/lib/utils/currencyConversions';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { InfoIcon } from 'lucide-react';
 
 export function PricingCard({
     name,
@@ -88,8 +90,26 @@ export function PricingCard({
                             <span className="text-foreground mt-0.5">•</span>
                             <span className="flex-1">
                                 {feature.startsWith('**') && feature.endsWith('**') ? (
-                                    <span className="font-semibold">
+                                    <span className="font-semibold flex items-center gap-1.5">
                                         {feature.slice(2, -2)}
+                                        {index === 0 && name === 'Explore' && (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <InfoIcon className="h-3 w-3 text-muted-foreground hover:text-foreground transition-colors" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent
+                                                        className="p-3 max-w-[110px] bg-background/95 backdrop-blur-sm border border-border/50"
+                                                        side="right"
+                                                        sideOffset={5}
+                                                    >
+                                                        <p className="text-xs text-muted-foreground leading-normal">
+                                                            {t(currentLanguage, 'pricing.card.credits_tooltip')}
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        )}
                                     </span>
                                 ) : (
                                     feature
