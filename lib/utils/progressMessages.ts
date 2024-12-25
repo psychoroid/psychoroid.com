@@ -1,62 +1,52 @@
+// Average processing time in milliseconds (1 minute)
+export const AVERAGE_PROCESSING_TIME = 60000;
+
 export const PROGRESS_MESSAGES = [
   {
-    threshold: 0,
+    timeRange: [0, 5000], // 0-5 seconds
     messages: [
-      "Starting the magic...",
-      "Warming up the 3D engine...",
+      'Starting the magic...',
+      'Warming up the engine...',
+      'Initializing the conversion process...'
     ]
   },
   {
-    threshold: 10,
+    timeRange: [5000, 15000], // 5-15 seconds
     messages: [
-      "Analyzing your image...",
-      "Reading the pixels between the lines...",
-      "Processing data and stuff..."
+      'Reading the pixels between the lines...',
+      'Converting your image to 3D...',
+      'Processing...'
     ]
   },
   {
-    threshold: 25,
+    timeRange: [15000, 30000], // 15-30 seconds
     messages: [
-      "Converting to 3D...",
-      "Adding depth to your image...",
-      "Building the mesh structure..."
+      'Crafting your model...',
+      'Building the mesh structure...',
+      'Adding depth to your design...'
     ]
   },
   {
-    threshold: 40,
+    timeRange: [30000, 50000], // 30-50 seconds
     messages: [
       "Crafting the shape...",
       "Sculpting the model...",
-      "Making it look awesome..."
+      "Making it look awesome...",
+      'Polishing the edges...',
+      'Fine-tuning your model...'
     ]
   },
   {
-    threshold: 60,
+    timeRange: [50000, Infinity], // 50+ seconds
     messages: [
-      "Polishing the edges...",
-      "Adding finishing touches...",
-      "Almost there..."
-    ]
-  },
-  {
-    threshold: 95,
-    messages: [
-      "Final preparations...",
-      "Getting ready to show you the result...",
-      "Just a few more seconds..."
-    ]
-  },
-  {
-    threshold: 100,
-    messages: [
-      "Done! 🎉",
-      "Completed! ✨",
-      "Ready! 🌟"
+      'Almost there...',
+      'Just a few more seconds...',
+      'Getting ready to show you the result...'
     ]
   }
 ];
 
 export type ProgressMessage = {
-  threshold: number;
+  timeRange: [number, number];
   messages: string[];
 }; 

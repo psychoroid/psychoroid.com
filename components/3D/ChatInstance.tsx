@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Paperclip, ArrowUp, X } from 'lucide-react'
 import { cn } from "@/lib/actions/utils"
 import { ModelSuggestions } from './ModelSuggestions'
@@ -13,6 +13,7 @@ import { t } from '@/lib/i18n/translations'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { useTheme } from 'next-themes'
+import { toast } from 'react-hot-toast'
 
 interface ChatInstanceProps {
     onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
@@ -22,6 +23,10 @@ interface ChatInstanceProps {
     user?: any
     setShowAuthModal?: (show: boolean) => void
 }
+
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png']
+const MAX_FILES = 5
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB in bytes
 
 export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPreview = false, user, setShowAuthModal }: ChatInstanceProps) {
     const router = useRouter()
@@ -36,6 +41,22 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     const submitButtonRef = useRef<HTMLButtonElement>(null)
     const { currentLanguage } = useTranslation()
     const { theme } = useTheme()
+
+    const isValidFileType = useCallback((file: File): boolean => {
+        return ALLOWED_FILE_TYPES.includes(file.type)
+    }, [])
+
+    const isValidFile = useCallback((file: File): { valid: boolean; error?: string } => {
+        if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+            return { valid: false, error: t(currentLanguage, 'ui.upload.invalid_format_msg') }
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            return { valid: false, error: t(currentLanguage, 'ui.upload.file_too_large') }
+        }
+
+        return { valid: true }
+    }, [currentLanguage])
 
     // Check if device is desktop on mount
     useEffect(() => {
@@ -117,15 +138,24 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
         const files = e.dataTransfer.files
         if (files && files.length > 0) {
             const imageFiles = Array.from(files)
-                .filter(file => file.type.startsWith('image/'))
-                .slice(0, 5) // Limit to 5 files
+                .filter(file => {
+                    const validation = isValidFile(file);
+                    if (!validation.valid && validation.error) {
+                        toast.error(validation.error);
+                        return false;
+                    }
+                    return true;
+                })
+                .slice(0, MAX_FILES)
+
+            if (imageFiles.length === 0) return
 
             const newPreviews = imageFiles.map(file => ({
                 file,
                 url: URL.createObjectURL(file)
             }))
 
-            setPreviewImages(prev => [...prev, ...newPreviews].slice(0, 5))
+            setPreviewImages(prev => [...prev, ...newPreviews].slice(0, MAX_FILES))
         }
     }
 
@@ -449,7 +479,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                 id="image-upload"
                 type="file"
                 className="hidden"
-                accept="image/*"
+                accept="image/jpeg,image/png"
                 multiple
                 onClick={e => e.stopPropagation()}
                 onChange={e => {
@@ -458,14 +488,24 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                         setInputValue('');
 
                         const imageFiles = Array.from(e.target.files)
-                            .slice(0, 5 - previewImages.length);
+                            .filter(file => {
+                                const validation = isValidFile(file);
+                                if (!validation.valid && validation.error) {
+                                    toast.error(validation.error);
+                                    return false;
+                                }
+                                return true;
+                            })
+                            .slice(0, MAX_FILES - previewImages.length);
+
+                        if (imageFiles.length === 0) return
 
                         const newPreviews = imageFiles.map(file => ({
                             file,
                             url: URL.createObjectURL(file)
                         }));
 
-                        setPreviewImages(prev => [...prev, ...newPreviews].slice(0, 5));
+                        setPreviewImages(prev => [...prev, ...newPreviews].slice(0, MAX_FILES));
                     }
                 }}
                 disabled={isUploading || showPreview}
