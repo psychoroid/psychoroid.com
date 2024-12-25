@@ -49,21 +49,44 @@ export async function POST(req: Request) {
                     break;
                 }
 
-                if (session.metadata?.type === 'subscription') {
-                    await supabase.rpc('add_subscription_credits', {
-                        p_user_id: userId,
-                        p_subscription_type: session.metadata.plan
-                    });
+                if (session.metadata?.type === 'subscription' && session.subscription) {
+                    try {
+                        // Get subscription details from Stripe
+                        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+                        
+                        // Add subscription credits and update subscription details
+                        await supabase.rpc('add_subscription_credits', {
+                            p_user_id: userId,
+                            p_subscription_type: session.metadata.plan,
+                            p_subscription_id: subscription.id,
+                            p_customer_id: session.customer as string,
+                            p_period_start: new Date(subscription.current_period_start * 1000),
+                            p_period_end: new Date(subscription.current_period_end * 1000)
+                        });
 
-                    await supabase.from('roids_transactions').insert({
-                        user_id: userId,
-                        amount: 0,
-                        transaction_type: 'subscription',
-                        stripe_session_id: session.id,
-                        description: `Subscription started: ${session.metadata.plan}`
-                    });
+                        console.log('✅ Subscription details:', {
+                            userId,
+                            plan: session.metadata.plan,
+                            subscriptionId: subscription.id,
+                            customerId: session.customer,
+                            periodStart: new Date(subscription.current_period_start * 1000),
+                            periodEnd: new Date(subscription.current_period_end * 1000)
+                        });
 
-                    console.log(`✅ Subscription credits added for user ${userId}`);
+                        // Record transaction
+                        await supabase.from('roids_transactions').insert({
+                            user_id: userId,
+                            amount: 0,
+                            transaction_type: 'subscription',
+                            stripe_session_id: session.id,
+                            description: `Subscription started: ${session.metadata.plan}`
+                        });
+
+                        console.log(`✅ Subscription credits added for user ${userId}`);
+                    } catch (error) {
+                        console.error('❌ Error processing subscription:', error);
+                        throw error;
+                    }
                 }
                 break;
             }

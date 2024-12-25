@@ -4,7 +4,7 @@ Enterprise-grade 3D asset creation and processing engine powered by AI.
 
 ## Overview
 
-[psychoroid.com](https://psychoroid.com) is a web-based open-source engine for automated 3D asset creation, optimization, and distribution. Built for developers, creators and enterprises.
+[psychoroid.com](https://psychoroid.com) is a web-based open-source engine for automated 3D asset creation, optimization, and distribution. Built for creators, and developers.
 
 ## Core Features
 
@@ -12,13 +12,11 @@ Enterprise-grade 3D asset creation and processing engine powered by AI.
 - Prompt and 2D to 3D conversion
 - Batch processing capabilities
 - Multiple export formats support
-- Quality validation tools
 
 ### Enterprise Integration
-- RESTful API
-- Webhook support
-- Custom pipeline development
-- Enterprise authentication
+- RESTful API [IN PROGRESS]
+- Webhook support [IN PROGRESS]
+- Custom pipeline development [IN PROGRESS]
 
 ## Quick Start
 

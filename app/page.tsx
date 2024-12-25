@@ -9,7 +9,7 @@ import P0Element from '@/components/design/p0-element'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
-import { PromoBanner } from '@/components/design/PromoBanner'
+// import { PromoBanner } from '@/components/design/PromoBanner'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
@@ -74,9 +74,9 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="min-h-svh flex flex-col bg-gray-50 dark:bg-background"
         >
-            <AnimatePresence>
+            {/* <AnimatePresence>
                 <PromoBanner />
-            </AnimatePresence>
+            </AnimatePresence> */}
             <div className="h-8" />
 
             <div className="fixed inset-0 pointer-events-none z-0 hidden md:block">
