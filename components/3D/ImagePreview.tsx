@@ -3,8 +3,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase/supabase';
-import { ImagePreviewProps } from '@/types/components';
 import { ProductDetails } from '@/types/product';
+import { ImagePreviewProps } from '@/types/components';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/actions/utils';
 import { X } from 'lucide-react';
@@ -16,7 +16,6 @@ interface ProcessingImagesState {
 }
 
 const STORAGE_KEY = 'processing_images';
-
 const ITEMS_PER_PAGE = 10; // 2×4 grid
 const MAX_PAGES = 20;
 
@@ -30,6 +29,7 @@ export function ImagePreview({
     isLoading,
     isExpanded = false,
     processingImages = {},
+    setImagePaths
 }: ImagePreviewProps) {
     const [hoveredImage, setHoveredImage] = useState<string | null>(null);
     const [localProcessingImages, setLocalProcessingImages] = useState<{ [key: string]: number }>(
@@ -61,16 +61,38 @@ export function ImagePreview({
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('No user found');
 
-            const { error } = await supabase.rpc('toggle_product_visibility', {
+            // Toggle is_featured to false
+            const { data, error } = await supabase.rpc('toggle_product_visibility', {
                 p_product_path: imagePath,
                 p_user_id: user.id
             });
 
             if (error) throw error;
 
-            onImageRemove(imagePath);
+            // If toggle was successful, remove from UI and refresh list
+            if (data) {
+                // Clear the selected image and model from viewer if it's the one being removed
+                if (selectedImage === imagePath) {
+                    onImageClick(null, null);
+                }
+                onImageRemove(imagePath);
+
+                // Refresh the list to show only featured images
+                const { data: products } = await supabase
+                    .from('products')
+                    .select('image_path')
+                    .eq('is_featured', true)
+                    .order('created_at', { ascending: false });
+
+                if (products) {
+                    const paths = products
+                        .filter(product => product.image_path)
+                        .map(product => product.image_path);
+                    setImagePaths(paths);
+                }
+            }
         } catch (error) {
-            console.error('Error hiding image:', error);
+            console.error('Error toggling image visibility:', error);
         }
     };
 
@@ -87,8 +109,8 @@ export function ImagePreview({
                 return;
             }
 
+            // Only allow clicking if the model path exists
             if (productDetails?.model_path) {
-                // Just pass the raw model path, let ProductViewer handle the URL construction
                 onImageClick(imagePath, productDetails.model_path);
             }
         } catch (error) {

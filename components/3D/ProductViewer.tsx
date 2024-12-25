@@ -6,16 +6,17 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { Product } from './Product';
 import { ProductViewerProps, ModelState } from '@/types/components';
 import { Vector3 } from 'three';
+import { MOUSE } from 'three';
 import { ProductControls } from './ProductControls';
 import { DownloadModal } from '@/components/community/DownloadModal';
 import type { CommunityProduct } from '@/types/community';
 
 // Update initial state constants for better front view
-const ANGLE = Math.PI * (90 / 180); // Convert 40 degrees to radians
-const DISTANCE = Math.sqrt(30); // Distance from origin (4 * sqrt(2))
+const ANGLE = Math.PI * (45 / 180); // 45 degrees for a better isometric view
+const DISTANCE = 6; // Fixed distance for consistent view
 const INITIAL_CAMERA_POSITION: [number, number, number] = [
     DISTANCE * Math.cos(ANGLE), // X position
-    4, // Y position stays the same
+    DISTANCE * 0.5, // Y position at half height
     DISTANCE * Math.sin(ANGLE)  // Z position
 ];
 const INITIAL_TARGET: [number, number, number] = [0, 0, 0];
@@ -24,7 +25,7 @@ const INITIAL_ZOOM = 1;
 // Add initial model rotation to face forward
 const INITIAL_MODEL_ROTATION: [number, number, number] = [0, Math.PI, 0];
 
-export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1, isExpanded = false, onClose }: ProductViewerProps) {
+export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 1, isExpanded = false, onClose }: ProductViewerProps) {
     const controlsRef = useRef<any>(null);
     const [modelState, setModelState] = useState<ModelState>({
         rotation: INITIAL_MODEL_ROTATION,
@@ -39,23 +40,26 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         target: INITIAL_TARGET,
         zoom: INITIAL_ZOOM
     });
-    const [isAutoRotating, setIsAutoRotating] = useState(isRotating);
+    const [isAutoRotating, setIsAutoRotating] = useState(false);
+    const [isZoomToCursor, setIsZoomToCursor] = useState(false);
 
-    const imageUrl = imagePath ? `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}` : undefined;
+    // Construct URLs
+    const imageUrl = imagePath ?
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${imagePath}` :
+        undefined;
 
-    // Convert relative model path to full URL
     const fullModelUrl = modelUrl ?
         modelUrl.startsWith('http') ?
             modelUrl :
-            `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-models/${modelUrl}`
-        : undefined;
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${modelUrl}` :
+        undefined;
 
     // Update zoom constants
-    const ZOOM_STEP = 1.2;
+    const ZOOM_STEP = 1.1; // Reduced for finer control
     const MIN_ZOOM = 0.5;
     const MAX_ZOOM = 10;
-    const MIN_DISTANCE = 1;  // Reduced from 2
-    const MAX_DISTANCE = 50; // Increased from 20
+    const MIN_DISTANCE = 2;  // Increased minimum distance
+    const MAX_DISTANCE = 20; // Reduced maximum distance
 
     // Handle zoom in
     const handleZoomIn = () => {
@@ -88,18 +92,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
         setIsAutoRotating(prev => !prev);
     };
 
-    // Sync rotation state with props
-    useEffect(() => {
-        setIsAutoRotating(isRotating);
-    }, [isRotating]);
-
     // Update controls when rotation state changes
-    useEffect(() => {
-        if (controlsRef.current) {
-            controlsRef.current.autoRotate = isAutoRotating;
-        }
-    }, [isAutoRotating]);
-
     useEffect(() => {
         if (controlsRef.current) {
             controlsRef.current.autoRotate = isAutoRotating;
@@ -170,51 +163,73 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
 
     const [showDownloadModal, setShowDownloadModal] = useState(false);
 
+    // Handle zoom mode toggle
+    const handleZoomModeToggle = () => {
+        setIsZoomToCursor(prev => !prev);
+    };
+
     const renderCanvas = (expanded: boolean) => (
         <div className="relative w-full h-full">
             <Canvas
                 gl={{
                     preserveDrawingBuffer: true,
-                    alpha: true
+                    alpha: true,
+                    antialias: true,
                 }}
-                camera={{ position: cameraPositionVector }}
+                camera={{
+                    position: cameraPositionVector,
+                    fov: 45, // Add fixed FOV for consistent perspective
+                    near: 0.1,
+                    far: 1000
+                }}
                 style={{ width: '100%', height: '100%' }}
-                className="bg-slate-300/90 dark:bg-zinc-900/50"
+                className="bg-zinc-100/90 dark:bg-zinc-900/50"
             >
-                <ambientLight intensity={0.4} />
-                <directionalLight position={[5, 5, 5]} intensity={0.3} castShadow />
-                <directionalLight position={[-5, 5, -5]} intensity={0.2} castShadow />
+                <ambientLight intensity={0.6} />
+                <directionalLight position={[5, 5, 5]} intensity={0.4} castShadow />
+                <directionalLight position={[-5, 5, -5]} intensity={0.3} castShadow />
                 <hemisphereLight
-                    intensity={0.2}
+                    intensity={0.3}
                     groundColor="rgb(5 5 5)"
                     color="#fafafa"
                 />
 
                 <Suspense fallback={null}>
-                    <Product
-                        imageUrl={imageUrl}
-                        modelUrl={fullModelUrl}
-                        isRotating={isAutoRotating}
-                        zoom={zoom}
-                        modelState={modelState}
-                        onModelStateChange={handleModelStateChange}
-                        onError={handleModelError}
-                    />
+                    {fullModelUrl && (
+                        <Product
+                            modelUrl={fullModelUrl}
+                            isRotating={isAutoRotating}
+                            zoom={zoom}
+                            modelState={modelState}
+                            onModelStateChange={handleModelStateChange}
+                            scale={[1, 1, 1]}
+                        />
+                    )}
                 </Suspense>
                 <OrbitControls
                     ref={controlsRef}
                     enableZoom={true}
                     enablePan={true}
                     enableRotate={true}
-                    autoRotate={false}
-                    autoRotateSpeed={0}
+                    autoRotate={isAutoRotating}
+                    autoRotateSpeed={0.5}
                     onChange={handleControlsChange}
                     target={targetVector}
                     minDistance={MIN_DISTANCE}
                     maxDistance={MAX_DISTANCE}
-                    zoomSpeed={1}
+                    zoomSpeed={1.5}
                     maxPolarAngle={Math.PI / 1.5}
                     minPolarAngle={Math.PI / 6}
+                    rotateSpeed={1.5}
+                    mouseButtons={{
+                        LEFT: MOUSE.ROTATE,
+                        MIDDLE: MOUSE.DOLLY,
+                        RIGHT: MOUSE.PAN
+                    }}
+                    screenSpacePanning={true}
+                    enableDamping={true}
+                    dampingFactor={0.05}
+                    zoomToCursor={isZoomToCursor}
                 />
             </Canvas>
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -225,6 +240,8 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                     onZoomOut={handleZoomOut}
                     onDownload={() => setShowDownloadModal(true)}
                     hideExpand
+                    isZoomToCursor={isZoomToCursor}
+                    onZoomModeToggle={handleZoomModeToggle}
                 />
             </div>
         </div>
@@ -283,7 +300,81 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = true, zoom = 1
                 </div>
             ) : (
                 <div className="h-full w-full rounded-lg">
-                    {renderCanvas(false)}
+                    <div className="relative w-full h-full">
+                        <Canvas
+                            gl={{
+                                preserveDrawingBuffer: true,
+                                alpha: true,
+                                antialias: true,
+                            }}
+                            camera={{
+                                position: cameraPositionVector,
+                                fov: 45, // Add fixed FOV for consistent perspective
+                                near: 0.1,
+                                far: 1000
+                            }}
+                            style={{ width: '100%', height: '100%' }}
+                            className="bg-zinc-100/90 dark:bg-zinc-900/50"
+                        >
+                            <ambientLight intensity={0.6} />
+                            <directionalLight position={[5, 5, 5]} intensity={0.4} castShadow />
+                            <directionalLight position={[-5, 5, -5]} intensity={0.3} castShadow />
+                            <hemisphereLight
+                                intensity={0.3}
+                                groundColor="rgb(5 5 5)"
+                                color="#fafafa"
+                            />
+                            <Suspense fallback={null}>
+                                {fullModelUrl && (
+                                    <Product
+                                        modelUrl={fullModelUrl}
+                                        isRotating={isAutoRotating}
+                                        zoom={zoom}
+                                        modelState={modelState}
+                                        onModelStateChange={handleModelStateChange}
+                                        scale={[1, 1, 1]}
+                                    />
+                                )}
+                            </Suspense>
+                            <OrbitControls
+                                ref={controlsRef}
+                                enableZoom={true}
+                                enablePan={true}
+                                enableRotate={true}
+                                autoRotate={isAutoRotating}
+                                autoRotateSpeed={0.5}
+                                onChange={handleControlsChange}
+                                target={targetVector}
+                                minDistance={MIN_DISTANCE}
+                                maxDistance={MAX_DISTANCE}
+                                zoomSpeed={1.5}
+                                maxPolarAngle={Math.PI / 1.5}
+                                minPolarAngle={Math.PI / 6}
+                                rotateSpeed={1.5}
+                                mouseButtons={{
+                                    LEFT: MOUSE.ROTATE,
+                                    MIDDLE: MOUSE.DOLLY,
+                                    RIGHT: MOUSE.PAN
+                                }}
+                                screenSpacePanning={true}
+                                enableDamping={true}
+                                dampingFactor={0.05}
+                                zoomToCursor={isZoomToCursor}
+                            />
+                        </Canvas>
+                        <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                            <ProductControls
+                                isRotating={isAutoRotating}
+                                onRotateToggle={handleRotateToggle}
+                                onZoomIn={handleZoomIn}
+                                onZoomOut={handleZoomOut}
+                                onDownload={() => setShowDownloadModal(true)}
+                                hideExpand
+                                isZoomToCursor={isZoomToCursor}
+                                onZoomModeToggle={handleZoomModeToggle}
+                            />
+                        </div>
+                    </div>
                 </div>
             )}
 

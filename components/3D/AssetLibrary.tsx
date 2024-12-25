@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Folder, Grid, Menu, Box, Search, Image as ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,15 +11,17 @@ import { supabase } from '@/lib/supabase/supabase'
 
 type ViewType = 'list' | 'models' | 'textured' | 'images';
 
+interface AssetGroup {
+    id: string;
+    title: string;
+    assets: string[];
+}
+
 interface AssetLibraryProps {
-    searchQuery: string
-    onSearchChange: (value: string) => void
-    assetGroups: {
-        id: string
-        title: string
-        assets: string[]
-    }[]
-    onImageClick: (imagePath: string, modelUrl: string) => void
+    searchQuery?: string;
+    onSearchChange?: (query: string) => void;
+    assetGroups: AssetGroup[];
+    onImageClick: (imagePath: string | null, modelUrl: string | null) => void;
 }
 
 export function AssetLibrary({ searchQuery, onSearchChange, assetGroups, onImageClick }: AssetLibraryProps) {
@@ -37,6 +39,7 @@ export function AssetLibrary({ searchQuery, onSearchChange, assetGroups, onImage
                 const { data: products, error } = await supabase
                     .from('products')
                     .select('image_path')
+                    .eq('is_featured', true)
                     .order('created_at', { ascending: false });
 
                 if (error) {
@@ -59,8 +62,20 @@ export function AssetLibrary({ searchQuery, onSearchChange, assetGroups, onImage
         fetchProducts();
     }, []);
 
-    const handleImageClick = async (imagePath: string, modelUrl: string) => {
+    const handleImageClick = async (imagePath: string | null, modelUrl: string | null) => {
         setSelectedImage(imagePath);
+
+        if (!imagePath || !modelUrl) {
+            // Clear the URL parameters
+            const params = new URLSearchParams(window.location.search);
+            params.delete('image');
+            params.delete('model');
+            window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+            // Always call parent's onImageClick to clear the viewer
+            onImageClick(null, null);
+            return;
+        }
+
         // Construct the full Supabase URL for the model
         const fullModelUrl = modelUrl.startsWith('http')
             ? modelUrl
@@ -80,6 +95,8 @@ export function AssetLibrary({ searchQuery, onSearchChange, assetGroups, onImage
         setImagePaths(prev => prev.filter(path => path !== imagePath));
         if (selectedImage === imagePath) {
             setSelectedImage(null);
+            // Clear the viewer immediately
+            handleImageClick(null, null);
         }
     };
 
@@ -119,6 +136,10 @@ export function AssetLibrary({ searchQuery, onSearchChange, assetGroups, onImage
         setSelectedView(view)
     }
 
+    const handleSearch = useCallback((query: string) => {
+        onSearchChange?.(query);
+    }, [onSearchChange]);
+
     return (
         <div className="w-full h-full flex flex-col">
             <div className="flex-1 border border-border bg-card/50 flex flex-col h-full">
@@ -128,7 +149,7 @@ export function AssetLibrary({ searchQuery, onSearchChange, assetGroups, onImage
                         <Input
                             placeholder="Search assets..."
                             value={searchQuery}
-                            onChange={(e) => onSearchChange(e.target.value)}
+                            onChange={(e) => handleSearch(e.target.value)}
                             className="w-full pl-9 h-9 text-xs rounded-none bg-background/50 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         />
                     </div>
@@ -199,6 +220,7 @@ export function AssetLibrary({ searchQuery, onSearchChange, assetGroups, onImage
                                         onPageChange={setCurrentPage}
                                         isLoading={isLoading}
                                         processingImages={{}}
+                                        setImagePaths={setImagePaths}
                                     />
                                 </div>
                             </motion.div>

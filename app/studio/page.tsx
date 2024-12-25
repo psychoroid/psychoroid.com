@@ -103,7 +103,7 @@ export default function WorkspacePage() {
         }
     }
 
-    const handleImageClick = (imagePath: string, modelUrl: string) => {
+    const handleImageClick = (imagePath: string | null, modelUrl: string | null) => {
         setSelectedImage(imagePath);
         setModelUrl(modelUrl);
     };
