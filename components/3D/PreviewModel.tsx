@@ -56,20 +56,22 @@ export function PreviewModel({ url, small, onLoad, gridView }: PreviewModelProps
                 0
             );
 
+            // Set initial rotation based on model source
+            const isDefaultModel = url.includes('default-assets');
+            if (!isDefaultModel) {
+                meshRef.current.rotation.y = Math.PI; // 180 degrees for non-default models
+            }
+
             initializedRef.current = true;
             onLoad?.();
         }
-    }, [model, small, onLoad, gridView]);
+    }, [model, small, onLoad, gridView, url]);
 
     // Use fixed rotation speed
     useFrame((state, delta) => {
         if (meshRef.current) {
-            const GRID_ROTATION_SPEED = 0.12;
-            const DEFAULT_ROTATION_SPEED = 0.15;
-
-            meshRef.current.rotation.y += delta * (
-                gridView ? GRID_ROTATION_SPEED : DEFAULT_ROTATION_SPEED
-            );
+            const ROTATION_SPEED = 0.15; // Use consistent speed for all models
+            meshRef.current.rotation.y += delta * ROTATION_SPEED;
         }
     });
 

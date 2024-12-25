@@ -183,7 +183,7 @@ export function ImagePreview({
                                     "relative cursor-pointer",
                                     "w-[120px] h-[120px]",
                                     "group hover:shadow-lg transition-shadow duration-200",
-                                    selectedImage === imagePath ? 'ring-2 ring-primary' : 'ring-1 ring-border'
+                                    selectedImage === imagePath ? 'ring-[1px] ring-primary' : 'border-[1px] border-border'
                                 )}
                                 style={{
                                     width: '120px',
@@ -219,14 +219,14 @@ export function ImagePreview({
                                         className={cn(
                                             "absolute top-2 right-2 w-6 h-6",
                                             "flex items-center justify-center",
-                                            "bg-background/80 backdrop-blur-sm rounded-sm",
-                                            "hover:bg-background/90 cursor-pointer",
+                                            "bg-red-500/90 backdrop-blur-sm rounded-none",
+                                            "hover:bg-red-600/90 cursor-pointer",
                                             "transition-all duration-200",
-                                            "border border-border"
+                                            "border-2 border-red-500"
                                         )}
                                         onClick={(e) => handleImageRemove(imagePath, e)}
                                     >
-                                        <X className="h-4 w-4" />
+                                        <X className="h-4 w-4 text-white" />
                                     </button>
                                 )}
                             </div>

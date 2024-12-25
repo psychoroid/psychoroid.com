@@ -491,10 +491,43 @@
     "assets": {
       "search": "Search assets",
       "noResults": "No assets found",
+      "noSearchResults": "No results found for your search",
       "loading": "Loading assets...",
       "perPage": "per page",
       "of": "of",
-      "page": "Page"
+      "page": "Page",
+      "visibility": {
+        "public": "Public",
+        "private": "Private",
+        "unlisted": "Unlisted",
+        "default": "Starter",
+        "toggle": {
+          "success": "Model is now {visibility}",
+          "error": "Failed to update visibility",
+          "unauthorized": "Not authorized to update this model",
+          "defaultAsset": "The starter asset cannot be made public. Create your own assets to share them with the community!",
+          "label": "Visibility",
+          "switcherLabel": "Toggle visibility"
+        }
+      },
+      "stats": {
+        "likes": "Likes",
+        "downloads": "Downloads",
+        "views": "Views"
+      },
+      "actions": {
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete",
+        "download": "Download"
+      },
+      "errors": {
+        "loadFailed": "Failed to load assets",
+        "updateFailed": "Failed to update asset",
+        "deleteFailed": "Failed to delete asset"
+      },
+      "created": "Created on {date}",
+      "noSearchResults": "No results found for your search"
     },
     "settings": {
       "title": "Settings",

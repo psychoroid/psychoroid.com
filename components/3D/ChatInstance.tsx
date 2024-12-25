@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { useTheme } from 'next-themes'
 import { toast } from 'react-hot-toast'
+import { supabase } from '@/lib/supabase/supabase'
 
 interface ChatInstanceProps {
     onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
@@ -36,11 +37,37 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
     const [isDragging, setIsDragging] = useState(false)
     const [previewImages, setPreviewImages] = useState<Array<{ file: File, url: string }>>([])
     const [isDesktop, setIsDesktop] = useState(false)
+    const [hasNonStarterProducts, setHasNonStarterProducts] = useState(false)
     const dragCounter = useRef(0)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const submitButtonRef = useRef<HTMLButtonElement>(null)
     const { currentLanguage } = useTranslation()
     const { theme } = useTheme()
+
+    // Check if user has non-starter products
+    useEffect(() => {
+        const checkUserProducts = async () => {
+            if (!user?.id) {
+                setHasNonStarterProducts(false)
+                return
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .rpc('has_non_starter_products', {
+                        p_user_id: user.id
+                    })
+
+                if (error) throw error
+                setHasNonStarterProducts(data)
+            } catch (error) {
+                console.error('Error checking user products:', error)
+                setHasNonStarterProducts(false)
+            }
+        }
+
+        checkUserProducts()
+    }, [user?.id])
 
     const isValidFileType = useCallback((file: File): boolean => {
         return ALLOWED_FILE_TYPES.includes(file.type)
@@ -405,27 +432,29 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                         </div>
 
                         <div className="flex gap-2 z-50 ml-auto">
-                            <Button
-                                variant="ghost"
-                                onClick={() => {
-                                    if (!user && setShowAuthModal) {
-                                        setShowAuthModal(true)
-                                        return
-                                    }
-                                    router.push('/studio')
-                                }}
-                                className={cn(
-                                    "h-7 sm:h-6 px-3",
-                                    "border border-dashed",
-                                    "text-xs",
-                                    theme === 'dark'
-                                        ? "border-blue-400 text-blue-400 hover:text-blue-400/90 hover:border-blue-400/90"
-                                        : "border-[#D73D57] text-[#D73D57] hover:text-[#D73D57]/90 hover:border-[#D73D57]/90",
-                                    "transition-colors rounded-none"
-                                )}
-                            >
-                                Studio
-                            </Button>
+                            {hasNonStarterProducts && (
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                        if (!user && setShowAuthModal) {
+                                            setShowAuthModal(true)
+                                            return
+                                        }
+                                        router.push('/studio')
+                                    }}
+                                    className={cn(
+                                        "h-7 sm:h-6 px-3",
+                                        "border border-dashed",
+                                        "text-xs",
+                                        theme === 'dark'
+                                            ? "border-blue-400 text-blue-400 hover:text-blue-400/90 hover:border-blue-400/90"
+                                            : "border-[#D73D57] text-[#D73D57] hover:text-[#D73D57]/90 hover:border-[#D73D57]/90",
+                                        "transition-colors rounded-none"
+                                    )}
+                                >
+                                    Studio
+                                </Button>
+                            )}
 
                             <RippleButton
                                 type="button"
@@ -460,13 +489,13 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                 }}
                                 className={cn(
                                     "flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-none transition-all duration-200 p-0 border-0",
-                                    ((inputValue.length > 0 && !showPreview) || previewImages.length > 0) && mounted
+                                    ((inputValue.length > 0 && !showPreview && !isUploading) || previewImages.length > 0) && mounted
                                         ? "bg-primary/90 text-primary-foreground hover:bg-primary cursor-pointer"
                                         : "bg-zinc-200/80 hover:bg-zinc-300/90 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/90 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
-                                    showPreview && "opacity-50 cursor-not-allowed"
+                                    (showPreview || isUploading) && "opacity-50 cursor-not-allowed"
                                 )}
                                 rippleColor="rgba(255, 255, 255, 0.2)"
-                                disabled={showPreview || (!inputValue.length && !previewImages.length) || !mounted}
+                                disabled={showPreview || (!inputValue.length && !previewImages.length) || !mounted || isUploading}
                             >
                                 <ArrowUp className="h-4 w-4" />
                             </RippleButton>

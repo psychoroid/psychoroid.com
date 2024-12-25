@@ -14,6 +14,7 @@ import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
+import { generateAssetMetadata } from '@/lib/utils/assetNaming'
 
 interface SavedProgresses {
   [key: string]: number;
@@ -168,18 +169,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
 
       if (uploadError) throw uploadError;
 
-      // Create product record
-      const { data: product, error: productError } = await supabase.rpc('create_product', {
-        p_name: 'Generated 3D Model',
-        p_description: 'Generated from image',
-        p_image_path: imagePath,
-        p_model_path: modelPath,
-        p_user_id: user.id
-      });
-
-      if (productError) throw productError;
-
-      onProgress(100);
+      onProgress(90);
       return modelPath;
 
     } catch (error: any) {
@@ -237,6 +227,27 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
         return;
       }
 
+      // Check user's ROIDS balance before proceeding
+      const { data: userRoids, error: roidsError } = await supabase
+        .from('user_roids')
+        .select('balance')
+        .eq('user_id', user.id)
+        .single();
+
+      if (roidsError) {
+        toast.error('Error checking ROIDS balance');
+        resetStates();
+        return;
+      }
+
+      if (!userRoids || userRoids.balance < 25) {
+        toast.error('Insufficient ROIDS balance', {
+          description: 'You need 25 ROIDS to generate a 3D model'
+        });
+        resetStates();
+        return;
+      }
+
       const files = event.target.files;
       if (!files || files.length === 0) return;
 
@@ -283,23 +294,39 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
           if (uploadData) {
             setIsLoading(true);
 
+            // Create initial product record with just the image
+            const { data: initialProduct, error: initialProductError } = await supabase.rpc('create_product', {
+              p_name: 'Processing...',
+              p_description: 'Generated from image',
+              p_image_path: filePath,
+              p_model_path: null,
+              p_user_id: user.id
+            });
+
+            if (initialProductError) {
+              console.error('Initial product creation error:', initialProductError);
+              throw initialProductError;
+            }
+
             try {
               const modelUrl = await generate3DModel(filePath, (progress) => {
                 onProgressUpdate(filePath, progress);
               });
 
-              setModelUrl(modelUrl);
+              // Generate metadata for the update
+              const metadata = generateAssetMetadata();
 
-              // Update the existing product record with the model path
-              const { data: productData, error: productError } = await supabase
-                .rpc('update_product', {
-                  p_image_path: filePath,
-                  p_model_path: modelUrl,
-                  p_user_id: user.id
-                });
+              // Update the product with model path, name, and tags
+              const { data: updatedProduct, error: updateError } = await supabase.rpc('update_product', {
+                p_image_path: filePath,
+                p_model_path: modelUrl,
+                p_user_id: user.id,
+                p_name: metadata.name,
+                p_tags: metadata.tags
+              });
 
-              if (productError) {
-                console.error('Error updating product:', productError);
+              if (updateError) {
+                console.error('Error updating product:', updateError);
                 throw new Error('Failed to update product');
               }
 
@@ -307,7 +334,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
               onImageUpload(filePath);
               router.push(`/studio?image=${filePath}&model=${modelUrl}`);
 
-              return productData;
+              return updatedProduct;
             } catch (error: any) {
               console.error('Error during 3D processing:', error);
               if (error.message.includes('Server is offline')) {

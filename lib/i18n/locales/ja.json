@@ -291,7 +291,7 @@
       },
       "forgot_password": {
         "title": "パスワードのリセット",
-        "no_account": "アカウントをお持ちでない方は",
+        "no_account": "アカウ���トをお持ちでない方は",
         "sign_up_link": "新規登録",
         "email_resent": {
           "title": "メールを再送信しました",
@@ -489,10 +489,41 @@
     "assets": {
       "search": "アセットを検索",
       "noResults": "アセットが見つかりません",
+      "noSearchResults": "検索結果が見つかりません",
       "loading": "アセットを読み込み中...",
-      "perPage": "件/ページ",
-      "of": "/",
-      "page": "ページ"
+      "perPage": "ページあたり",
+      "of": "中",
+      "page": "ページ",
+      "visibility": {
+        "public": "公開",
+        "private": "非公開",
+        "unlisted": "非表示",
+        "default": "スターター",
+        "toggle": {
+          "success": "モデルは{visibility}になりました",
+          "error": "可視性の更新に失敗しました",
+          "unauthorized": "このモデルを更新する権限がありません",
+          "defaultAsset": "スターターアセットは公開できません。コミュニティと共有するには独自のアセットを作成してください！",
+          "label": "可視性",
+          "switcherLabel": "可視性を切り替え"
+        }
+      },
+      "stats": {
+        "likes": "いいね",
+        "downloads": "ダウンロード",
+        "views": "閲覧数"
+      },
+      "actions": {
+        "view": "表示",
+        "edit": "編集",
+        "delete": "削除",
+        "download": "ダウンロード"
+      },
+      "errors": {
+        "loadFailed": "アセットの読み込みに失敗しました",
+        "updateFailed": "アセットの更新に失敗しました",
+        "deleteFailed": "アセットの削除に失敗しました"
+      }
     },
     "settings": {
       "title": "設定",

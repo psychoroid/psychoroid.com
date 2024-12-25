@@ -12,12 +12,13 @@ import { ModelPreview } from '@/components/3D/ModelPreview';
 import Image from 'next/image';
 import { memo } from 'react';
 import debounce from 'lodash/debounce';
-import { Skeleton } from "@/components/ui/skeleton"
 import { usePathname } from 'next/navigation'
 import { formatCount } from '@/lib/utils/products';
 import { getTagColor } from '@/lib/utils/tagColors';
 import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
+import Loader from '@/components/design/loader';
+import { cn } from "@/lib/actions/utils"
 
 interface UserAsset {
     id: string;
@@ -42,15 +43,17 @@ interface UserAssetsListProps {
     totalPages: number;
     isLoading?: boolean;
     onAssetUpdate?: () => void;
+    error?: string | null;
 }
 
 const ITEMS_PER_PAGE = 15
 
 // Create a separate memoized asset card component
-const AssetCard = memo(({ asset, index, onVisibilityToggle }: {
+const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage }: {
     asset: UserAsset;
     index: number;
     onVisibilityToggle: (asset: UserAsset, index: number) => Promise<void>;
+    currentLanguage: string;
 }) => {
     const [showModel, setShowModel] = useState(false)
     const [imageError, setImageError] = useState(false)
@@ -67,15 +70,36 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle }: {
 
     const renderPreview = () => {
         if (asset.model_path && showModel) {
-            return (
-                <div className="w-full h-full relative">
-                    <ModelPreview
-                        modelUrl={asset.model_path}
-                        imageUrl={asset.image_path}
-                        small
-                    />
-                </div>
-            )
+            try {
+                const isDefaultModel = asset.model_path.startsWith('default-assets/');
+                return (
+                    <div className="w-full h-full relative">
+                        <ModelPreview
+                            modelUrl={asset.model_path}
+                            imageUrl={`product-images/${asset.image_path}`}
+                            small
+                            bucket={isDefaultModel ? 'default-assets' : 'product-models'}
+                        />
+                    </div>
+                )
+            } catch (error) {
+                console.error('Error loading model:', error);
+                return (
+                    <div className="w-full h-full bg-accent/10 flex items-center justify-center">
+                        <div className="relative w-24 h-24">
+                            <Image
+                                src={`https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${asset.image_path}`}
+                                alt={asset.name || 'Asset preview'}
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                className="object-cover"
+                                onError={() => setImageError(true)}
+                                priority={index < 5}
+                            />
+                        </div>
+                    </div>
+                )
+            }
         }
 
         if (!asset.image_path || imageError) {
@@ -117,13 +141,18 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle }: {
                     </h3>
                     <Badge
                         variant={asset.visibility === 'public' ? 'default' : 'secondary'}
-                        className={`cursor-pointer hover:opacity-80 transition-opacity shrink-0 rounded-none ${asset.visibility === 'public'
-                            ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
-                            : 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20'
-                            }`}
-                        onClick={() => onVisibilityToggle(asset, index)}
+                        className={cn(
+                            `cursor-pointer hover:opacity-80 transition-opacity shrink-0 rounded-none`,
+                            asset.visibility === 'public'
+                                ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
+                                : 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
+                            asset.model_path.startsWith('default-assets/') && 'cursor-not-allowed opacity-50 pointer-events-none'
+                        )}
+                        onClick={() => !asset.model_path.startsWith('default-assets/') && onVisibilityToggle(asset, index)}
                     >
-                        {asset.visibility.charAt(0).toUpperCase() + asset.visibility.slice(1)}
+                        {asset.model_path.startsWith('default-assets/')
+                            ? t(currentLanguage, 'ui.assets.visibility.default')
+                            : t(currentLanguage, `ui.assets.visibility.${asset.visibility}`)}
                     </Badge>
                 </div>
 
@@ -221,17 +250,17 @@ export const UserAssetsList = memo(function UserAssetsList({
     currentPage,
     totalPages,
     isLoading = false,
-    onAssetUpdate
+    onAssetUpdate,
+    error
 }: UserAssetsListProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const pathname = usePathname();
-    const [localAssets, setLocalAssets] = useState<UserAsset[]>([]);
     const { currentLanguage } = useTranslation();
 
     const debouncedSearch = useMemo(
         () => debounce((query: string) => {
             onSearch(query);
-        }, 300),
+        }, 500),
         [onSearch]
     );
 
@@ -242,42 +271,30 @@ export const UserAssetsList = memo(function UserAssetsList({
         };
     }, [debouncedSearch]);
 
-    // Initialize with cached data if available
+    // Reset state when pathname changes
     useEffect(() => {
-        const cachedAssets = localStorage.getItem('cached_user_assets');
-        if (cachedAssets) {
-            setLocalAssets(JSON.parse(cachedAssets));
-        }
-    }, []);
+        setSearchQuery('');
+    }, [pathname]);
 
-    // Update local assets when props change
+    // Force refresh of assets periodically when visible
     useEffect(() => {
-        if (assets.length > 0) {
-            setLocalAssets(assets);
-            // Cache the latest assets
-            localStorage.setItem('cached_user_assets', JSON.stringify(assets));
+        if (document.visibilityState === 'visible' && onAssetUpdate) {
+            const interval = setInterval(onAssetUpdate, 30000); // Refresh every 30 seconds
+            return () => clearInterval(interval);
         }
-    }, [assets]);
+    }, [onAssetUpdate]);
 
     // Optimized visibility toggle
     const handleVisibilityToggle = useCallback(async (asset: UserAsset, index: number) => {
         try {
+            // Check if this is a default asset
+            const isDefaultAsset = asset.model_path.startsWith('default-assets/');
+            if (isDefaultAsset) {
+                toast.error(t(currentLanguage, 'ui.assets.visibility.toggle.defaultAsset'));
+                return;
+            }
+
             const newVisibility = asset.visibility === 'public' ? 'private' : 'public';
-
-            // Optimistic update
-            const updatedAsset: UserAsset = {
-                ...asset,
-                visibility: newVisibility as 'public' | 'private' | 'unlisted'
-            };
-
-            setLocalAssets(prev => {
-                const newAssets = [...prev];
-                const index = newAssets.findIndex(a => a.id === asset.id);
-                if (index !== -1) {
-                    newAssets[index] = updatedAsset;
-                }
-                return newAssets;
-            });
 
             // API call
             const { data, error } = await supabase.rpc('toggle_model_visibility', {
@@ -286,9 +303,9 @@ export const UserAssetsList = memo(function UserAssetsList({
             });
 
             if (error) throw error;
-            if (data === false) throw new Error('Not authorized to update this model');
+            if (data === false) throw new Error(t(currentLanguage, 'ui.assets.visibility.toggle.unauthorized'));
 
-            toast.success(`Model is now ${newVisibility}`);
+            toast.success(t(currentLanguage, 'ui.assets.visibility.toggle.success').replace('{visibility}', newVisibility));
 
             // Background refresh
             if (onAssetUpdate) {
@@ -296,36 +313,14 @@ export const UserAssetsList = memo(function UserAssetsList({
             }
         } catch (error: any) {
             console.error('Error toggling visibility:', error);
-            toast.error(error.message || 'Failed to update visibility');
+            toast.error(error.message || t(currentLanguage, 'ui.assets.visibility.toggle.error'));
 
-            // Revert optimistic update on error
+            // Refresh to get current state
             if (onAssetUpdate) {
                 onAssetUpdate();
             }
         }
-    }, [onAssetUpdate]);
-
-    // Debounce search handler
-    const handleSearch = useMemo(
-        () => debounce((query: string) => {
-            setSearchQuery(query);
-            onSearch(query);
-        }, 300),
-        [onSearch]
-    );
-
-    // Reset state when pathname changes
-    useEffect(() => {
-        setSearchQuery('')
-    }, [pathname])
-
-    // Force refresh of assets periodically when visible
-    useEffect(() => {
-        if (document.visibilityState === 'visible' && onAssetUpdate) {
-            const interval = setInterval(onAssetUpdate, 30000) // Refresh every 30 seconds
-            return () => clearInterval(interval)
-        }
-    }, [onAssetUpdate])
+    }, [onAssetUpdate, currentLanguage]);
 
     return (
         <div className="space-y-4">
@@ -336,45 +331,36 @@ export const UserAssetsList = memo(function UserAssetsList({
                     placeholder={t(currentLanguage, 'ui.assets.search')}
                     value={searchQuery}
                     onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        debouncedSearch(e.target.value);
+                        const query = e.target.value;
+                        setSearchQuery(query);
+                        debouncedSearch(query);
                     }}
                     className="pl-9 rounded-none text-xs"
                 />
             </div>
 
             {isLoading ? (
-                <div className="space-y-4">
-                    <div className="text-sm text-muted-foreground text-center">
-                        {t(currentLanguage, 'ui.assets.loading')}
-                    </div>
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="flex gap-4 p-3 border border-border rounded-none">
-                            <Skeleton className="w-24 h-24" />
-                            <div className="flex-grow space-y-2">
-                                <Skeleton className="h-4 w-1/3" />
-                                <Skeleton className="h-3 w-2/3" />
-                                <div className="flex gap-1">
-                                    <Skeleton className="h-5 w-16" />
-                                    <Skeleton className="h-5 w-16" />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                <div className="relative min-h-[300px]">
+                    <Loader />
                 </div>
-            ) : localAssets.length === 0 ? (
+            ) : error ? (
+                <div className="text-sm text-red-500 text-center py-8">
+                    {error}
+                </div>
+            ) : assets.length === 0 ? (
                 <div className="text-sm text-muted-foreground text-center py-8">
-                    {t(currentLanguage, 'ui.assets.noResults')}
+                    {searchQuery ? t(currentLanguage, 'ui.assets.noSearchResults') : t(currentLanguage, 'ui.assets.noResults')}
                 </div>
             ) : (
                 <>
                     <div className="space-y-4">
-                        {localAssets.map((asset, index) => (
+                        {assets.map((asset, index) => (
                             <AssetCard
                                 key={asset.id}
                                 asset={asset}
                                 index={index}
                                 onVisibilityToggle={handleVisibilityToggle}
+                                currentLanguage={currentLanguage}
                             />
                         ))}
                     </div>

@@ -209,7 +209,7 @@ BEGIN
             updated_at
         ) VALUES (
             NEW.id,
-            200,
+            125,
             'free'::subscription_type_enum,
             false,
             'unpaid'::subscription_status_enum,

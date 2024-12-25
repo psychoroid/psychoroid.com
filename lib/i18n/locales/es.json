@@ -489,10 +489,42 @@
     "assets": {
       "search": "Buscar assets",
       "noResults": "No se encontraron assets",
+      "noSearchResults": "No se encontraron resultados para tu búsqueda",
       "loading": "Cargando assets...",
       "perPage": "por página",
       "of": "de",
-      "page": "Página"
+      "page": "Página",
+      "visibility": {
+        "public": "Público",
+        "private": "Privado",
+        "unlisted": "No listado",
+        "default": "Starter",
+        "toggle": {
+          "success": "El modelo ahora es {visibility}",
+          "error": "Error al actualizar la visibilidad",
+          "unauthorized": "No autorizado para actualizar este modelo",
+          "defaultAsset": "El modelo inicial no se puede hacer público. ¡Crea tus propios modelos para compartirlos con la comunidad!",
+          "label": "Visibilidad",
+          "switcherLabel": "Cambiar visibilidad"
+        }
+      },
+      "stats": {
+        "likes": "Likes",
+        "downloads": "Descargas",
+        "views": "Vistas"
+      },
+      "actions": {
+        "view": "Ver",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "download": "Descargar"
+      },
+      "errors": {
+        "loadFailed": "Error al cargar los assets",
+        "updateFailed": "Error al actualizar el asset",
+        "deleteFailed": "Error al eliminar el asset"
+      },
+      "created": "Creado el {date}"
     },
     "settings": {
       "title": "Configuración",

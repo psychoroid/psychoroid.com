@@ -7,7 +7,7 @@ const COLORS = [
     '#FF5252', // Red psychoroid
     '#3B82F6', // Blue
     '#08CFCE', // Cyber
-    '#FEB60A', // Gold
+    // '#FEB60A', // Gold
     '#98D8C8', // Mint
 ];
 

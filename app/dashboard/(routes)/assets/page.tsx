@@ -4,58 +4,75 @@ import { useState, useEffect, useCallback } from 'react';
 import { UserAssetsList } from '@/components/dashboard/UserAssetsList';
 import { supabase } from '@/lib/supabase/supabase';
 import { useUser } from '@/lib/contexts/UserContext';
+import { useTranslation } from '@/lib/contexts/TranslationContext';
+import { t } from '@/lib/i18n/translations';
 import type { Asset } from '@/types/product';
+
+interface ProductResponse extends Omit<Asset, 'created_at' | 'updated_at'> {
+    created_at: string;
+    updated_at: string;
+    total_count: number;
+}
 
 export default function AssetsPage() {
     const { user } = useUser();
+    const { currentLanguage } = useTranslation();
     const [assets, setAssets] = useState<Asset[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchAssets = useCallback(async (page = 1, search = '') => {
         if (!user?.id) return;
 
         try {
-            const from = (page - 1) * 15;
-            const to = from + 14;
+            setIsLoading(true);
+            setError(null);
 
-            // Parallel requests for better performance
-            const [assetsResponse, countResponse] = await Promise.all([
-                supabase
-                    .from('products')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .not('model_path', 'is', null)
-                    .not('model_path', 'eq', '')
-                    .ilike('name', `%${search}%`)
-                    .order('created_at', { ascending: false })
-                    .range(from, to),
+            const { data, error } = await supabase.rpc('search_user_products', {
+                p_user_id: user.id,
+                p_search_query: search || '',
+                p_page_size: 15,
+                p_page: page
+            });
 
-                supabase
-                    .from('products')
-                    .select('id', { count: 'exact' })
-                    .eq('user_id', user.id)
-                    .not('model_path', 'is', null)
-                    .not('model_path', 'eq', '')
-                    .ilike('name', `%${search}%`)
-            ]);
+            if (error) {
+                console.error('Supabase error:', error);
+                throw error;
+            }
 
-            if (assetsResponse.error) throw assetsResponse.error;
-            if (countResponse.error) throw countResponse.error;
+            // Transform the data to match the Asset type
+            const transformedData = (data || []).map((item: ProductResponse) => ({
+                ...item,
+                created_at: new Date(item.created_at).toISOString(),
+                updated_at: new Date(item.updated_at).toISOString()
+            }));
 
-            setAssets(assetsResponse.data || []);
-            setTotalPages(Math.ceil((countResponse.count || 0) / 15));
-        } catch (error) {
+            // Always set assets, even if empty
+            setAssets(transformedData);
+
+            // Calculate total pages if we have data
+            if (data && data.length > 0) {
+                setTotalPages(Math.ceil(data[0].total_count / 15));
+            } else {
+                setTotalPages(1);
+            }
+        } catch (error: any) {
             console.error('Error fetching assets:', error);
+            setError(t(currentLanguage, 'ui.assets.errors.loadFailed'));
+            setAssets([]);
         } finally {
             setIsLoading(false);
         }
-    }, [user?.id]);
+    }, [user?.id, currentLanguage]);
 
+    // Initial fetch
     useEffect(() => {
-        fetchAssets(currentPage);
-    }, [fetchAssets, currentPage]);
+        if (user?.id) {
+            fetchAssets(currentPage);
+        }
+    }, [fetchAssets, currentPage, user?.id]);
 
     const handleSearch = useCallback((query: string) => {
         setCurrentPage(1);
@@ -71,6 +88,7 @@ export default function AssetsPage() {
             currentPage={currentPage}
             totalPages={totalPages}
             onAssetUpdate={() => fetchAssets(currentPage)}
+            error={error}
         />
     );
 } 

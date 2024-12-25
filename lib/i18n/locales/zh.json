@@ -489,10 +489,41 @@
     "assets": {
       "search": "搜索资源",
       "noResults": "未找到资源",
-      "loading": "正在加载资源...",
+      "noSearchResults": "未找到搜索结果",
+      "loading": "加载资源中...",
       "perPage": "每页",
-      "of": "/",
-      "page": "页"
+      "of": "共",
+      "page": "页",
+      "visibility": {
+        "public": "公开",
+        "private": "私有",
+        "unlisted": "未列出",
+        "default": "入门",
+        "toggle": {
+          "success": "模型现在是{visibility}",
+          "error": "更新可见性失败",
+          "unauthorized": "无权更新此模型",
+          "defaultAsset": "入门资产不能公开。创建您自己的资产来与社区分享！",
+          "label": "可见性",
+          "switcherLabel": "切换可见性"
+        }
+      },
+      "stats": {
+        "likes": "点赞",
+        "downloads": "下载",
+        "views": "浏览"
+      },
+      "actions": {
+        "view": "查看",
+        "edit": "编辑",
+        "delete": "删除",
+        "download": "下载"
+      },
+      "errors": {
+        "loadFailed": "加载资源失败",
+        "updateFailed": "更新资源失败",
+        "deleteFailed": "删除资源失败"
+      }
     },
     "settings": {
       "title": "设置",
