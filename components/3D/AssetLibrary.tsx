@@ -19,9 +19,10 @@ interface AssetLibraryProps {
         title: string
         assets: string[]
     }[]
+    onImageClick: (imagePath: string, modelUrl: string) => void
 }
 
-export function AssetLibrary({ searchQuery, onSearchChange, assetGroups }: AssetLibraryProps) {
+export function AssetLibrary({ searchQuery, onSearchChange, assetGroups, onImageClick }: AssetLibraryProps) {
     const [showLibrary, setShowLibrary] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedView, setSelectedView] = useState<ViewType>('list')
@@ -58,8 +59,21 @@ export function AssetLibrary({ searchQuery, onSearchChange, assetGroups }: Asset
         fetchProducts();
     }, []);
 
-    const handleImageClick = (imagePath: string) => {
+    const handleImageClick = async (imagePath: string, modelUrl: string) => {
         setSelectedImage(imagePath);
+        // Construct the full Supabase URL for the model
+        const fullModelUrl = modelUrl.startsWith('http')
+            ? modelUrl
+            : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${modelUrl}`;
+
+        // Update the URL parameters
+        const params = new URLSearchParams(window.location.search);
+        params.set('image', imagePath);
+        params.set('model', fullModelUrl);
+        window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+
+        // Pass both the image path and the full model URL
+        onImageClick(imagePath, fullModelUrl);
     };
 
     const handleImageRemove = (imagePath: string) => {

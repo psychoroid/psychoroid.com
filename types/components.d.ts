@@ -53,6 +53,8 @@ export interface ProductControlsProps {
   onDownload?: () => void;
   hideExpand?: boolean;
   hideDownload?: boolean;
+  isZoomToCursor?: boolean;
+  onZoomModeToggle?: () => void;
 }
 
 export interface PricingCardProps {

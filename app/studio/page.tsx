@@ -103,6 +103,11 @@ export default function WorkspacePage() {
         }
     }
 
+    const handleImageClick = (imagePath: string, modelUrl: string) => {
+        setSelectedImage(imagePath);
+        setModelUrl(modelUrl);
+    };
+
     if (!user) return null
 
     return (
@@ -139,6 +144,7 @@ export default function WorkspacePage() {
                                         searchQuery={searchQuery}
                                         onSearchChange={setSearchQuery}
                                         assetGroups={assetGroups}
+                                        onImageClick={handleImageClick}
                                     />
                                 </div>
                             </motion.div>

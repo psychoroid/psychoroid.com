@@ -83,16 +83,16 @@ export function ImagePreview({
                 .single<ProductDetails>();
 
             if (error) {
-                console.error('Error fetching product details:', error);
+                console.error('Error fetching product:', error);
                 return;
             }
 
-            if (productDetails && productDetails.model_path) {
-                console.log('Switching to model:', productDetails.model_path);
+            if (productDetails?.model_path) {
+                // Just pass the raw model path, let ProductViewer handle the URL construction
                 onImageClick(imagePath, productDetails.model_path);
             }
         } catch (error) {
-            console.error('Error handling image click:', error);
+            console.error('Error in handleImageClick:', error);
         }
     };
 
