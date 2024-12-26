@@ -4,6 +4,7 @@ import Link from 'next/link';
 import FeedbackForm from './feedback-form';
 import { XIcon } from '@/components/icons/XIcon';
 import { GitHubIcon } from '@/components/icons/GitHubIcon';
+import { DiscordIcon } from '@/components/icons/DiscordIcon';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
@@ -19,17 +20,25 @@ export function Footer() {
                     <div className="hidden lg:flex items-center text-xs text-muted-foreground">
                         {t(currentLanguage, 'footer.copyright')}
                         <div className="h-4 w-px bg-border mx-4" />
+                        <Link
+                            href="/blog"
+                            className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                        >
+                            {t(currentLanguage, 'footer.blog')}
+                        </Link>
+                        <div className="h-4 w-px bg-border mx-4" />
                         <FeedbackForm />
                         <div className="h-4 w-px bg-border mx-4" />
                         <Link
                             href="https://www.producthunt.com/products/psychoroid-com/reviews"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                            className="text-muted-foreground hover:text-foreground transition-colors text-xs"
                         >
                             {t(currentLanguage, 'footer.recommend')}
                         </Link>
                         <div className="h-4 w-px bg-border mx-4" />
+                        <span className="text-muted-foreground text-sm -translate-y-[1px] mr-1">›</span>
                         <LanguageSwitcher />
                     </div>
                     <div className="flex items-center space-x-6 py-2 lg:py-0 ml-auto">
@@ -50,7 +59,7 @@ export function Footer() {
                         >
                             <PHIcon className="h-4 w-4 fill-current -translate-y-[1.5px]" />
                         </Link>
-                        {/* <div className="h-4 w-px bg-border"></div>
+                        <div className="h-4 w-px bg-border"></div>
                         <Link
                             href="https://discord.gg/hVFZ3Wq2Hh"
                             target="_blank"
@@ -58,7 +67,7 @@ export function Footer() {
                             className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <DiscordIcon className="h-4 w-4 -translate-y-[1px]" />
-                        </Link> */}
+                        </Link>
                         <div className="h-4 w-px bg-border"></div>
                         <Link
                             href="https://x.com/psychoroidx"

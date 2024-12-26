@@ -105,7 +105,11 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'fal.media',
                 pathname: '/files/**',
-            }
+            },
+            {
+                protocol: 'https',
+                hostname: 'cdn.sanity.io',
+            },
         ],
         unoptimized: false,
         minimumCacheTTL: 60,
