@@ -379,7 +379,7 @@ export function ChatInstance({ onFileSelect, isUploading, onPromptSubmit, showPr
                                     Let&apos;s do this!
                                 </motion.p>
                                 <motion.p className="text-xs text-muted-foreground/60">
-                                    Supported formats: JPG, PNG, WebP (max 5 files)
+                                    Supported formats: JPG, and PNG (max 5 files)
                                 </motion.p>
                             </motion.div>
                         </motion.div>
