@@ -40,7 +40,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
         scale: [1, 1, 1] as [number, number, number]
     });
     const [loadError, setLoadError] = useState<Error | null>(null);
-    const [isServerOffline, setIsServerOffline] = useState(false);
+    // const [isServerOffline, setIsServerOffline] = useState(false);
 
     const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(INITIAL_CAMERA_POSITION);
     const [controlsState, setControlsState] = useState({
@@ -154,19 +154,19 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
         console.error('Model loading error:', error);
     };
 
-    // Add server status check
-    useEffect(() => {
-        const checkServerStatus = async () => {
-            try {
-                const response = await fetch('http://localhost:8000/health');
-                setIsServerOffline(!response.ok);
-            } catch (error) {
-                setIsServerOffline(true);
-            }
-        };
+    // // Add server status check
+    // useEffect(() => {
+    //     const checkServerStatus = async () => {
+    //         try {
+    //             const response = await fetch('http://localhost:8000/health');
+    //             setIsServerOffline(!response.ok);
+    //         } catch (error) {
+    //             setIsServerOffline(true);
+    //         }
+    //     };
 
-        checkServerStatus();
-    }, []);
+    //     checkServerStatus();
+    // }, []);
 
     const [showDownloadModal, setShowDownloadModal] = useState(false);
 

@@ -101,6 +101,8 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
   }, [onProgressUpdate])
 
   const generate3DModel = useCallback(async (imagePath: string, onProgress: (progress: number) => void): Promise<string> => {
+    /*
+    // ===== BEGIN: Original Server-based Implementation =====
     const checkServerHealth = async () => {
       try {
         const response = await fetch('http://localhost:8000/health')
@@ -136,9 +138,6 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
         type: imageBlob.type || 'image/jpeg'
       });
 
-      // Create model path
-      const modelPath = `${user.id}/${Date.now()}_${fileName.split('.')[0]}.glb`;
-
       // Create form data
       const formData = new FormData();
       formData.append('image', file);
@@ -157,6 +156,9 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
 
       onProgress(90);
       const meshBlob = await meshResponse.blob();
+
+      // Create model path
+      const modelPath = `${user.id}/${Date.now()}_${fileName.split('.')[0]}.glb`;
 
       // Upload to Supabase storage
       const { error: uploadError } = await supabase.storage
@@ -178,6 +180,63 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
       }
       throw new Error(t(currentLanguage, 'ui.model.generation_failed'));
     }
+    // ===== END: Original Server-based Implementation =====
+    */
+
+    // ===== BEGIN: FAL.AI Implementation =====
+    try {
+      if (!user) throw new Error('Not authenticated');
+
+      // Get the image from storage
+      const imageUrl = `https://peyzpnmmgsxjydvpussg.supabase.co/storage/v1/object/public/product-images/${imagePath}`;
+      const imageResponse = await fetch(imageUrl);
+      const imageBlob = await imageResponse.blob();
+
+      // Create a File object from the blob
+      const fileName = imagePath.split('/').pop() || 'image.jpg';
+      const file = new File([imageBlob], fileName, {
+        type: imageBlob.type || 'image/jpeg'
+      });
+
+      // Create form data
+      const formData = new FormData();
+      formData.append('image', file);
+
+      // Call FAL.AI conversion endpoint
+      const falResponse = await fetch('/api/fal-conversion', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!falResponse.ok) {
+        const errorData = await falResponse.json();
+        throw new Error(`Failed to generate 3D model: ${falResponse.statusText} - ${JSON.stringify(errorData)}`);
+      }
+
+      const { modelUrl, textures } = await falResponse.json();
+      onProgress(90);
+
+      // Create model path for storage
+      const modelPath = `${user.id}/${Date.now()}_${fileName.split('.')[0]}.glb`;
+
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('product-models')
+        .upload(modelPath, await (await fetch(modelUrl)).blob(), {
+          contentType: 'model/gltf-binary',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      onProgress(90);
+      return modelPath;
+
+    } catch (error: any) {
+      console.error('Error in generate3DModel:', error);
+      throw new Error(t(currentLanguage, 'ui.model.generation_failed'));
+    }
+    // ===== END: FAL.AI Implementation =====
   }, [user, currentLanguage]);
 
   const isValidFile = useCallback((file: File): { valid: boolean; error?: string } => {
@@ -204,6 +263,8 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
       }
     }
 
+    /*
+    // Original server health check
     const checkServerHealth = async () => {
       try {
         const response = await fetch('http://localhost:8000/health')
@@ -219,6 +280,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
         return false
       }
     }
+    */
 
     try {
       if (!user) {
@@ -271,12 +333,14 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
         const filePath = `${fileName}`;
 
         try {
+          /* Original server health check (commented out)
           // Check server health before starting upload
           const isServerHealthy = await checkServerHealth()
           if (!isServerHealthy) {
             resetStates()
             return;
           }
+          */
 
           setUploading(true);
           // Upload the image to Supabase storage
@@ -336,6 +400,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
               return updatedProduct;
             } catch (error: any) {
               console.error('Error during 3D processing:', error);
+              /* Original server error handling (commented out)
               if (error.message.includes('Server is offline')) {
                 // Delete the uploaded image since we couldn't process it
                 await supabase.storage
@@ -344,6 +409,8 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
               } else {
                 toast.error(t(currentLanguage, 'ui.upload.processing_failed'));
               }
+              */
+              toast.error(t(currentLanguage, 'ui.upload.processing_failed'));
               resetStates()
             }
           }

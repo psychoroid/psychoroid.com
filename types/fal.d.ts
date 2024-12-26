@@ -36,4 +36,21 @@ export interface GenerationResponse {
 export interface QueueStatus {
     status: 'IN_PROGRESS' | 'COMPLETED' | 'IN_QUEUE';
     logs?: Array<{ message: string }>;
-} 
+}
+
+export type Hyper3dRodinOutput = {
+    model_mesh: {
+        url: string;
+        file_size: number;
+        file_name: string;
+        content_type: string;
+    };
+    model_textures?: Array<{
+        url: string;
+        content_type: string;
+        file_name: string;
+        file_size: number;
+        width?: number;
+        height?: number;
+    }>;
+}; 

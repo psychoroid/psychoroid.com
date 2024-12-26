@@ -117,7 +117,7 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
 
             const result = await generateImage({
                 prompt: cleanPrompt,
-                num_images: numImages,
+                num_images: 2,
                 image_size: "square_hd",
                 guidance_scale: 8.5,
                 num_inference_steps: 40
@@ -145,7 +145,7 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
             setIsGenerating(false);
             setTranslatedPrompt(''); // Reset translated prompt for next use
         }
-    }, [user, setShowAuthModal, numImages]);
+    }, [user, setShowAuthModal]);
 
     const handleImageClick = useCallback((imageUrl: string) => {
         setSelectedImageUrl(imageUrl === selectedImageUrl ? null : imageUrl);

@@ -21,10 +21,10 @@ export async function POST(request: Request) {
       input: {
         prompt: enhancedPrompt,
         negative_prompt: negativePrompt,
-        num_images: params.num_images || 4,
+        num_images: params.num_images || 2,
         image_size: params.image_size || "square_hd",
-        guidance_scale: params.guidance_scale || 7.5,
-        num_inference_steps: params.num_inference_steps || 40,
+        guidance_scale: params.guidance_scale || 7,
+        num_inference_steps: params.num_inference_steps || 30,
         enable_safety_checker: true,
         seed: Math.floor(Math.random() * 2147483647)
       }
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         content_type: img.content_type || 'image/jpeg'
       })),
       prompt: enhancedPrompt,
-      num_images: params.num_images || 4
+      num_images: 2
     })
   } catch (error) {
     console.error('Image generation error:', error)
