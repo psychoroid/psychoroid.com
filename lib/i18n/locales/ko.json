@@ -737,10 +737,20 @@
       "useSelectedImage": "생성",
       "closeConfirm": {
         "title": "닫으시겠습니까?",
-        "description": "생성된 이미지가 3D 처리 전에 손실됩니다. 이 작업은 취소할 수 없습니다.",
+        "description": "생성된 이미지가 3D 처리 전에 손실됩니��. 이 작업은 취소할 수 없습니다.",
         "cancel": "취소",
         "close": "닫기"
       }
+    },
+    "community": {
+      "errors": {
+        "loadFailed": "커뮤니티 제품을 불러오는데 실패했습니다. 다시 시도해 주세요."
+      },
+      "noSearchResults": "검색과 일치하는 제품을 찾을 수 없습니다.",
+      "noResults": "아직 커뮤니티에 제품이 없습니다.",
+      "perPage": "개/페이지",
+      "page": "페이지",
+      "of": "/"
     }
   }
 }

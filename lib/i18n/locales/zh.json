@@ -741,6 +741,16 @@
         "cancel": "取消",
         "close": "关闭"
       }
+    },
+    "community": {
+      "errors": {
+        "loadFailed": "加载社区产品失败。请重试。"
+      },
+      "noSearchResults": "未找到符合搜索条件的产品。",
+      "noResults": "社区中暂无可用产品。",
+      "perPage": "条/页",
+      "page": "页",
+      "of": "/"
     }
   }
 } 

@@ -745,6 +745,21 @@
     },
     "model": {
       "generation_failed": "Failed to generate 3D model"
+    },
+    "community": {
+      "errors": {
+        "loadFailed": "Failed to load community products. Please try again."
+      },
+      "noSearchResults": "No products found matching your search.",
+      "noResults": "No products available in the community yet.",
+      "perPage": "items per page",
+      "page": "Page",
+      "of": "of",
+      "filters": {
+        "trending": "Trending",
+        "new": "New",
+        "downloads": "Most Downloaded"
+      }
     }
   }
 } 

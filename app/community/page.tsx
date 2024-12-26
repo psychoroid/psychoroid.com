@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { CommunityNavbar } from '@/components/design/CommunityNavbar';
 import { Footer } from '@/components/design/Footer';
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,10 @@ import { useUser } from '@/lib/contexts/UserContext';
 import type { CommunityProduct, ProductLike } from '@/types/community';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { debounce } from 'lodash';
+import { CommunityFilters, type SortFilter } from '@/components/community/CommunityFilters';
 
 export default function CommunityPage() {
     const { user } = useUser();
@@ -24,6 +28,10 @@ export default function CommunityPage() {
     const [isExpanded, setIsExpanded] = useState(false);
     const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [error, setError] = useState<string | null>(null);
+    const [activeFilter, setActiveFilter] = useState<SortFilter>('trending');
 
     const fetchUserLikes = useCallback(async () => {
         if (!user?.id) return;
@@ -40,15 +48,20 @@ export default function CommunityPage() {
         }
     }, [user?.id]);
 
-    const fetchCommunityProducts = useCallback(async () => {
+    const fetchCommunityProducts = useCallback(async (page = 1, search = '', filter: SortFilter = 'trending') => {
         try {
             setIsLoading(true);
+            setError(null);
 
-            const { data, error } = await supabase
-                .rpc('get_trending_products', {
-                    p_limit: 50,
-                    p_offset: 0
-                });
+            let rpcFunction = 'search_community_products';
+            let params: any = {
+                p_search_query: search,
+                p_page_size: 15,
+                p_page: page,
+                p_sort: filter
+            };
+
+            const { data, error } = await supabase.rpc(rpcFunction, params);
 
             if (error) throw error;
 
@@ -58,44 +71,68 @@ export default function CommunityPage() {
                     product.model_path && product.model_path.trim() !== ''
                 );
 
-                // Store with timestamp for cache validation
-                localStorage.setItem('community_products', JSON.stringify({
-                    data: validProducts,
-                    timestamp: Date.now()
-                }));
+                // Calculate total pages
+                if (validProducts.length > 0) {
+                    setTotalPages(Math.ceil(validProducts[0].total_count / 15));
+                } else {
+                    setTotalPages(1);
+                }
 
-                setProducts(validProducts.map(product => ({
-                    ...product,
-                    views_count: product.views_count || 0  // Ensure views_count is initialized
-                })));
+                setProducts(validProducts);
             } else {
                 setProducts([]);
+                setTotalPages(1);
             }
         } catch (error) {
             console.error('Error fetching products:', error);
+            setError(t(currentLanguage, 'ui.community.errors.loadFailed'));
             setProducts([]);
+            setTotalPages(1);
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [currentLanguage]);
+
+    // Debounced search handler
+    const debouncedSearch = useMemo(
+        () => debounce((query: string) => {
+            setCurrentPage(1);
+            fetchCommunityProducts(1, query, activeFilter);
+        }, 500),
+        [fetchCommunityProducts, activeFilter]
+    );
 
     useEffect(() => {
-        fetchCommunityProducts();
+        return () => {
+            debouncedSearch.cancel();
+        };
+    }, [debouncedSearch]);
+
+    // Initial fetch and refetch on page/filter change
+    useEffect(() => {
+        if (currentPage === 1) {
+            // For page 1, use the current search query
+            debouncedSearch(searchQuery);
+        } else {
+            // For other pages, use the immediate fetch
+            fetchCommunityProducts(currentPage, searchQuery, activeFilter);
+        }
+
         if (user?.id) {
             fetchUserLikes();
         }
-    }, [searchQuery, user?.id, fetchUserLikes, fetchCommunityProducts]);
+    }, [currentPage, user?.id, fetchUserLikes, fetchCommunityProducts, activeFilter, debouncedSearch, searchQuery]);
 
     useEffect(() => {
         // Set up auto-refresh interval
         const interval = setInterval(() => {
-            fetchCommunityProducts();
+            fetchCommunityProducts(currentPage, searchQuery);
         }, 5 * 60 * 1000); // Refreshes every 5 minutes
 
         // Also refresh when tab becomes visible
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                fetchCommunityProducts();
+                fetchCommunityProducts(currentPage, searchQuery);
             }
         };
 
@@ -105,7 +142,7 @@ export default function CommunityPage() {
             clearInterval(interval);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [fetchCommunityProducts]);
+    }, [fetchCommunityProducts, currentPage, searchQuery]);
 
     const handleLike = async (productId: string) => {
         if (!user) return;
@@ -176,6 +213,12 @@ export default function CommunityPage() {
         setSelectedProduct(product);
     };
 
+    const handleFilterChange = (filter: SortFilter) => {
+        setActiveFilter(filter);
+        setCurrentPage(1);
+        fetchCommunityProducts(1, searchQuery, filter);
+    };
+
     return (
         <div className="h-svh bg-background flex flex-col overflow-hidden">
             <CommunityNavbar />
@@ -197,15 +240,25 @@ export default function CommunityPage() {
 
                             {/* Right side - Search */}
                             <div className="md:col-span-8">
-                                <div className="relative md:pr-4 md:pt-2 mt-2">
-                                    <Search className="absolute left-3 top-1/2 md:top-[60%] transform -translate-y-1/2 h-[14px] w-[14px] text-muted-foreground pointer-events-none" />
+                                <div className="relative md:pt-2 mt-2">
+                                    <Search className="absolute left-3 top-[23%] md:top-[30%] transform -translate-y-1/2 h-[14px] w-[14px] text-muted-foreground pointer-events-none" />
                                     <Input
                                         type="text"
                                         placeholder={t(currentLanguage, 'community.search.placeholder')}
                                         value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onChange={(e) => {
+                                            const query = e.target.value;
+                                            setSearchQuery(query);
+                                            debouncedSearch(query);
+                                        }}
                                         className="w-full pl-9 h-9 text-xs rounded-none"
                                     />
+                                    <div className="mt-2">
+                                        <CommunityFilters
+                                            activeFilter={activeFilter}
+                                            onFilterChange={handleFilterChange}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -223,15 +276,56 @@ export default function CommunityPage() {
                                     </div>
                                 ))}
                             </div>
+                        ) : error ? (
+                            <div className="text-sm text-red-500 text-center py-8">
+                                {error}
+                            </div>
+                        ) : products.length === 0 ? (
+                            <div className="text-sm text-muted-foreground text-center py-8">
+                                {searchQuery ? t(currentLanguage, 'ui.community.noSearchResults') : t(currentLanguage, 'ui.community.noResults')}
+                            </div>
                         ) : (
-                            <CommunityGrid
-                                products={products}
-                                onProductSelect={handleProductSelect}
-                                selectedProduct={selectedProduct}
-                                onLike={handleLike}
-                                onDownload={handleDownload}
-                                userLikes={userLikes}
-                            />
+                            <>
+                                <CommunityGrid
+                                    products={products}
+                                    onProductSelect={handleProductSelect}
+                                    selectedProduct={selectedProduct}
+                                    onLike={handleLike}
+                                    onDownload={handleDownload}
+                                    userLikes={userLikes}
+                                />
+
+                                {totalPages > 1 && (
+                                    <div className="flex items-center justify-between pt-8">
+                                        <div className="text-sm text-muted-foreground">
+                                            15 {t(currentLanguage, 'ui.community.perPage')}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => setCurrentPage(prev => prev - 1)}
+                                                disabled={currentPage === 1}
+                                                className="rounded-none"
+                                            >
+                                                <ChevronLeft className="h-4 w-4" />
+                                            </Button>
+                                            <span className="text-sm">
+                                                {t(currentLanguage, 'ui.community.page')} {currentPage} {t(currentLanguage, 'ui.community.of')} {totalPages}
+                                            </span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => setCurrentPage(prev => prev + 1)}
+                                                disabled={currentPage === totalPages}
+                                                className="rounded-none"
+                                            >
+                                                <ChevronRight className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
 

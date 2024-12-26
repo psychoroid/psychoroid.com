@@ -743,6 +743,16 @@
     },
     "model": {
       "generation_failed": "Échec de la génération du modèle 3D"
+    },
+    "community": {
+      "errors": {
+        "loadFailed": "Échec du chargement des produits de la communauté. Veuillez réessayer."
+      },
+      "noSearchResults": "Aucun produit ne correspond à votre recherche.",
+      "noResults": "Aucun produit n'est encore disponible dans la communauté.",
+      "perPage": "éléments par page",
+      "page": "Page",
+      "of": "sur"
     }
   }
 } 

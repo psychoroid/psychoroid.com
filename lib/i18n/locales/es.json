@@ -742,6 +742,16 @@
         "cancel": "Cancelar",
         "close": "Cerrar"
       }
+    },
+    "community": {
+      "errors": {
+        "loadFailed": "Error al cargar los productos de la comunidad. Por favor, inténtalo de nuevo."
+      },
+      "noSearchResults": "No se encontraron productos que coincidan con tu búsqueda.",
+      "noResults": "Aún no hay productos disponibles en la comunidad.",
+      "perPage": "elementos por página",
+      "page": "Página",
+      "of": "de"
     }
   }
 }
