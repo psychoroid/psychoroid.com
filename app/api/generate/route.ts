@@ -11,19 +11,19 @@ export async function POST(request: Request) {
   try {
     const params: ImageGenerationInput = await request.json()
 
-    // Enhance the prompt for better 3D-suitable results
-    const enhancedPrompt = `${params.prompt}, single object, product photography on pure white background, centered composition, ultra detailed, studio lighting setup, 8k uhd, photorealistic, commercial quality, sharp focus, crystal clear, perfectly isolated, professional product shot`
+    // Enhance the prompt for better 3D printing-suitable results
+    const enhancedPrompt = `${params.prompt}, single object, bright studio lighting, pure white background, 3D printable, clear edges, high detail, product photography`
 
-    // Strengthen negative prompt to ensure clean, isolated objects
-    const negativePrompt = "multiple objects, background details, patterns, shadows, text, watermarks, blur, noise, grain, distortion, deformation, artifacts, cropped, incomplete, floating, unrealistic proportions, artistic effects, filters, background texture, environment, scene, multiple views, duplicate, symmetrical, mirrored"
+    // Strengthen negative prompt to ensure clean, 3D-print-ready designs  
+    const negativePrompt = "dark, shadows, multiple objects, busy background, text, blur, noise, distortion, cropped, floating, thin structures, artistic effects"
 
     const result = await fal.subscribe("fal-ai/stable-diffusion-v35-medium", {
       input: {
         prompt: enhancedPrompt,
         negative_prompt: negativePrompt,
-        num_images: params.num_images || 2,
+        num_images: params.num_images || 4,
         image_size: params.image_size || "square_hd",
-        guidance_scale: params.guidance_scale || 4.5,
+        guidance_scale: params.guidance_scale || 7.5,
         num_inference_steps: params.num_inference_steps || 40,
         enable_safety_checker: true,
         seed: Math.floor(Math.random() * 2147483647)
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         content_type: img.content_type || 'image/jpeg'
       })),
       prompt: enhancedPrompt,
-      num_images: params.num_images || 2
+      num_images: params.num_images || 4
     })
   } catch (error) {
     console.error('Image generation error:', error)
