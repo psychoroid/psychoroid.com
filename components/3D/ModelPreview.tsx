@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useEffect, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import Loader from '@/components/design/loader';
@@ -12,27 +12,44 @@ interface ModelPreviewProps {
     imageUrl?: string;
     small?: boolean;
     bucket?: string;
+    canvasId?: string;
 }
 
-export function ModelPreview({ modelUrl, imageUrl, small = false, bucket }: ModelPreviewProps) {
+export function ModelPreview({
+    modelUrl,
+    imageUrl,
+    small = false,
+    bucket = 'product-models',
+    canvasId = 'preview-canvas'
+}: ModelPreviewProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
 
-    const getStorageUrl = (path: string) => {
+    // Set mounted state on component mount
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    // Reset loading state when model URL changes
+    useEffect(() => {
+        setIsLoading(true);
+        setError(null);
+    }, [modelUrl]);
+
+    const getStorageUrl = useCallback((path: string) => {
         try {
             if (path.startsWith('http')) return path;
 
             const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
             if (!baseUrl) throw new Error('Supabase URL not configured');
 
-            // For default model, use the provided bucket
             if (bucket) {
-                // Remove bucket name if it's already in the path
                 const cleanPath = path.replace(`${bucket}/`, '');
                 return `${baseUrl}/storage/v1/object/public/${bucket}/${cleanPath}`;
             }
 
-            // For user models, use the path as is
             const parts = path.split('/');
             if (parts.length < 2) throw new Error('Invalid storage path format');
 
@@ -44,7 +61,20 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket }: Mode
             console.error('Error generating storage URL:', error);
             return path;
         }
-    };
+    }, [bucket]);
+
+    const handleLoad = useCallback(() => {
+        if (mounted) {
+            setIsLoading(false);
+        }
+    }, [mounted]);
+
+    const handleError = useCallback((err: Error) => {
+        if (mounted) {
+            setError(err.message);
+            setIsLoading(false);
+        }
+    }, [mounted]);
 
     if (error) {
         return (
@@ -68,8 +98,11 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket }: Mode
     }
 
     return (
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full" style={{ contain: 'strict', isolation: 'isolate' }}>
             <Canvas
+                key={`${canvasId}-${modelUrl}`}
+                id={canvasId}
+                frameloop="demand"
                 camera={{
                     position: [0, 0, small ? 2.2 : 2.4],
                     fov: 40,
@@ -81,7 +114,8 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket }: Mode
                     alpha: true,
                     antialias: true,
                     preserveDrawingBuffer: true,
-                    premultipliedAlpha: false
+                    premultipliedAlpha: false,
+                    failIfMajorPerformanceCaveat: false,
                 }}
             >
                 <ambientLight intensity={1.2} />
@@ -111,7 +145,8 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket }: Mode
                     <PreviewModel
                         url={getStorageUrl(modelUrl)}
                         small={small}
-                        onLoad={() => setIsLoading(false)}
+                        onLoad={handleLoad}
+                        onError={handleError}
                         gridView={!small}
                     />
                 </Suspense>

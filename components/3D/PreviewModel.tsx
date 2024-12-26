@@ -1,83 +1,87 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { useFrame, useLoader } from '@react-three/fiber';
+import React, { useRef, useEffect } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { useGLTF } from '@react-three/drei';
 import { Mesh, Box3, Vector3 } from 'three';
-// @ts-ignore
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 interface PreviewModelProps {
     url: string;
     small?: boolean;
     onLoad?: () => void;
+    onError?: (error: Error) => void;
     gridView?: boolean;
 }
 
-export function PreviewModel({ url, small, onLoad, gridView }: PreviewModelProps) {
+export function PreviewModel({ url, small = false, onLoad, onError, gridView = false }: PreviewModelProps) {
     const meshRef = useRef<Mesh>(null);
-    const model = useLoader(GLTFLoader, url);
-    const scaleRef = useRef<number | null>(null);
+    const { scene } = useGLTF(url);
     const initializedRef = useRef(false);
 
-    React.useEffect(() => {
-        if (model && meshRef.current && !initializedRef.current) {
-            const box = new Box3().setFromObject(model.scene);
-            const size = box.getSize(new Vector3());
-            const maxDimension = Math.max(size.x, size.y, size.z);
+    // Handle model initialization and scaling
+    useEffect(() => {
+        if (scene && meshRef.current && !initializedRef.current) {
+            try {
+                const box = new Box3().setFromObject(scene);
+                const size = box.getSize(new Vector3());
+                const maxDimension = Math.max(size.x, size.y, size.z);
 
-            // Fixed scales for different views
-            const GRID_SCALE = 1.6;
-            const SMALL_SCALE = 1.2;
-            const DEFAULT_SCALE = 1.4;
+                // Fixed scales for different views
+                const GRID_SCALE = 1.6;
+                const SMALL_SCALE = 1.2;
+                const DEFAULT_SCALE = 1.4;
 
-            // Use exact values for each view type
-            const finalScale = (1 / maxDimension) * (
-                gridView ? GRID_SCALE :
-                    small ? SMALL_SCALE :
-                        DEFAULT_SCALE
-            );
+                const finalScale = (1 / maxDimension) * (
+                    gridView ? GRID_SCALE :
+                        small ? SMALL_SCALE :
+                            DEFAULT_SCALE
+                );
 
-            scaleRef.current = finalScale;
-            meshRef.current.scale.setScalar(finalScale);
+                meshRef.current.scale.setScalar(finalScale);
 
-            // Fixed positions for different views
-            const center = box.getCenter(new Vector3());
-            const GRID_Y_OFFSET = -0.1;
-            const SMALL_Y_OFFSET = 0;
-            const DEFAULT_Y_OFFSET = -0.05;
+                // Center the model
+                const center = box.getCenter(new Vector3());
+                const yOffset = gridView ? -0.1 : small ? 0 : -0.05;
+                meshRef.current.position.set(
+                    0,
+                    (-center.y * finalScale) + yOffset,
+                    0
+                );
 
-            const yOffset = gridView ? GRID_Y_OFFSET :
-                small ? SMALL_Y_OFFSET :
-                    DEFAULT_Y_OFFSET;
+                // Set initial rotation
+                const isDefaultModel = url.includes('default-assets');
+                if (!isDefaultModel) {
+                    meshRef.current.rotation.y = Math.PI;
+                }
 
-            meshRef.current.position.set(
-                0,
-                (-center.y * finalScale) + yOffset,
-                0
-            );
-
-            // Set initial rotation based on model source
-            const isDefaultModel = url.includes('default-assets');
-            if (!isDefaultModel) {
-                meshRef.current.rotation.y = Math.PI; // 180 degrees for non-default models
+                initializedRef.current = true;
+                onLoad?.();
+            } catch (error) {
+                onError?.(error instanceof Error ? error : new Error('Failed to initialize model'));
             }
-
-            initializedRef.current = true;
-            onLoad?.();
         }
-    }, [model, small, onLoad, gridView, url]);
+    }, [scene, small, gridView, url, onLoad, onError]);
 
-    // Use fixed rotation speed
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            initializedRef.current = false;
+            if (url) {
+                useGLTF.preload(url);
+            }
+        };
+    }, [url]);
+
+    // Smooth rotation
     useFrame((state, delta) => {
-        if (meshRef.current) {
-            const ROTATION_SPEED = 0.15; // Use consistent speed for all models
-            meshRef.current.rotation.y += delta * ROTATION_SPEED;
+        if (meshRef.current && initializedRef.current) {
+            meshRef.current.rotation.y += delta * 0.5;
         }
     });
 
     return (
         <mesh ref={meshRef}>
-            <primitive object={model.scene} />
+            <primitive object={scene} />
         </mesh>
     );
 } 

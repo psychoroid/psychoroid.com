@@ -184,6 +184,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                 }}
                 style={{ width: '100%', height: '100%' }}
                 className="bg-background dark:bg-background"
+                id="main-product-viewer"
             >
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[5, 5, 5]} intensity={0.4} castShadow />
@@ -315,6 +316,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                             }}
                             style={{ width: '100%', height: '100%' }}
                             className="bg-background dark:bg-background"
+                            id="main-product-viewer"
                         >
                             <ambientLight intensity={0.6} />
                             <directionalLight position={[5, 5, 5]} intensity={0.4} castShadow />
