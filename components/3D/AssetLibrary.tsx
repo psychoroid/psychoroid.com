@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { AssetCard } from "./AssetCard"
@@ -19,18 +19,17 @@ interface AssetLibraryProps {
 
 export function AssetLibrary({ searchQuery: externalSearchQuery, onSearchChange, onImageClick }: AssetLibraryProps) {
     const { user } = useUser()
-    const [currentPage, setCurrentPage] = useState(1)
+    const [currentPage] = useState(1)
     const [isLoading, setIsLoading] = useState(true)
     const [assets, setAssets] = useState<Asset[]>([])
     const [internalSearchQuery, setInternalSearchQuery] = useState('')
-    const [totalPages, setTotalPages] = useState(1)
     const [error, setError] = useState<string | null>(null)
 
     // Use external search query if provided, otherwise use internal
     const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
 
-    // Fetch products from Supabase with debounced search
-    const fetchAssets = useCallback(async (page = 1, search = '') => {
+    // Memoize fetch function
+    const fetchAssets = useCallback(async (search = '') => {
         if (!user?.id) return;
 
         try {
@@ -41,28 +40,17 @@ export function AssetLibrary({ searchQuery: externalSearchQuery, onSearchChange,
                 p_user_id: user.id,
                 p_search_query: search || '',
                 p_page_size: 15,
-                p_page: page
+                p_page: 1
             });
 
-            if (error) {
-                console.error('Error fetching products:', error);
-                setError('Failed to load assets');
-                return;
-            }
+            if (error) throw error;
 
             if (!data || !Array.isArray(data)) {
                 setAssets([]);
-                setTotalPages(1);
                 return;
             }
 
-            // Calculate total pages
-            if (data.length > 0) {
-                const totalCount = data[0].total_count;
-                setTotalPages(Math.ceil(totalCount / 15));
-            }
-
-            // Transform the data and filter out default-assets
+            // Transform and filter data
             const transformedData = data
                 .filter(item => !item.model_path?.startsWith('default-assets/'))
                 .map((item: any) => ({
@@ -74,42 +62,40 @@ export function AssetLibrary({ searchQuery: externalSearchQuery, onSearchChange,
             setAssets(transformedData);
         } catch (error) {
             console.error('Error in fetchAssets:', error);
-            setError('An error occurred while loading assets');
+            setError('Failed to load assets');
         } finally {
             setIsLoading(false);
         }
     }, [user?.id]);
 
-    // Create debounced search function inline
-    const debouncedSearch = useCallback((query: string) => {
-        const debouncedFn = debounce((searchQuery: string) => {
-            setCurrentPage(1);
-            fetchAssets(1, searchQuery);
-        }, 300);
-        debouncedFn(query);
-        return () => debouncedFn.cancel();
-    }, [fetchAssets]);
+    // Memoize debounced search function
+    const debouncedSearch = useMemo(() =>
+        debounce((query: string) => {
+            fetchAssets(query);
+        }, 300)
+        , [fetchAssets]);
 
     // Effect for search query changes
     useEffect(() => {
-        const cleanup = debouncedSearch(searchQuery);
-        return cleanup;
+        debouncedSearch(searchQuery);
+        return () => debouncedSearch.cancel();
     }, [searchQuery, debouncedSearch]);
 
-    // Initial fetch and refetch on page change
+    // Initial fetch
     useEffect(() => {
-        fetchAssets(currentPage, searchQuery);
-    }, [currentPage, fetchAssets, searchQuery]);
+        fetchAssets(searchQuery);
+        return () => setAssets([]); // Cleanup
+    }, [fetchAssets, searchQuery]);
 
-    const handleSearch = (query: string) => {
+    const handleSearch = useCallback((query: string) => {
         if (onSearchChange) {
             onSearchChange(query);
         } else {
             setInternalSearchQuery(query);
         }
-    };
+    }, [onSearchChange]);
 
-    const handleImageClick = (imagePath: string | null, modelUrl: string | null) => {
+    const handleImageClick = useCallback((imagePath: string | null, modelUrl: string | null) => {
         if (modelUrl) {
             const fullModelUrl = modelUrl.startsWith('http')
                 ? modelUrl
@@ -118,7 +104,7 @@ export function AssetLibrary({ searchQuery: externalSearchQuery, onSearchChange,
         } else {
             onImageClick(imagePath, null);
         }
-    };
+    }, [onImageClick]);
 
     return (
         <div className="w-full h-full flex flex-col">
