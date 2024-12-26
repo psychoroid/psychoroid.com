@@ -6,7 +6,6 @@ import { ProductViewer } from '@/components/3D/ProductViewer'
 import { AssetLibrary } from '@/components/3D/AssetLibrary'
 import { ModelGenerator } from '@/components/3D/ModelGenerator'
 import { useUser } from '@/lib/contexts/UserContext'
-import { supabase } from '@/lib/supabase/supabase'
 import { Footer } from '@/components/design/Footer'
 import { motion } from 'framer-motion'
 

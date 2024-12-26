@@ -23,11 +23,11 @@
       "per_month": "/ mois",
       "per_year": "/ an",
       "currency": "€",
-      "credits_tooltip": "Utilisez 25 crédits pour la génération par image ou 30 crédits pour la génération par prompt"
+      "credits_tooltip": "Utilisez 20 crédits pour la génération d'image en 3D ou 25 crédits pour la génération de texte en 3D"
     },
     "on_demand": {
       "title": "Crédits à la demande",
-      "rate": "1 roid = $0.01",
+      "rate": "1 roid = 0.045 €",
       "min_credits": "Min. 100",
       "roids": "roids",
       "purchase": "Acheter",
@@ -39,9 +39,8 @@
         "name": "Explore",
         "description": "Essayez notre technologie",
         "features": [
-          "**100 crédits par mois**",
-          "Priorité limitée en file d'attente",
-          "1 tâche en simultané",
+          "**30 crédits par mois**",
+          "Priorité limitée",
           "Les modèles sont sous licence publique"
         ]
       },
@@ -49,28 +48,26 @@
         "name": "Automate",
         "description": "Idéal pour les studios et les équipes",
         "features": [
-          "**1 000 crédits par mois**",
+          "**300 crédits par mois**",
           "Priorité standard en file d'attente",
           "3 tâches en simultané",
           "Les modèles sont privés et vous appartiennent",
-          "Téléchargement des modèles communautaires",
-          "Édition de texture par IA",
-          "Accès API"
-        ]
+          "Téléchargement des modèles communautaires"
+      ]
       },
       "scale": {
         "name": "Scale",
         "description": "Tout le potentiel de psychoroid.com",
         "features": [
-          "**5 000 crédits par mois**",
+          "**1200 crédits par mois**",
           "Priorité maximale en file d'attente",
-          "8 tâches en simultané",
+          "5 tâches en simultané",
           "Les modèles sont privés et vous appartiennent",
           "Téléchargement des modèles communautaires",
           "Édition de texture par IA",
+          "Animez vos créations",
           "Accès API",
-          "Réessais gratuits",
-          "Animez vos créations"
+          "Réessais gratuits"
         ]
       }
     }

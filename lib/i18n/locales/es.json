@@ -23,11 +23,11 @@
       "per_month": "/ mes",
       "per_year": "/ año",
       "currency": "€",
-      "credits_tooltip": "Use 25 créditos para generación de imágenes o 30 créditos para generación por prompt"
+      "credits_tooltip": "Usa 20 créditos para generación de imagen a 3D o 25 créditos para generación de texto a 3D"
     },
     "on_demand": {
       "title": "Créditos bajo demanda",
-      "rate": "1 roid = $0.01",
+      "rate": "1 roid = 0.045 €",
       "min_credits": "Mín. 100",
       "roids": "roids",
       "purchase": "Comprar",
@@ -39,9 +39,8 @@
         "name": "Explorar",
         "description": "Prueba nuestra tecnología",
         "features": [
-          "**100 créditos por mes**",
-          "Prioridad limitada en la cola",
-          "1 tarea en cola",
+          "**30 créditos por mes**",
+          "Prioridad limitada",
           "Los activos están bajo licencia pública"
         ]
       },
@@ -49,28 +48,26 @@
         "name": "Automatizar",
         "description": "Ideal para estudios y equipos",
         "features": [
-          "**1.000 créditos por mes**",
+          "**300 créditos por mes**",
           "Prioridad estándar en la cola",
           "3 tareas en cola",
           "Los activos son privados y propiedad del cliente",
-          "Acceso a activos comunitarios",
-          "Edición de texturas con IA",
-          "Acceso a API"
+          "Acceso a activos comunitarios"
         ]
       },
       "scale": {
         "name": "Escalar",
         "description": "Libera todo el potencial",
         "features": [
-          "**5.000 créditos por mes**",
+          "**1200 créditos por mes**",
           "Máxima prioridad en la cola",
-          "8 tareas en cola",
+          "5 tareas en cola",
           "Los activos son privados y propiedad del cliente",
           "Acceso a activos comunitarios",
           "Edición de texturas con IA",
+          "Anima tus creaciones",
           "Acceso a API",
-          "Reintentos gratuitos",
-          "Anima tus creaciones"
+          "Reintentos gratuitos"
         ]
       }
     }

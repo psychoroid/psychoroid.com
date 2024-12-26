@@ -53,6 +53,15 @@ export function ProductControls({
           <Expand className="h-6 w-6" />
         </Button>
       )}
+      <Button
+        onClick={onZoomModeToggle}
+        variant="outline"
+        size="icon"
+        className="rounded-none border-2 bg-black/5 text-gray-800 hover:bg-black/10 hover:text-gray-900 hover:border-black/20 dark:bg-white/5 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
+        title={isZoomToCursor ? "Cursor Zoom Mode" : "Center Zoom Mode"}
+      >
+        {isZoomToCursor ? <Crosshair className="h-6 w-6" /> : <Focus className="h-6 w-6" />}
+      </Button>
       {!hideDownload && onDownload && (
         <Button
           onClick={onDownload}
@@ -63,15 +72,6 @@ export function ProductControls({
           <Download className="h-6 w-6" />
         </Button>
       )}
-      <Button
-        onClick={onZoomModeToggle}
-        variant="outline"
-        size="icon"
-        className="rounded-none border-2 bg-black/5 text-gray-800 hover:bg-black/10 hover:text-gray-900 hover:border-black/20 dark:bg-white/5 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm"
-        title={isZoomToCursor ? "Cursor Zoom Mode" : "Center Zoom Mode"}
-      >
-        {isZoomToCursor ? <Crosshair className="h-6 w-6" /> : <Focus className="h-6 w-6" />}
-      </Button>
     </div>
   );
 }

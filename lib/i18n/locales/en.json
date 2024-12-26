@@ -23,11 +23,11 @@
       "per_month": "/ month",
       "per_year": "/ year",
       "currency": "$",
-      "credits_tooltip": "Use 25 credits for image-to-3D generation or 30 credits for prompt generation"
+      "credits_tooltip": "Use 20 credits for image-to-3D generation or 25 credits for text-to-3D generation"
     },
     "on_demand": {
       "title": "On-demand credits",
-      "rate": "1 roid = $0.01",
+      "rate": "1 roid = $0.045",
       "min_credits": "Min. 100",
       "roids": "roids",
       "purchase": "Purchase",
@@ -39,9 +39,8 @@
         "name": "Explore",
         "description": "Try our technology",
         "features": [
-          "**100 credits per month**",
+          "**30 credits per month**",
           "Limited queue priority",
-          "1 task waiting in queue",
           "Assets are under public license"
         ]
       },
@@ -49,28 +48,26 @@
         "name": "Automate",
         "description": "Best for studios and teams",
         "features": [
-          "**1,000 credits per month**",
+          "**300 credits per month**",
           "Standard queue priority",
           "3 tasks waiting in queue",
           "Assets are private & customer owned",
-          "Download community assets",
-          "AI texture editing",
-          "API access"
+          "Download community assets"
         ]
       },
       "scale": {
         "name": "Scale",
         "description": "Unlock peak performance",
         "features": [
-          "**5,000 credits per month**",
+          "**1200 credits per month**",
           "Top queue priority",
-          "8 tasks waiting in queue",
+          "5 tasks waiting in queue",
           "Assets are private & customer owned",
           "Download community assets",
           "AI texture editing",
+          "Animate your creations",
           "API access",
-          "Free retries",
-          "Animate your creations"
+          "Free retries"
         ]
       }
     }
@@ -86,11 +83,12 @@
     "sign_out": "Sign out"
   },
   "footer": {
-    "copyright": "Copyright © 2025 — psychoroid.com",
+    "copyright": "© 2024 Psychoroid Studios. All rights reserved.",
     "faq": "FAQ",
     "privacy": "Privacy",
     "terms": "Terms",
-    "recommend": "Leave us a review"
+    "recommend": "Leave us a review",
+    "blog": "Blog"
   },
   "faq": {
     "title": "FAQ",
@@ -761,5 +759,11 @@
         "downloads": "Most Downloaded"
       }
     }
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Latest updates, tutorials, and insights about psychoroid.com, 3D asset creation and AI.",
+    "readMore": "Read More",
+    "publishedOn": "Published on"
   }
 } 

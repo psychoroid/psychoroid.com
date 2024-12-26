@@ -192,7 +192,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
     return { valid: true }
   }, [currentLanguage]);
 
-  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement> & { prompt?: string }) => {
     const resetStates = () => {
       setUploading(false)
       setIsLoading(false)
@@ -296,7 +296,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
             // Create initial product record with just the image
             const { data: initialProduct, error: initialProductError } = await supabase.rpc('create_product', {
               p_name: 'Processing...',
-              p_description: 'Generated from image',
+              p_description: event.prompt || 'Generated from image',
               p_image_path: filePath,
               p_model_path: null,
               p_user_id: user.id
@@ -404,7 +404,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
     return () => clearInterval(intervalId);
   }, [uploading, processingStartTime, currentTimeRange]);
 
-  const handleGeneratedImageSelect = async (imageUrl: string) => {
+  const handleGeneratedImageSelect = async (imageUrl: string, prompt?: string) => {
     try {
       setUploading(true);
 
@@ -413,12 +413,14 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
       const blob = await response.blob();
       const file = new File([blob], `generated-${Date.now()}.png`, { type: 'image/png' });
 
-      // Create a synthetic event
+      // Create a synthetic event with the prompt
       const event = {
         target: {
           files: [file]
-        }
-      } as unknown as React.ChangeEvent<HTMLInputElement>;
+        },
+        // Add prompt to the event
+        prompt
+      } as unknown as React.ChangeEvent<HTMLInputElement> & { prompt?: string };
 
       // Process the file using existing upload logic
       await handleFileUpload(event);

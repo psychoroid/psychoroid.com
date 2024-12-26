@@ -14,13 +14,13 @@ import { PromptTranslator } from './PromptTranslator';
 import { supabase } from '@/lib/supabase/supabase';
 
 interface ImageGenerationProps {
-    onImageSelect: (imageUrl: string) => void;
+    onImageSelect: (imageUrl: string, prompt: string) => void;
     numImages?: number;
     user?: any;
     setShowAuthModal?: (show: boolean) => void;
 }
 
-export function ImageGeneration({ onImageSelect, numImages = 2, user, setShowAuthModal }: ImageGenerationProps) {
+export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAuthModal }: ImageGenerationProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [showCloseConfirm, setShowCloseConfirm] = useState(false);
@@ -117,7 +117,7 @@ export function ImageGeneration({ onImageSelect, numImages = 2, user, setShowAut
 
             const result = await generateImage({
                 prompt: cleanPrompt,
-                num_images: 2,
+                num_images: numImages,
                 image_size: "square_hd",
                 guidance_scale: 8.5,
                 num_inference_steps: 40
@@ -145,7 +145,7 @@ export function ImageGeneration({ onImageSelect, numImages = 2, user, setShowAut
             setIsGenerating(false);
             setTranslatedPrompt(''); // Reset translated prompt for next use
         }
-    }, [user, setShowAuthModal]);
+    }, [user, setShowAuthModal, numImages]);
 
     const handleImageClick = useCallback((imageUrl: string) => {
         setSelectedImageUrl(imageUrl === selectedImageUrl ? null : imageUrl);
@@ -156,8 +156,10 @@ export function ImageGeneration({ onImageSelect, numImages = 2, user, setShowAut
 
         try {
             setIsProcessing(true);
-            await onImageSelect(selectedImageUrl);
             setShowModal(false);
+            // Pass both the image URL and the prompt
+            onImageSelect(selectedImageUrl, translatedPrompt || currentPrompt);
+            // Reset states
             setGeneratedImages([]);
             setCurrentPrompt('');
             setInputValue('');
@@ -168,7 +170,7 @@ export function ImageGeneration({ onImageSelect, numImages = 2, user, setShowAut
         } finally {
             setIsProcessing(false);
         }
-    }, [selectedImageUrl, onImageSelect]);
+    }, [selectedImageUrl, onImageSelect, currentPrompt, translatedPrompt]);
 
     return (
         <>
@@ -194,12 +196,12 @@ export function ImageGeneration({ onImageSelect, numImages = 2, user, setShowAut
             </div>
 
             <Dialog open={showModal} onOpenChange={handleCloseModal}>
-                <DialogContent className="max-w-[600px] p-4 bg-background/95 backdrop-blur-md border-none rounded-none" hideClose>
+                <DialogContent className="max-w-[600px] p-4 bg-background/25 backdrop-blur-md border-none rounded-none" hideClose>
                     <DialogTitle className="sr-only">Generated Images</DialogTitle>
                     <div className="relative">
-                        <div className="grid grid-cols-2 gap-4 p-4">
+                        <div className={`grid grid-cols-2 md:grid-cols-${numImages === 2 ? '2' : '4'} gap-4 p-4`}>
                             {isGenerating ? (
-                                <div className="col-span-2 flex items-center justify-center py-8">
+                                <div className="col-span-full flex items-center justify-center py-8">
                                     <div className="flex items-center gap-2">
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                         <p className="text-sm">{t(currentLanguage, 'ui.imageGeneration.generating')}</p>
@@ -236,19 +238,12 @@ export function ImageGeneration({ onImageSelect, numImages = 2, user, setShowAut
                             <div className="flex justify-center p-4">
                                 <Button
                                     onClick={handleImageSelect}
-                                    disabled={!selectedImageUrl || isProcessing}
+                                    disabled={!selectedImageUrl}
                                     variant="outline"
                                     size="default"
                                     className="hover:bg-foreground hover:text-background transition-colors rounded-none text-xs font-medium px-4"
                                 >
-                                    {isProcessing ? (
-                                        <div className="flex items-center gap-2">
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                            <span>{t(currentLanguage, 'ui.imageGeneration.processing')}</span>
-                                        </div>
-                                    ) : (
-                                        t(currentLanguage, 'ui.imageGeneration.useSelectedImage')
-                                    )}
+                                    {t(currentLanguage, 'ui.imageGeneration.useSelectedImage')}
                                 </Button>
                             </div>
                         )}

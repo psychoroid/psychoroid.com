@@ -3,7 +3,7 @@ CREATE OR REPLACE FUNCTION handle_product_roids_deduction()
 RETURNS TRIGGER AS $$
 DECLARE
     current_balance INTEGER;
-    required_roids CONSTANT INTEGER := 25;
+    required_roids CONSTANT INTEGER := 20;
 BEGIN
     -- Get current ROIDS balance
     SELECT balance INTO current_balance

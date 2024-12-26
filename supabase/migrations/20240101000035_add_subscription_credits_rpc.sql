@@ -17,8 +17,8 @@ DECLARE
 BEGIN
     -- Determine credits based on subscription type
     v_credits := CASE 
-        WHEN p_subscription_type = 'automate' THEN 1000
-        WHEN p_subscription_type = 'scale' THEN 5000
+        WHEN p_subscription_type = 'automate' THEN 300
+        WHEN p_subscription_type = 'scale' THEN 1200
         ELSE 0
     END;
 
@@ -134,9 +134,9 @@ BEGIN
     ) LOOP
         -- Determine base credits based on subscription type
         v_base_credits := CASE 
-            WHEN v_user.subscription_type = 'automate' THEN 1000
-            WHEN v_user.subscription_type = 'scale' THEN 5000
-            WHEN v_user.subscription_type = 'free' THEN 100
+            WHEN v_user.subscription_type = 'automate' THEN 300
+            WHEN v_user.subscription_type = 'scale' THEN 1200
+            WHEN v_user.subscription_type = 'free' THEN 30
             ELSE 0
         END;
 

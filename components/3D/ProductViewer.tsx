@@ -183,7 +183,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                     far: 1000
                 }}
                 style={{ width: '100%', height: '100%' }}
-                className="bg-zinc-100/90 dark:bg-zinc-900/50"
+                className="bg-background dark:bg-background"
             >
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[5, 5, 5]} intensity={0.4} castShadow />
@@ -314,7 +314,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                                 far: 1000
                             }}
                             style={{ width: '100%', height: '100%' }}
-                            className="bg-zinc-100/90 dark:bg-zinc-900/50"
+                            className="bg-background dark:bg-background"
                         >
                             <ambientLight intensity={0.6} />
                             <directionalLight position={[5, 5, 5]} intensity={0.4} castShadow />

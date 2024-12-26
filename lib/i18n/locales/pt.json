@@ -23,11 +23,11 @@
       "per_month": "/ mês",
       "per_year": "/ ano",
       "currency": "€",
-      "credits_tooltip": "Use 25 créditos para geração por imagem ou 30 créditos para geração por prompt"
+      "credits_tooltip": "Use 20 créditos para geração de imagem para 3D ou 25 créditos para geração de texto para 3D"
     },
     "on_demand": {
       "title": "Créditos sob demanda",
-      "rate": "1 roid = $0.01",
+      "rate": "1 roid = $0.045",
       "min_credits": "Mín. 100",
       "roids": "roids",
       "purchase": "Comprar",
@@ -39,9 +39,8 @@
         "name": "Explorar",
         "description": "Experimente nossa tecnologia",
         "features": [
-          "**100 créditos por mês**",
-          "Prioridade limitada na fila",
-          "1 tarefa na fila",
+          "**30 créditos por mês**",
+          "Prioridade limitada",
           "Ativos sob licença pública"
         ]
       },
@@ -49,28 +48,26 @@
         "name": "Automatizar",
         "description": "Ideal para estúdios e equipes",
         "features": [
-          "**1.000 créditos por mês**",
+          "**300 créditos por mês**",
           "Prioridade padrão na fila",
           "3 tarefas na fila",
           "Ativos são privados e de propriedade do cliente",
-          "Download de ativos da comunidade",
-          "Edição de textura por IA",
-          "Acesso à API"
+          "Download de ativos da comunidade"
         ]
       },
       "scale": {
         "name": "Escalar",
         "description": "Libere todo o potencial",
         "features": [
-          "**5.000 créditos por mês**",
+          "**1200 créditos por mês**",
           "Prioridade máxima na fila",
-          "8 tarefas na fila",
+          "5 tarefas na fila",
           "Ativos são privados e de propriedade do cliente",
           "Download de ativos da comunidade",
           "Edição de textura por IA",
+          "Anime suas criações",
           "Acesso à API",
-          "Tentativas gratuitas",
-          "Anime suas criações"
+          "Tentativas gratuitas"
         ]
       }
     }

@@ -41,7 +41,7 @@ export default function PricingPage() {
     const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
     const [customCredits, setCustomCredits] = useState<number>(1000);
     const [isUserSubscribed, setIsUserSubscribed] = useState(false);
-    const CREDIT_PRICE = 0.01; // $0.01 per credit
+    const CREDIT_PRICE = 0.045;
     const { currentLanguage } = useTranslation();
 
     useEffect(() => {
@@ -59,9 +59,9 @@ export default function PricingPage() {
         {
             name: 'Explore',
             price: 0,
-            credits: 200,
+            credits: 30,
             features: [
-                '**100 credits on signup**',
+                '**30 credits on signup**',
                 'Limited queue priority',
                 '1 task waiting in queue',
                 'Assets are under public license',
@@ -71,11 +71,11 @@ export default function PricingPage() {
         },
         {
             name: 'Automate',
-            price: 12,
+            price: 15,
             period: 'month',
-            credits: 1000,
+            credits: 300,
             features: [
-                '**1,000 credits per month**',
+                '**300 credits per month**',
                 'Standard queue priority',
                 '5 tasks waiting in queue',
                 'Assets are private & customer owned',
@@ -88,9 +88,9 @@ export default function PricingPage() {
         },
         {
             name: 'Scale',
-            price: 59,
+            price: 45,
             period: 'month',
-            credits: 5000,
+            credits: 1200,
             features: t(currentLanguage, 'pricing.plans.scale.features'),
             description: t(currentLanguage, 'pricing.plans.scale.description'),
             type: 'subscription' as const
