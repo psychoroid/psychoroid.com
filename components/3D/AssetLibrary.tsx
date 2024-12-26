@@ -2,17 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
-import { Folder, Grid, Menu, Box, Search, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Search } from "lucide-react"
 import { AssetCard } from "./AssetCard"
 import { motion, AnimatePresence } from "framer-motion"
-import { cn } from "@/lib/actions/utils"
 import { supabase } from '@/lib/supabase/supabase'
 import { useUser } from '@/lib/contexts/UserContext'
 import type { Asset } from '@/types/product'
-
-type ViewType = 'list' | 'models' | 'textured';
-type LayoutType = 'grid' | 'stack';
+import debounce from 'lodash/debounce'
+import Loader from '@/components/design/loader'
 
 interface AssetLibraryProps {
     searchQuery?: string;
@@ -20,21 +17,25 @@ interface AssetLibraryProps {
     onImageClick: (imagePath: string | null, modelUrl: string | null) => void;
 }
 
-export function AssetLibrary({ searchQuery, onSearchChange, onImageClick }: AssetLibraryProps) {
+export function AssetLibrary({ searchQuery: externalSearchQuery, onSearchChange, onImageClick }: AssetLibraryProps) {
     const { user } = useUser()
     const [currentPage, setCurrentPage] = useState(1)
-    const [selectedView, setSelectedView] = useState<ViewType>('list')
-    const [selectedImage, setSelectedImage] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [assets, setAssets] = useState<Asset[]>([])
-    const [layout, setLayout] = useState<LayoutType>('stack')
+    const [internalSearchQuery, setInternalSearchQuery] = useState('')
+    const [totalPages, setTotalPages] = useState(1)
+    const [error, setError] = useState<string | null>(null)
 
-    // Fetch products from Supabase
+    // Use external search query if provided, otherwise use internal
+    const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
+
+    // Fetch products from Supabase with debounced search
     const fetchAssets = useCallback(async (page = 1, search = '') => {
         if (!user?.id) return;
 
         try {
             setIsLoading(true);
+            setError(null);
 
             const { data, error } = await supabase.rpc('search_user_products', {
                 p_user_id: user.id,
@@ -45,12 +46,25 @@ export function AssetLibrary({ searchQuery, onSearchChange, onImageClick }: Asse
 
             if (error) {
                 console.error('Error fetching products:', error);
+                setError('Failed to load assets');
                 return;
             }
 
-            // Transform the data and filter out default assets
-            const transformedData = (data || [])
-                .filter((item: { model_path: string }) => !item.model_path.startsWith('default-assets/'))
+            if (!data || !Array.isArray(data)) {
+                setAssets([]);
+                setTotalPages(1);
+                return;
+            }
+
+            // Calculate total pages
+            if (data.length > 0) {
+                const totalCount = data[0].total_count;
+                setTotalPages(Math.ceil(totalCount / 15));
+            }
+
+            // Transform the data and filter out default-assets
+            const transformedData = data
+                .filter(item => !item.model_path?.startsWith('default-assets/'))
                 .map((item: any) => ({
                     ...item,
                     created_at: new Date(item.created_at).toISOString(),
@@ -60,14 +74,40 @@ export function AssetLibrary({ searchQuery, onSearchChange, onImageClick }: Asse
             setAssets(transformedData);
         } catch (error) {
             console.error('Error in fetchAssets:', error);
+            setError('An error occurred while loading assets');
         } finally {
             setIsLoading(false);
         }
     }, [user?.id]);
 
+    // Create debounced search function inline
+    const debouncedSearch = useCallback((query: string) => {
+        const debouncedFn = debounce((searchQuery: string) => {
+            setCurrentPage(1);
+            fetchAssets(1, searchQuery);
+        }, 300);
+        debouncedFn(query);
+        return () => debouncedFn.cancel();
+    }, [fetchAssets]);
+
+    // Effect for search query changes
+    useEffect(() => {
+        const cleanup = debouncedSearch(searchQuery);
+        return cleanup;
+    }, [searchQuery, debouncedSearch]);
+
+    // Initial fetch and refetch on page change
     useEffect(() => {
         fetchAssets(currentPage, searchQuery);
-    }, [fetchAssets, currentPage, searchQuery]);
+    }, [currentPage, fetchAssets, searchQuery]);
+
+    const handleSearch = (query: string) => {
+        if (onSearchChange) {
+            onSearchChange(query);
+        } else {
+            setInternalSearchQuery(query);
+        }
+    };
 
     const handleImageClick = (imagePath: string | null, modelUrl: string | null) => {
         if (modelUrl) {
@@ -80,116 +120,60 @@ export function AssetLibrary({ searchQuery, onSearchChange, onImageClick }: Asse
         }
     };
 
-    const viewButtons = [
-        {
-            type: 'models' as ViewType,
-            icon: Box,
-            description: 'Models',
-            iconClass: "text-purple-500"
-        }
-    ]
-
-    const handleViewChange = (view: ViewType) => {
-        // Clear states when changing views
-        setSelectedImage(null);
-        setIsLoading(true);
-        setSelectedView(view);
-        fetchAssets(currentPage, searchQuery);
-    };
-
-    // Cleanup effect for view changes
-    useEffect(() => {
-        return () => {
-            setSelectedImage(null);
-            setIsLoading(false);
-        };
-    }, [selectedView]);
-
-    const handleSearch = useCallback((query: string) => {
-        onSearchChange?.(query);
-    }, [onSearchChange]);
-
     return (
         <div className="w-full h-full flex flex-col">
             <div className="flex-1 border border-border bg-card/50 flex flex-col h-full">
                 <div className="p-2 border-b border-border">
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-[14px] w-[14px] text-muted-foreground pointer-events-none" />
-                            <Input
-                                placeholder="Search assets..."
-                                value={searchQuery}
-                                onChange={(e) => handleSearch(e.target.value)}
-                                className="w-full pl-9 h-9 text-xs rounded-none bg-background/50 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                            />
-                        </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setLayout(l => l === 'grid' ? 'stack' : 'grid')}
-                            className={cn(
-                                "h-9 w-9 rounded-none",
-                                layout === 'stack' && "bg-accent"
-                            )}
-                        >
-                            <Menu className="h-4 w-4" />
-                        </Button>
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-[14px] w-[14px] text-muted-foreground pointer-events-none" />
+                        <Input
+                            placeholder="Search assets..."
+                            value={searchQuery}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            className="w-full pl-9 h-9 text-xs rounded-none bg-background/50 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        />
                     </div>
                 </div>
-                <div className="flex border-b border-border">
-                    <div className="flex items-center w-full">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-full h-10 rounded-none sm:h-10 relative group"
-                        >
-                            <Box className="w-5 h-5 sm:w-5 sm:h-5 text-purple-500" />
-                            <span className="sr-only">Models</span>
-                            <div className={cn(
-                                "absolute -top-8 left-1/2 transform -translate-x-1/2",
-                                "px-2 py-1 text-xs",
-                                "bg-background/80 backdrop-blur-[2px]",
-                                "text-muted-foreground/80",
-                                "rounded-sm border border-border/50",
-                                "opacity-0 group-hover:opacity-100",
-                                "transition-opacity duration-200 delay-[750ms]",
-                                "pointer-events-none whitespace-nowrap",
-                                "shadow-sm"
-                            )}>
-                                Models
-                            </div>
-                        </Button>
-                    </div>
-                </div>
+
                 <div className="flex-1 p-2 overflow-auto scrollbar-hide">
                     <AnimatePresence mode="wait">
-                        <motion.div
-                            key={`${layout}-${selectedView}`}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            <div className={cn(
-                                layout === 'grid'
-                                    ? "grid grid-cols-2 gap-4"
-                                    : "flex flex-col space-y-2"
-                            )}>
-                                {assets.map((asset, index) => (
-                                    <AssetCard
-                                        key={`${selectedView}-${asset.id}`}
-                                        id={asset.id}
-                                        title={asset.name}
-                                        description={asset.description}
-                                        modelPath={asset.model_path}
-                                        imagePath={asset.image_path}
-                                        onClick={handleImageClick}
-                                        index={index}
-                                        layout={layout}
-                                    />
-                                ))}
+                        {isLoading ? (
+                            <div className="flex items-center justify-center h-full">
+                                <Loader />
                             </div>
-                        </motion.div>
+                        ) : error ? (
+                            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                                {error}
+                            </div>
+                        ) : assets.length === 0 ? (
+                            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                                {searchQuery ? 'No assets found matching your search' : 'No assets found'}
+                            </div>
+                        ) : (
+                            <motion.div
+                                key={`assets-${searchQuery}`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <div className="flex flex-col space-y-2">
+                                    {assets.map((asset, index) => (
+                                        <AssetCard
+                                            key={asset.id}
+                                            id={asset.id}
+                                            title={asset.name}
+                                            description={asset.description}
+                                            modelPath={asset.model_path}
+                                            imagePath={asset.image_path}
+                                            onClick={handleImageClick}
+                                            index={index}
+                                            layout="stack"
+                                        />
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
                     </AnimatePresence>
                 </div>
             </div>

@@ -19,6 +19,8 @@ import { useTranslation } from '@/lib/contexts/TranslationContext'
 import { t } from '@/lib/i18n/translations'
 import Loader from '@/components/design/loader';
 import { cn } from "@/lib/actions/utils"
+import { DownloadModal } from '@/components/community/DownloadModal';
+import type { CommunityProduct } from '@/types/community';
 
 interface UserAsset {
     id: string;
@@ -49,14 +51,16 @@ interface UserAssetsListProps {
 const ITEMS_PER_PAGE = 15
 
 // Create a separate memoized asset card component
-const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage }: {
+const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onSelect }: {
     asset: UserAsset;
     index: number;
     onVisibilityToggle: (asset: UserAsset, index: number) => Promise<void>;
     currentLanguage: string;
+    onSelect: () => void;
 }) => {
     const [showModel, setShowModel] = useState(false)
     const [imageError, setImageError] = useState(false)
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -67,6 +71,11 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage }: {
 
         return () => clearTimeout(timer)
     }, [index])
+
+    const handleDownload = () => {
+        // Just show the download modal, it will handle the download recording
+        setShowDownloadModal(true);
+    };
 
     const renderPreview = () => {
         if (asset.model_path && showModel) {
@@ -128,116 +137,135 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage }: {
     }
 
     return (
-        <div className="flex flex-col sm:flex-row gap-4 p-3 border border-border rounded-none hover:bg-accent/50 transition-colors min-h-[160px] sm:min-h-0 sm:h-[120px] group">
-            <div className="w-full h-32 sm:w-24 sm:h-24 flex-shrink-0 overflow-hidden">
-                {renderPreview()}
-            </div>
-
-            {/* Content */}
-            <div className="flex-grow space-y-2 sm:space-y-1">
-                <div className="flex items-start justify-between">
-                    <h3 className="font-medium text-foreground text-sm truncate pr-2">
-                        {asset.name}
-                    </h3>
-                    <Badge
-                        variant={asset.visibility === 'public' ? 'default' : 'secondary'}
-                        className={cn(
-                            `cursor-pointer hover:opacity-80 transition-opacity shrink-0 rounded-none`,
-                            asset.visibility === 'public'
-                                ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
-                                : 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
-                            asset.model_path.startsWith('default-assets/') && 'cursor-not-allowed opacity-50 pointer-events-none'
-                        )}
-                        onClick={() => !asset.model_path.startsWith('default-assets/') && onVisibilityToggle(asset, index)}
-                    >
-                        {asset.model_path.startsWith('default-assets/')
-                            ? t(currentLanguage, 'ui.assets.visibility.default')
-                            : t(currentLanguage, `ui.assets.visibility.${asset.visibility}`)}
-                    </Badge>
+        <>
+            <div className="flex flex-col sm:flex-row gap-4 p-3 border border-border rounded-none hover:bg-accent/50 transition-colors min-h-[160px] sm:min-h-0 sm:h-[120px] group">
+                <div className="w-full h-32 sm:w-24 sm:h-24 flex-shrink-0 overflow-hidden">
+                    {renderPreview()}
                 </div>
 
-                <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1">
-                    {asset.description}
-                </p>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-1 translate-y-[3px]">
-                    {asset.tags?.slice(0, 4).map((tag, index) => (
+                {/* Content */}
+                <div className="flex-grow space-y-2 sm:space-y-1">
+                    <div className="flex items-start justify-between">
+                        <h3 className="font-medium text-foreground text-sm truncate pr-2">
+                            {asset.name}
+                        </h3>
                         <Badge
-                            key={index}
-                            variant="outline"
-                            className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50`}
+                            variant={asset.visibility === 'public' ? 'default' : 'secondary'}
+                            className={cn(
+                                `cursor-pointer hover:opacity-80 transition-opacity shrink-0 rounded-none`,
+                                asset.visibility === 'public'
+                                    ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
+                                    : 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
+                                asset.model_path.startsWith('default-assets/') && 'cursor-not-allowed opacity-50 pointer-events-none'
+                            )}
+                            onClick={() => !asset.model_path.startsWith('default-assets/') && onVisibilityToggle(asset, index)}
                         >
-                            {tag}
+                            {asset.model_path.startsWith('default-assets/')
+                                ? t(currentLanguage, 'ui.assets.visibility.default')
+                                : t(currentLanguage, `ui.assets.visibility.${asset.visibility}`)}
                         </Badge>
-                    ))}
-                    {asset.tags && asset.tags.length > 4 && (
-                        <div className="relative group">
+                    </div>
+
+                    <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1">
+                        {asset.description}
+                    </p>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1 translate-y-[3px]">
+                        {asset.tags?.slice(0, 4).map((tag, index) => (
                             <Badge
+                                key={index}
                                 variant="outline"
-                                className="text-xs rounded-none bg-primary/10 text-primary border-primary/20 hover:bg-accent/50"
+                                className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50`}
                             >
-                                +{asset.tags.length - 4}
+                                {tag}
                             </Badge>
-                            {/* Hover popup */}
-                            <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-10">
-                                <div className="bg-popover border border-border shadow-lg rounded-none p-2 min-w-[120px]">
-                                    <div className="flex flex-wrap gap-1">
-                                        {asset.tags.slice(4).map((tag, index) => (
-                                            <Badge
-                                                key={index}
-                                                variant="outline"
-                                                className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50`}
-                                            >
-                                                {tag}
-                                            </Badge>
-                                        ))}
+                        ))}
+                        {asset.tags && asset.tags.length > 4 && (
+                            <div className="relative group">
+                                <Badge
+                                    variant="outline"
+                                    className="text-xs rounded-none bg-primary/10 text-primary border-primary/20 hover:bg-accent/50"
+                                >
+                                    +{asset.tags.length - 4}
+                                </Badge>
+                                {/* Hover popup */}
+                                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-10">
+                                    <div className="bg-popover border border-border shadow-lg rounded-none p-2 min-w-[120px]">
+                                        <div className="flex flex-wrap gap-1">
+                                            {asset.tags.slice(4).map((tag, index) => (
+                                                <Badge
+                                                    key={index}
+                                                    variant="outline"
+                                                    className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50`}
+                                                >
+                                                    {tag}
+                                                </Badge>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Stats and Time - Updated Layout */}
-                <div className="flex items-center justify-between mt-auto pt-1">
-                    {/* Stats with Icons */}
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex items-center gap-1.5 rounded-none text-muted-foreground hover:bg-accent/30 pointer-events-none"
-                        >
-                            <Heart className="h-4 w-4" />
-                            <span className="text-xs">{formatCount(asset.likes_count)}</span>
-                        </Button>
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex items-center gap-1.5 rounded-none text-muted-foreground hover:bg-accent/30 pointer-events-none"
-                        >
-                            <Download className="h-4 w-4" />
-                            <span className="text-xs">{formatCount(asset.downloads_count)}</span>
-                        </Button>
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex items-center gap-1.5 rounded-none text-muted-foreground hover:bg-accent/30 pointer-events-none"
-                        >
-                            <Eye className="h-4 w-4" />
-                            <span className="text-xs">{formatCount(asset.views_count)}</span>
-                        </Button>
+                        )}
                     </div>
 
-                    {/* Keep the time display */}
-                    <span className="text-xs text-muted-foreground">
-                        Created {formatDistanceToNow(new Date(asset.created_at))} ago
-                    </span>
+                    {/* Stats and Time - Updated Layout */}
+                    <div className="flex items-center justify-between mt-auto pt-1">
+                        {/* Stats with Icons */}
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1.5 rounded-none text-muted-foreground hover:bg-accent/30 pointer-events-none"
+                            >
+                                <Heart className="h-4 w-4" />
+                                <span className="text-xs">{formatCount(asset.likes_count)}</span>
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1.5 rounded-none text-muted-foreground hover:bg-accent/30"
+                                onClick={handleDownload}
+                            >
+                                <Download className="h-4 w-4" />
+                                <span className="text-xs">{formatCount(asset.downloads_count)}</span>
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1.5 rounded-none text-muted-foreground hover:bg-accent/30 pointer-events-none"
+                            >
+                                <Eye className="h-4 w-4" />
+                                <span className="text-xs">{formatCount(asset.views_count)}</span>
+                            </Button>
+                        </div>
+
+                        {/* Keep the time display */}
+                        <span className="text-xs text-muted-foreground">
+                            Created {formatDistanceToNow(new Date(asset.created_at))} ago
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <DownloadModal
+                isOpen={showDownloadModal}
+                onClose={() => setShowDownloadModal(false)}
+                product={{
+                    ...asset,
+                    username: '',
+                } as CommunityProduct}
+                onDownload={(format) => {
+                    // Simulate progress and close modal after download
+                    const timer = setTimeout(() => {
+                        setShowDownloadModal(false);
+                    }, 1000); // Wait 1 second after download completes before closing
+                    return () => clearTimeout(timer);
+                }}
+            />
+        </>
     );
 });
 
@@ -361,6 +389,7 @@ export const UserAssetsList = memo(function UserAssetsList({
                                 index={index}
                                 onVisibilityToggle={handleVisibilityToggle}
                                 currentLanguage={currentLanguage}
+                                onSelect={() => { }}
                             />
                         ))}
                     </div>

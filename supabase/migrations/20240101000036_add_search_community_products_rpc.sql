@@ -12,9 +12,9 @@ RETURNS TABLE (
     image_path TEXT,
     model_path TEXT,
     visibility visibility_type_enum,
-    likes_count BIGINT,
-    downloads_count BIGINT,
-    views_count BIGINT,
+    likes_count INTEGER,
+    downloads_count INTEGER,
+    views_count INTEGER,
     tags TEXT[],
     created_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ,
@@ -50,9 +50,9 @@ BEGIN
         p.image_path,
         p.model_path,
         p.visibility,
-        COALESCE(pl.likes_count, 0::BIGINT) as likes_count,
-        COALESCE(pd.downloads_count, 0::BIGINT) as downloads_count,
-        COALESCE(pv.views_count, 0::BIGINT) as views_count,
+        p.likes_count,
+        p.downloads_count,
+        p.views_count,
         p.tags,
         p.created_at,
         p.updated_at,
@@ -61,21 +61,6 @@ BEGIN
         v_total_count as total_count
     FROM products p
     LEFT JOIN profiles pr ON p.user_id = pr.id
-    LEFT JOIN (
-        SELECT product_id, COUNT(*) as likes_count
-        FROM product_likes
-        GROUP BY product_id
-    ) pl ON p.id = pl.product_id
-    LEFT JOIN (
-        SELECT product_id, COUNT(*) as downloads_count
-        FROM product_downloads
-        GROUP BY product_id
-    ) pd ON p.id = pd.product_id
-    LEFT JOIN (
-        SELECT product_id, COUNT(*) as views_count
-        FROM product_views
-        GROUP BY product_id
-    ) pv ON p.id = pv.product_id
     WHERE p.visibility = 'public'
     AND (
         p_search_query = '' OR
@@ -84,14 +69,11 @@ BEGIN
         p.tags && ARRAY[p_search_query]
     )
     ORDER BY 
-        CASE 
-            WHEN p_sort = 'trending' THEN (COALESCE(pl.likes_count, 0) + COALESCE(pd.downloads_count, 0) + COALESCE(pv.views_count, 0))
-            WHEN p_sort = 'downloads' THEN COALESCE(pd.downloads_count, 0)
-            ELSE NULL
-        END DESC NULLS LAST,
-        CASE 
-            WHEN p_sort = 'new' THEN p.created_at
-            ELSE NULL
+        CASE p_sort
+            WHEN 'trending' THEN (p.likes_count * 3 + p.downloads_count * 2 + p.views_count)
+            WHEN 'downloads' THEN p.downloads_count
+            WHEN 'new' THEN EXTRACT(EPOCH FROM p.created_at)
+            ELSE EXTRACT(EPOCH FROM p.created_at)
         END DESC NULLS LAST,
         -- Default sorting as fallback
         CASE WHEN p.model_path LIKE 'default-assets/%' THEN 1 ELSE 0 END,

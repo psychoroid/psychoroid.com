@@ -2,7 +2,7 @@
 
 import React, { Suspense, useRef, useState, useEffect, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Stage, Environment, ContactShadows } from '@react-three/drei';
 import { Product } from '@/components/community/CommunityProduct3D';
 import { ModelState } from '@/types/components';
 import { Vector3 } from 'three';
@@ -49,6 +49,7 @@ export function CommunityProductViewer({
     });
     const [isAutoRotating, setIsAutoRotating] = useState(isRotating);
     const [showDownloadModal, setShowDownloadModal] = useState(false);
+    const [isZoomToCursor, setIsZoomToCursor] = useState(false);
 
     // Process URLs to point to Supabase storage
     const processedModelUrl = !modelUrl
@@ -99,6 +100,11 @@ export function CommunityProductViewer({
     // Handle rotation toggle
     const handleRotateToggle = () => {
         setIsAutoRotating(prev => !prev);
+    };
+
+    // Handle zoom mode toggle
+    const handleZoomModeToggle = () => {
+        setIsZoomToCursor(prev => !prev);
     };
 
     // Sync rotation state with props
@@ -171,7 +177,9 @@ export function CommunityProductViewer({
                     alpha: true,
                     antialias: true,
                     failIfMajorPerformanceCaveat: false,
-                    powerPreference: 'high-performance'
+                    powerPreference: 'high-performance',
+                    toneMapping: 3, // ACESFilmicToneMapping
+                    toneMappingExposure: 1.2
                 }}
                 camera={{ position: cameraPositionVector }}
                 style={{ width: '100%', height: '100%' }}
@@ -180,28 +188,58 @@ export function CommunityProductViewer({
                     makeDefault
                     position={cameraPositionVector}
                     zoom={controlsState.zoom}
+                    fov={45}
                 />
-                <ambientLight intensity={2} />
-                <directionalLight position={[5, 5, 5]} intensity={3} castShadow={false} />
-                <directionalLight position={[-5, 3, -5]} intensity={1.5} castShadow={false} />
-                <directionalLight position={[0, 10, -5]} intensity={1.2} castShadow={false} />
-                <hemisphereLight intensity={1} groundColor="white" />
-                <Suspense fallback={null}>
-                    <Product
-                        imageUrl={imageUrl}
-                        modelUrl={processedModelUrl}
-                        isRotating={isAutoRotating}
-                        zoom={zoom}
-                        modelState={{
-                            ...modelState,
-                            position: INITIAL_MODEL_POSITION,
-                            scale: INITIAL_MODEL_SCALE
-                        }}
-                        onModelStateChange={handleModelStateChange}
-                        showGrid={false}
-                        scale={INITIAL_MODEL_SCALE}
-                    />
-                </Suspense>
+
+                {/* Main lighting setup using Stage */}
+                <Stage
+                    intensity={1}
+                    environment="city"
+                    adjustCamera={false}
+                    shadows={false}
+                >
+                    <Suspense fallback={null}>
+                        <Product
+                            imageUrl={imageUrl}
+                            modelUrl={processedModelUrl}
+                            isRotating={isAutoRotating}
+                            zoom={zoom}
+                            modelState={{
+                                ...modelState,
+                                position: INITIAL_MODEL_POSITION,
+                                scale: INITIAL_MODEL_SCALE
+                            }}
+                            onModelStateChange={handleModelStateChange}
+                            showGrid={false}
+                            scale={INITIAL_MODEL_SCALE}
+                        />
+                    </Suspense>
+                </Stage>
+
+                {/* Additional lighting for better visibility */}
+                <ambientLight intensity={0.8} />
+                <directionalLight
+                    position={[5, 5, 5]}
+                    intensity={1.5}
+                    castShadow={false}
+                />
+                <directionalLight
+                    position={[-5, 5, -5]}
+                    intensity={1}
+                    castShadow={false}
+                />
+
+                {/* Environment and effects */}
+                <Environment preset="city" />
+                <ContactShadows
+                    opacity={0.4}
+                    scale={10}
+                    blur={2}
+                    far={4}
+                    resolution={256}
+                    color="#000000"
+                />
+
                 <OrbitControls
                     ref={controlsRef}
                     enableZoom={true}
@@ -215,6 +253,7 @@ export function CommunityProductViewer({
                     maxDistance={5}
                     zoomSpeed={1}
                     makeDefault
+                    zoomToCursor={isZoomToCursor}
                 />
             </Canvas>
         </div>
@@ -277,6 +316,8 @@ export function CommunityProductViewer({
                                 onZoomOut={handleZoomOut}
                                 onDownload={() => setShowDownloadModal(true)}
                                 hideExpand
+                                isZoomToCursor={isZoomToCursor}
+                                onZoomModeToggle={handleZoomModeToggle}
                             />
                         </div>
                     </div>

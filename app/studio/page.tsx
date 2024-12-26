@@ -142,7 +142,6 @@ export default function WorkspacePage() {
                                     <AssetLibrary
                                         searchQuery={searchQuery}
                                         onSearchChange={setSearchQuery}
-                                        assetGroups={assetGroups}
                                         onImageClick={handleImageClick}
                                     />
                                 </div>

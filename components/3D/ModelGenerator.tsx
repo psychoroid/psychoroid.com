@@ -5,8 +5,8 @@ import { StudioChat } from "./StudioChat"
 import RippleButton from "@/components/ui/magic/ripple-button"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { RemeshButton } from "./RemeshButton"
-import { TextureButton } from "./TextureButton"
+// import { RemeshButton } from "./RemeshButton"
+// import { TextureButton } from "./TextureButton"
 
 interface ModelGeneratorProps {
     onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void
@@ -27,17 +27,17 @@ export function ModelGenerator({
     const [isTextureOpen, setIsTextureOpen] = useState(false)
     const [isNewModelOpen, setIsNewModelOpen] = useState(true)
 
-    const handleRemeshClick = () => {
-        setIsRemeshOpen(!isRemeshOpen)
-        setIsTextureOpen(false)
-        setIsNewModelOpen(false)
-    }
+    // const handleRemeshClick = () => {
+    //     setIsRemeshOpen(!isRemeshOpen)
+    //     setIsTextureOpen(false)
+    //     setIsNewModelOpen(false)
+    // }
 
-    const handleTextureClick = () => {
-        setIsTextureOpen(!isTextureOpen)
-        setIsRemeshOpen(false)
-        setIsNewModelOpen(false)
-    }
+    // const handleTextureClick = () => {
+    //     setIsTextureOpen(!isTextureOpen)
+    //     setIsRemeshOpen(false)
+    //     setIsNewModelOpen(false)
+    // }
 
     const handleNewModelClick = () => {
         setIsNewModelOpen(!isNewModelOpen)
@@ -91,12 +91,30 @@ export function ModelGenerator({
                         )}
                     </AnimatePresence>
 
-                    <div className="relative">
+                    {/* <div className="relative">
                         <RemeshButton isOpen={isRemeshOpen} onClick={handleRemeshClick} />
                     </div>
 
                     <div className="relative">
                         <TextureButton isOpen={isTextureOpen} onClick={handleTextureClick} />
+                    </div> */}
+
+                    <div className="relative">
+                        <RippleButton
+                            className="w-full h-16 px-6 group hover:bg-accent rounded-none border border-border opacity-50 cursor-not-allowed"
+                            rippleColor="rgba(100, 100, 100, 0.2)"
+                            disabled
+                        >
+                            <div className="flex items-center gap-3">
+                                <Box className="h-5 w-5 shrink-0 text-gray-500" />
+                                <div className="flex flex-col items-start">
+                                    <span className="font-medium">Coming Soon</span>
+                                    <span className="text-xs text-muted-foreground">
+                                        Exciting features in development
+                                    </span>
+                                </div>
+                            </div>
+                        </RippleButton>
                     </div>
                 </div>
             </motion.div>

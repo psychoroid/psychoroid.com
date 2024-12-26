@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Html } from '@react-three/drei';
+import { OrbitControls, Html, Environment, ContactShadows, Stage } from '@react-three/drei';
 import Loader from '@/components/design/loader';
 import Image from 'next/image';
 import { PreviewModel } from '../3D/PreviewModel';
@@ -75,7 +75,7 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvas
                 frameloop="demand"
                 camera={{
                     position: [0, 0, small ? 2.2 : 2.4],
-                    fov: 40,
+                    fov: 45,
                     near: 0.1,
                     far: 1000
                 }}
@@ -86,43 +86,57 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvas
                     preserveDrawingBuffer: true,
                     premultipliedAlpha: false,
                     failIfMajorPerformanceCaveat: false,
+                    toneMapping: 3, // ACESFilmicToneMapping
+                    toneMappingExposure: 1.2
                 }}
             >
-                <ambientLight intensity={2} />
-                <hemisphereLight
+                {/* Main lighting setup */}
+                <Stage
                     intensity={1}
-                    groundColor="white"
-                />
+                    environment="city"
+                    adjustCamera={false}
+                    shadows={false}
+                >
+                    <Suspense fallback={
+                        <Html center>
+                            <div className="w-full h-full flex items-center justify-center">
+                                <Loader />
+                            </div>
+                        </Html>
+                    }>
+                        <PreviewModel
+                            url={getStorageUrl(modelUrl)}
+                            small={small}
+                            onLoad={() => setIsLoading(false)}
+                            gridView={!small}
+                        />
+                    </Suspense>
+                </Stage>
+
+                {/* Additional lighting for better visibility */}
+                <ambientLight intensity={0.8} />
                 <directionalLight
                     position={[5, 5, 5]}
-                    intensity={3}
-                    castShadow={false}
-                />
-                <directionalLight
-                    position={[-5, 3, -5]}
                     intensity={1.5}
                     castShadow={false}
                 />
                 <directionalLight
-                    position={[0, 10, -5]}
-                    intensity={1.2}
+                    position={[-5, 5, -5]}
+                    intensity={1}
                     castShadow={false}
                 />
 
-                <Suspense fallback={
-                    <Html center>
-                        <div className="w-full h-full flex items-center justify-center">
-                            <Loader />
-                        </div>
-                    </Html>
-                }>
-                    <PreviewModel
-                        url={getStorageUrl(modelUrl)}
-                        small={small}
-                        onLoad={() => setIsLoading(false)}
-                        gridView={!small}
-                    />
-                </Suspense>
+                {/* Environment and effects */}
+                <Environment preset="city" />
+                <ContactShadows
+                    opacity={0.4}
+                    scale={10}
+                    blur={2}
+                    far={4}
+                    resolution={256}
+                    color="#000000"
+                />
+
                 <OrbitControls
                     enableZoom={false}
                     enablePan={false}

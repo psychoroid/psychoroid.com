@@ -4,6 +4,7 @@ import { Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from "@/lib/actions/utils";
 import { Plus } from 'lucide-react';
+import Image from 'next/image';
 
 interface AssetCardProps {
     id: string;
@@ -27,6 +28,7 @@ export function AssetCard({
     layout
 }: AssetCardProps) {
     const [showModel, setShowModel] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -36,11 +38,15 @@ export function AssetCard({
         return () => clearTimeout(timer);
     }, [index]);
 
-    const handleClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (modelPath && imagePath) {
-            onClick(imagePath, modelPath);
+    const handleClick = () => {
+        if (onClick) {
+            // Only handle product-models bucket URLs
+            const modelUrl = modelPath?.startsWith('http')
+                ? modelPath
+                : modelPath
+                    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${modelPath}`
+                    : null;
+            onClick(imagePath || null, modelUrl);
         }
     };
 
@@ -74,12 +80,12 @@ export function AssetCard({
                         onClick={handleClick}
                     >
                         {modelPath && showModel ? (
-                            <div className="w-full h-full">
+                            <div className="w-full h-full relative">
                                 <ModelPreview
                                     modelUrl={modelPath}
                                     imageUrl={imagePath}
                                     small
-                                    bucket="product-models"
+                                    bucket={modelPath.startsWith('default-assets/') ? 'default-assets' : 'product-models'}
                                     canvasId={`asset-preview-${id}`}
                                 />
                             </div>
@@ -126,12 +132,12 @@ export function AssetCard({
                     onClick={handleClick}
                 >
                     {modelPath && showModel ? (
-                        <div className="w-full h-full">
+                        <div className="w-full h-full relative">
                             <ModelPreview
                                 modelUrl={modelPath}
                                 imageUrl={imagePath}
                                 small
-                                bucket="product-models"
+                                bucket={modelPath.startsWith('default-assets/') ? 'default-assets' : 'product-models'}
                                 canvasId={`asset-preview-${id}`}
                             />
                         </div>

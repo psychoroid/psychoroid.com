@@ -1,8 +1,8 @@
 'use client';
 
-import React, { Suspense, useState, useEffect, useCallback } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Html } from '@react-three/drei';
+import { OrbitControls, Html, Environment, ContactShadows, Stage } from '@react-three/drei';
 import Loader from '@/components/design/loader';
 import Image from 'next/image';
 import { PreviewModel } from './PreviewModel';
@@ -15,41 +15,25 @@ interface ModelPreviewProps {
     canvasId?: string;
 }
 
-export function ModelPreview({
-    modelUrl,
-    imageUrl,
-    small = false,
-    bucket = 'product-models',
-    canvasId = 'preview-canvas'
-}: ModelPreviewProps) {
+export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvasId = 'preview-canvas' }: ModelPreviewProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [mounted, setMounted] = useState(false);
 
-    // Set mounted state on component mount
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
-
-    // Reset loading state when model URL changes
-    useEffect(() => {
-        setIsLoading(true);
-        setError(null);
-    }, [modelUrl]);
-
-    const getStorageUrl = useCallback((path: string) => {
+    const getStorageUrl = (path: string) => {
         try {
             if (path.startsWith('http')) return path;
 
             const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
             if (!baseUrl) throw new Error('Supabase URL not configured');
 
+            // For default model, use the provided bucket
             if (bucket) {
+                // Remove bucket name if it's already in the path
                 const cleanPath = path.replace(`${bucket}/`, '');
                 return `${baseUrl}/storage/v1/object/public/${bucket}/${cleanPath}`;
             }
 
+            // For user models, use the path as is
             const parts = path.split('/');
             if (parts.length < 2) throw new Error('Invalid storage path format');
 
@@ -61,20 +45,7 @@ export function ModelPreview({
             console.error('Error generating storage URL:', error);
             return path;
         }
-    }, [bucket]);
-
-    const handleLoad = useCallback(() => {
-        if (mounted) {
-            setIsLoading(false);
-        }
-    }, [mounted]);
-
-    const handleError = useCallback((err: Error) => {
-        if (mounted) {
-            setError(err.message);
-            setIsLoading(false);
-        }
-    }, [mounted]);
+    };
 
     if (error) {
         return (
@@ -98,14 +69,13 @@ export function ModelPreview({
     }
 
     return (
-        <div className="relative w-full h-full" style={{ contain: 'strict', isolation: 'isolate' }}>
+        <div className="relative w-full h-full" style={{ contain: 'strict' }}>
             <Canvas
-                key={`${canvasId}-${modelUrl}`}
                 id={canvasId}
                 frameloop="demand"
                 camera={{
                     position: [0, 0, small ? 2.2 : 2.4],
-                    fov: 40,
+                    fov: 45,
                     near: 0.1,
                     far: 1000
                 }}
@@ -116,44 +86,62 @@ export function ModelPreview({
                     preserveDrawingBuffer: true,
                     premultipliedAlpha: false,
                     failIfMajorPerformanceCaveat: false,
+                    toneMapping: 3, // ACESFilmicToneMapping
+                    toneMappingExposure: 1.2
                 }}
             >
-                <ambientLight intensity={1.2} />
-                <hemisphereLight
-                    intensity={0.8}
-                    groundColor="black"
-                    color="#303030"
-                />
+                {/* Main lighting setup */}
+                <Stage
+                    intensity={1}
+                    environment="city"
+                    adjustCamera={false}
+                    shadows={false}
+                >
+                    <Suspense fallback={
+                        <Html center>
+                            <div className="w-full h-full flex items-center justify-center">
+                                <Loader />
+                            </div>
+                        </Html>
+                    }>
+                        <PreviewModel
+                            url={getStorageUrl(modelUrl)}
+                            small={small}
+                            onLoad={() => setIsLoading(false)}
+                            gridView={!small}
+                        />
+                    </Suspense>
+                </Stage>
+
+                {/* Additional lighting for better visibility */}
+                <ambientLight intensity={0.8} />
                 <directionalLight
                     position={[5, 5, 5]}
-                    intensity={0.8}
-                    castShadow
+                    intensity={1.5}
+                    castShadow={false}
                 />
                 <directionalLight
                     position={[-5, 5, -5]}
-                    intensity={0.8}
-                    castShadow
+                    intensity={1}
+                    castShadow={false}
                 />
 
-                <Suspense fallback={
-                    <Html center>
-                        <div className="w-full h-full flex items-center justify-center">
-                            <Loader />
-                        </div>
-                    </Html>
-                }>
-                    <PreviewModel
-                        url={getStorageUrl(modelUrl)}
-                        small={small}
-                        onLoad={handleLoad}
-                        onError={handleError}
-                        gridView={!small}
-                    />
-                </Suspense>
+                {/* Environment and effects */}
+                <Environment preset="city" />
+                <ContactShadows
+                    opacity={0.4}
+                    scale={10}
+                    blur={2}
+                    far={4}
+                    resolution={256}
+                    color="#000000"
+                />
+
                 <OrbitControls
                     enableZoom={false}
                     enablePan={false}
                     enableRotate={false}
+                    makeDefault
                 />
             </Canvas>
         </div>

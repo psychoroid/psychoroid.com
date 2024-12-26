@@ -61,14 +61,16 @@ const getModelUrl = (modelPath: string, bucket: string) => {
         return modelPath;
     }
 
+    // Clean up the model path to remove any leading slashes
+    const cleanPath = modelPath.replace(/^\/+/, '');
+
     // For default assets, always use the default-assets bucket
-    if (modelPath.startsWith('default-assets/')) {
-        return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/default-assets/${modelPath.replace('default-assets/', '')}`;
+    if (cleanPath.startsWith('default-assets/')) {
+        return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/default-assets/${cleanPath.replace('default-assets/', '')}`;
     }
 
-    // For other models, use the specified bucket
-    const cleanPath = modelPath.replace(/^\/+/, '');
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${cleanPath}`;
+    // For other models, use the product-models bucket
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${cleanPath}`;
 };
 
 export function DownloadModal({ isOpen, onClose, product, onDownload }: DownloadModalProps) {
@@ -93,6 +95,24 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen, onClose]);
+
+    // Add progress simulation
+    useEffect(() => {
+        if (conversionStatus.isConverting) {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                if (progress <= 90) { // Only go up to 90% for simulation
+                    setConversionStatus(prev => ({
+                        ...prev,
+                        progress
+                    }));
+                }
+            }, 1000); // Update every 500ms
+
+            return () => clearInterval(interval);
+        }
+    }, [conversionStatus.isConverting]);
 
     const convertModel = async (format: ModelFormat): Promise<string> => {
         let dracoLoader: DRACOLoader | null = null;
@@ -300,33 +320,21 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
             downloadingRef.current = true;
             let downloadUrl;
 
-            // Show initial conversion message
+            // Start conversion progress
+            setConversionStatus({ isConverting: true, progress: 0 });
             const conversionToast = toast.loading(`Processing ${format.toUpperCase()} file...`);
 
             try {
                 // If format is not GLB, convert first
                 if (format !== 'glb') {
                     downloadUrl = await convertModel(format);
+                    // Jump to 100% when conversion is done
+                    setConversionStatus(prev => ({ ...prev, progress: 100 }));
                     toast.dismiss(conversionToast);
                 } else {
                     toast.dismiss(conversionToast);
-                    // Construct the full URL for GLB files
-                    const bucket = product.tags?.includes('template') ? 'default-assets' : 'product-models';
-
-                    // Clean up the model path to remove any duplicate 'default-assets/'
-                    let cleanModelPath = product.model_path;
-                    if (cleanModelPath.startsWith('default-assets/default-assets/')) {
-                        cleanModelPath = cleanModelPath.replace('default-assets/default-assets/', 'default-assets/');
-                    }
-
-                    // If the model_path is already a full URL, use it directly
-                    if (cleanModelPath.startsWith('http')) {
-                        downloadUrl = cleanModelPath;
-                    } else {
-                        // Remove any leading slashes and construct the URL
-                        cleanModelPath = cleanModelPath.replace(/^\/+/, '');
-                        downloadUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${cleanModelPath}`;
-                    }
+                    // Get the model URL using the updated function
+                    downloadUrl = getModelUrl(product.model_path, 'product-models');
                 }
 
                 // Verify the URL is accessible
@@ -360,7 +368,16 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                 document.body.removeChild(link);
 
                 onDownload(product.id);
-                onClose();
+
+                // Wait a moment before closing to show 100% progress
+                setTimeout(() => {
+                    onClose();
+                    // Only reset conversion status after modal is closed
+                    setTimeout(() => {
+                        setConversionStatus({ isConverting: false, progress: 0 });
+                    }, 300);
+                }, 500);
+
                 toast.success(`Downloading ${format.toUpperCase()} file`);
 
             } catch (error) {
@@ -371,6 +388,7 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
         } catch (error) {
             console.error('Error downloading model:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to download file');
+            setConversionStatus({ isConverting: false, progress: 0 });
         } finally {
             setTimeout(() => {
                 downloadingRef.current = false;
@@ -392,7 +410,7 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                             <h3 className="text-sm font-medium">Converting model...</h3>
                             <div className="w-full bg-accent h-1">
                                 <div
-                                    className="bg-primary h-1 transition-all duration-300"
+                                    className="bg-green-500 h-1 transition-all duration-300"
                                     style={{ width: `${conversionStatus.progress}%` }}
                                 />
                             </div>
