@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         // Verify the event with Stripe
         let event: Stripe.Event;
         try {
-            event = stripe.webhooks.constructEvent(
+            event = await stripe.webhooks.constructEventAsync(
                 body,
                 signature,
                 process.env.STRIPE_WEBHOOK_SECRET!
