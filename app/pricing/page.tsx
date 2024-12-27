@@ -39,7 +39,7 @@ export default function PricingPage() {
     const { user } = useUser();
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-    const [customCredits, setCustomCredits] = useState<number>(1000);
+    const [customCredits, setCustomCredits] = useState<number>(100);
     const [isUserSubscribed, setIsUserSubscribed] = useState(false);
     const CREDIT_PRICE = 0.045;
     const { currentLanguage } = useTranslation();
