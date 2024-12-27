@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
-import { AssetCard } from "./AssetCard"
+import { AssetCard } from "./LibraryAssetCard"
 import { motion, AnimatePresence } from "framer-motion"
 import { supabase } from '@/lib/supabase/supabase'
 import { useUser } from '@/lib/contexts/UserContext'
@@ -97,10 +97,44 @@ export function AssetLibrary({ searchQuery: externalSearchQuery, onSearchChange,
 
     const handleImageClick = useCallback((imagePath: string | null, modelUrl: string | null) => {
         if (modelUrl) {
+            // Ensure we have the full URL and proper path formatting
             const fullModelUrl = modelUrl.startsWith('http')
                 ? modelUrl
-                : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${modelUrl}`;
-            onImageClick(imagePath, fullModelUrl);
+                : modelUrl.includes('product-models/')
+                    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${modelUrl.replace('product-models/', '')}`
+                    : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${modelUrl}`;
+
+            const fullImagePath = imagePath?.startsWith('http')
+                ? imagePath
+                : imagePath
+                    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${imagePath}`
+                    : null;
+
+            // Pre-load the model before triggering the click
+            const preloadModel = new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('HEAD', fullModelUrl, true);
+                xhr.onload = () => resolve(true);
+                xhr.onerror = () => reject(new Error('Failed to preload model'));
+                xhr.send();
+            });
+
+            // Show loading state
+            setIsLoading(true);
+
+            // Wait for preload and then trigger click
+            preloadModel
+                .then(() => {
+                    onImageClick(fullImagePath, fullModelUrl);
+                })
+                .catch(error => {
+                    console.error('Error preloading model:', error);
+                    // Still try to load even if preload fails
+                    onImageClick(fullImagePath, fullModelUrl);
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
         } else {
             onImageClick(imagePath, null);
         }

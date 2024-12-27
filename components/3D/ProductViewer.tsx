@@ -2,11 +2,11 @@
 
 import React, { Suspense, useRef, useState, useEffect, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Stage, Environment, ContactShadows } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Stage, Environment, ContactShadows, AccumulativeShadows, RandomizedLight } from '@react-three/drei';
+import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
 import { Product } from './Product';
 import { ProductViewerProps, ModelState } from '@/types/components';
-import { Vector3 } from 'three';
-import { MOUSE } from 'three';
+import { Vector3, MOUSE, WebGLRenderer } from 'three';
 import { ProductControls } from './ProductControls';
 import { DownloadModal } from '@/components/community/DownloadModal';
 import type { CommunityProduct } from '@/types/community';
@@ -25,7 +25,7 @@ const INITIAL_TARGET: [number, number, number] = [0, 0, 0];
 const INITIAL_ZOOM = 1;
 
 // Add initial model rotation to face forward
-const INITIAL_MODEL_ROTATION: [number, number, number] = [0, Math.PI, 0];
+const INITIAL_MODEL_ROTATION: [number, number, number] = [0, 0, 0];
 
 // Update the ProductViewerProps interface
 interface ExtendedProductViewerProps extends ProductViewerProps {
@@ -181,9 +181,10 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                 gl={{
                     preserveDrawingBuffer: true,
                     alpha: true,
-                    antialias: true,
+                    antialias: false, // Disabled because we're using SMAA
                     toneMapping: 3, // ACESFilmicToneMapping
-                    toneMappingExposure: 1.2
+                    toneMappingExposure: 0.8, // Reduced from 1.5 for better handling of bright objects
+                    outputColorSpace: "srgb"
                 }}
                 camera={{
                     position: cameraPositionVector,
@@ -191,16 +192,18 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                     near: 0.1,
                     far: 1000
                 }}
+                shadows
                 style={{ width: '100%', height: '100%' }}
                 className="bg-background dark:bg-background"
                 id="main-product-viewer"
             >
-                {/* Main lighting setup using Stage */}
+                {/* Enhanced lighting setup */}
                 <Stage
-                    intensity={1}
-                    environment="city"
+                    intensity={0.8}
+                    environment="warehouse"
                     adjustCamera={false}
                     shadows={false}
+                    preset="rembrandt"
                 >
                     <Suspense fallback={null}>
                         {fullModelUrl && (
@@ -216,29 +219,46 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                     </Suspense>
                 </Stage>
 
-                {/* Additional lighting for better visibility */}
-                <ambientLight intensity={0.8} />
+                {/* Improved lighting setup for better details */}
                 <directionalLight
                     position={[5, 5, 5]}
-                    intensity={1.5}
-                    castShadow={false}
+                    intensity={0.8}
+                    castShadow
+                    shadow-mapSize={[1024, 1024]}
+                    shadow-bias={-0.0001}
                 />
                 <directionalLight
                     position={[-5, 5, -5]}
-                    intensity={1}
-                    castShadow={false}
+                    intensity={0.5}
+                    castShadow
+                    shadow-mapSize={[1024, 1024]}
+                    shadow-bias={-0.0001}
                 />
+                <spotLight
+                    position={[10, 10, 5]}
+                    angle={0.15}
+                    penumbra={1}
+                    intensity={0.6}
+                    castShadow
+                    shadow-bias={-0.0001}
+                />
+                <ambientLight intensity={0.2} />
 
-                {/* Environment and effects */}
-                <Environment preset="city" />
-                <ContactShadows
-                    opacity={0.4}
-                    scale={10}
-                    blur={2}
-                    far={4}
-                    resolution={256}
-                    color="#000000"
+                {/* Enhanced environment and effects */}
+                <Environment
+                    preset="warehouse"
+                    background={false}
+                    blur={0.8}
                 />
+                {/* Enhanced environment and effects */}
+                <EffectComposer multisampling={0}>
+                    <Bloom
+                        intensity={0.2}
+                        luminanceThreshold={1.0}
+                        luminanceSmoothing={0.6}
+                    />
+                    <SMAA />
+                </EffectComposer>
 
                 <OrbitControls
                     ref={controlsRef}
@@ -254,7 +274,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                     zoomSpeed={1.5}
                     maxPolarAngle={Math.PI / 1.5}
                     minPolarAngle={Math.PI / 6}
-                    rotateSpeed={1.5}
+                    rotateSpeed={0.8}
                     mouseButtons={{
                         LEFT: MOUSE.ROTATE,
                         MIDDLE: MOUSE.DOLLY,

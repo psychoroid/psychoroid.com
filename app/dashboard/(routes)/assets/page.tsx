@@ -8,6 +8,8 @@ import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
 import type { Asset } from '@/types/product';
 
+const ITEMS_PER_PAGE = 25;
+
 interface ProductResponse extends Omit<Asset, 'created_at' | 'updated_at'> {
     created_at: string;
     updated_at: string;
@@ -33,7 +35,7 @@ export default function AssetsPage() {
             const { data, error } = await supabase.rpc('search_user_products', {
                 p_user_id: user.id,
                 p_search_query: search || '',
-                p_page_size: 15,
+                p_page_size: ITEMS_PER_PAGE,
                 p_page: page
             });
 
@@ -54,7 +56,7 @@ export default function AssetsPage() {
 
             // Calculate total pages if we have data
             if (data && data.length > 0) {
-                setTotalPages(Math.ceil(data[0].total_count / 15));
+                setTotalPages(Math.ceil(data[0].total_count / ITEMS_PER_PAGE));
             } else {
                 setTotalPages(1);
             }

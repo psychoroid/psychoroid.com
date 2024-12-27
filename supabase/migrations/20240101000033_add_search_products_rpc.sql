@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION search_user_products(
     p_user_id UUID,
     p_search_query TEXT DEFAULT '',
-    p_page_size INT DEFAULT 15,
+    p_page_size INT DEFAULT 25,
     p_page INT DEFAULT 1
 )
 RETURNS TABLE (

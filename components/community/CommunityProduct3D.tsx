@@ -1,152 +1,84 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { useFrame, useLoader } from '@react-three/fiber';
-import { Mesh, Box3, Vector3, GridHelper, Group } from 'three';
-import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { ProductProps } from '@/types/community';
-
-// Define the GLTF result type
-type GLTFResult = GLTF & {
-    nodes: { [key: string]: THREE.Mesh };
-    materials: { [key: string]: THREE.Material };
-};
+import { useLoader } from '@react-three/fiber';
+import { Mesh, Box3, Vector3 } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { ProductProps } from '@/types/components';
 
 const INITIAL_ROTATION: [number, number, number] = [0, 0, 0];
-const ROTATION_SPEED = 0.8;
 
 export function Product({
-    imageUrl,
     modelUrl,
-    isRotating = true,
+    isRotating = false,
     zoom = 1,
     modelState,
     onModelStateChange,
-    onLoad,
-    onError,
     scale = [1, 1, 1],
-    onProgress,
-    showGrid = true
-}: ProductProps): JSX.Element {
-    const containerRef = useRef<Group>(null);
+}: ProductProps) {
     const meshRef = useRef<Mesh>(null);
-    const gridRef = useRef<GridHelper>(null);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const model = useLoader(
+    // Only load if we have a valid URL
+    const gltf = useLoader(
         GLTFLoader,
         modelUrl || '',
-        (event) => {
-            if (event instanceof ProgressEvent) {
-                const progress = (event.loaded / event.total) * 100;
-                onProgress?.(progress);
-            }
+        (loader) => {
+            loader.setCrossOrigin('anonymous');
         },
         (error) => {
-            if (!(error instanceof ProgressEvent)) {
-                console.error('Error loading model:', error);
-                onError?.(error);
-            }
+            console.error('Error loading model:', error);
+            setError('Failed to load model');
         }
-    ) as GLTFResult;
+    );
 
+    // Initialize model position and scale once
     useEffect(() => {
-        if (!modelUrl || !model || !containerRef.current) return;
+        if (!modelUrl || !meshRef.current || !gltf || isInitialized || error) return;
 
         try {
-            // 1. Reset everything
-            model.scene.traverse((child) => {
-                if (child instanceof Mesh) {
-                    child.position.set(0, 0, 0);
-                    child.rotation.set(0, 0, 0);
-                    child.scale.set(1, 1, 1);
-                }
-            });
-            model.scene.position.set(0, 0, 0);
-            model.scene.rotation.set(0, 0, 0);
-            model.scene.scale.set(1, 1, 1);
-            containerRef.current.position.set(0, 0, 0);
-            containerRef.current.rotation.set(0, 0, 0);
-            containerRef.current.scale.set(1, 1, 1);
-
-            // 2. Get initial bounds
-            const box = new Box3().setFromObject(model.scene);
-            const size = box.getSize(new Vector3());
+            // Calculate bounding box
+            const box = new Box3().setFromObject(gltf.scene);
             const center = box.getCenter(new Vector3());
+            const size = box.getSize(new Vector3());
 
-            // 3. Calculate scale
+            // Calculate scale to normalize model size
             const maxDimension = Math.max(size.x, size.y, size.z);
-            const normalizedScale = 1 / maxDimension;
+            const targetScale = 3 / maxDimension;
 
-            // 4. Center the model
-            model.scene.position.x = -center.x;
-            model.scene.position.y = -center.y; // Center vertically
-            model.scene.position.z = -center.z;
+            // Position model at the center
+            const newPosition: [number, number, number] = [0, 0, 0];
 
-            // 5. Apply scale to container
-            containerRef.current.scale.set(
-                normalizedScale * scale[0],
-                normalizedScale * scale[1],
-                normalizedScale * scale[2]
-            );
+            // Center the model
+            gltf.scene.position.set(-center.x, -center.y, -center.z);
 
-            // 6. Set initial rotation
-            containerRef.current.rotation.set(INITIAL_ROTATION[0], INITIAL_ROTATION[1], INITIAL_ROTATION[2]);
-
+            // Update model state once
             onModelStateChange?.({
                 rotation: INITIAL_ROTATION,
-                position: [0, 0, 0],
-                scale: [normalizedScale, normalizedScale, normalizedScale]
+                position: newPosition,
+                scale: [targetScale, targetScale, targetScale]
             });
 
-            onLoad?.();
-        } catch (error) {
-            console.error('Error setting up model:', error);
-            onError?.(error);
+            setIsInitialized(true);
+        } catch (err) {
+            console.error('Error initializing model:', err);
+            setError('Failed to initialize model');
         }
-    }, [model, modelUrl, onModelStateChange, onLoad, onError, scale]);
+    }, [modelUrl, onModelStateChange, gltf, isInitialized, error]);
 
-    useFrame((state, delta) => {
-        if (!containerRef.current) return;
-
-        if (isRotating) {
-            containerRef.current.rotation.y += delta * ROTATION_SPEED;
-            onModelStateChange?.({
-                rotation: [
-                    containerRef.current.rotation.x,
-                    containerRef.current.rotation.y,
-                    containerRef.current.rotation.z
-                ],
-                position: model.scene.position.toArray() as [number, number, number],
-                scale: containerRef.current.scale.toArray() as [number, number, number]
-            });
-        }
-
-        // Update container scale for zoom
-        containerRef.current.scale.set(
-            zoom * scale[0],
-            zoom * scale[1],
-            zoom * scale[2]
-        );
-
-        if (gridRef.current) {
-            const gridScale = zoom;
-            gridRef.current.scale.set(gridScale, gridScale, gridScale);
-        }
-    });
+    // Skip rendering if it's a default asset or there's an error
+    if (!gltf || !modelUrl || error || modelUrl?.includes('default-assets/')) {
+        return null;
+    }
 
     return (
-        <>
-            {showGrid && (
-                <gridHelper
-                    ref={gridRef}
-                    args={[2, 10, "#67B7D1", "#67B7D1"]}
-                    position={[0, 0, 0]}
-                    rotation={[0, 0, 0]}
-                />
-            )}
-            <group ref={containerRef}>
-                <primitive object={model.scene} />
-            </group>
-        </>
+        <primitive
+            ref={meshRef}
+            object={gltf.scene}
+            scale={modelState?.scale || [1, 1, 1]}
+            position={modelState?.position || [0, 0, 0]}
+            rotation={modelState?.rotation || INITIAL_ROTATION}
+        />
     );
 }

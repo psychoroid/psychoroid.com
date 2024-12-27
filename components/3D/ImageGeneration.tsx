@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { generateImage } from '@/lib/fal.ai/fal';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
 import { PromptTranslator } from './PromptTranslator';
 import { supabase } from '@/lib/supabase/supabase';
+import { compressImage } from '@/lib/utils/imageCompression';
 
 interface ImageGenerationProps {
     onImageSelect: (imageUrl: string, prompt: string) => void;
@@ -32,6 +33,32 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
     const [isProcessing, setIsProcessing] = useState(false);
     const { currentLanguage } = useTranslation();
     const [translatedPrompt, setTranslatedPrompt] = useState<string>('');
+    const [generationProgress, setGenerationProgress] = useState(0);
+
+    // Progress animation effect
+    useEffect(() => {
+        if (isGenerating) {
+            setGenerationProgress(0);
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                if (progress <= 90) {
+                    setGenerationProgress(progress);
+                }
+            }, 70); // 6 seconds to reach 90% (60ms * 90 steps = 5.4s, plus buffer)
+
+            return () => {
+                clearInterval(interval);
+            };
+        } else {
+            // When generation is complete, quickly fill the remaining progress
+            setGenerationProgress(100);
+            const timeout = setTimeout(() => {
+                setGenerationProgress(0);
+            }, 500);
+            return () => clearTimeout(timeout);
+        }
+    }, [isGenerating]);
 
     const handleCloseModal = useCallback(() => {
         if (generatedImages.length > 0 && !isGenerating) {
@@ -59,19 +86,14 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
                 return;
             }
 
-            // Check user's ROIDS balance before proceeding
+            // Fast-fail ROIDS check
             const { data: userRoids, error: roidsError } = await supabase
                 .from('user_roids')
                 .select('balance')
                 .eq('user_id', user.id)
                 .single();
 
-            if (roidsError) {
-                toast.error('Error checking ROIDS balance');
-                return;
-            }
-
-            if (!userRoids || userRoids.balance < 5) {
+            if (roidsError || !userRoids || userRoids.balance < 5) {
                 toast.error('Insufficient ROIDS balance', {
                     description: 'You need 5 ROIDS to generate images'
                 });
@@ -83,66 +105,45 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
             setCurrentPrompt(prompt);
             setSelectedImageUrl(null);
 
-            console.log('Original prompt:', prompt);
-
-            // Always translate non-English prompts
-            let finalPrompt = prompt;
-            if (currentLanguage !== 'en') {
-                try {
-                    const translationResponse = await fetch('/api/translate', {
+            // Parallel processing: translation and prompt cleaning
+            const [cleanPrompt, translatedPrompt] = await Promise.all([
+                Promise.resolve(prompt.replace(/\b(3d|3D|three dimensional|3-d)\b/g, '').trim()),
+                currentLanguage !== 'en' ?
+                    fetch('/api/translate', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Priority': 'high'
                         },
                         body: JSON.stringify({
                             text: prompt,
-                            sourceLang: currentLanguage,
-                            targetLang: 'en'
-                        }),
-                    });
+                            sourceLang: currentLanguage
+                        })
+                    }).then(res => res.json())
+                        .then(data => data.translation || prompt)
+                        .catch(() => prompt) :
+                    Promise.resolve(prompt)
+            ]);
 
-                    if (!translationResponse.ok) {
-                        throw new Error('Translation failed');
-                    }
-
-                    const translationData = await translationResponse.json();
-                    if (translationData.translation) {
-                        finalPrompt = translationData.translation;
-                        setTranslatedPrompt(translationData.translation);
-                        console.log('Original prompt:', prompt);
-                        console.log('Translated prompt:', finalPrompt);
-                    }
-                } catch (error) {
-                    console.error('Translation error:', error);
-                    // Continue with original prompt if translation fails
-                    finalPrompt = prompt;
-                }
-            }
-
-            // Clean up the prompt and remove 3D-related terms
-            const cleanPrompt = finalPrompt.replace(/\b(3d|3D|three dimensional|3-d)\b/g, '').trim();
-            console.log('Final prompt being sent to image generation:', cleanPrompt);
+            setTranslatedPrompt(translatedPrompt);
 
             const result = await generateImage({
-                prompt: cleanPrompt,
-                num_images: 2,
+                prompt: translatedPrompt,
+                num_images: 4,
                 image_size: "square_hd",
-                guidance_scale: 8.5,
-                num_inference_steps: 40
+                guidance_scale: 7.5,
+                num_inference_steps: 30
             });
 
-            // Deduct ROIDS after successful generation
-            const { error: deductionError } = await supabase.rpc('deduct_roids', {
+            await supabase.rpc('deduct_roids', {
                 p_user_id: user.id,
                 p_amount: 5,
                 p_description: 'Image generation cost'
             });
 
-            if (deductionError) {
-                console.error('Error deducting ROIDS:', deductionError);
-                toast.error('Error deducting ROIDS');
-                return;
-            }
+            // Set progress to 100% before showing images
+            setGenerationProgress(100);
+            await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for smooth transition
 
             setGeneratedImages(result.images);
         } catch (error) {
@@ -163,9 +164,13 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
 
         try {
             setIsProcessing(true);
+
+            // Compress image before sending
+            const compressedImageUrl = await compressImage(selectedImageUrl);
+
             setShowModal(false);
-            // Pass both the image URL and the prompt
-            onImageSelect(selectedImageUrl, translatedPrompt || currentPrompt);
+            onImageSelect(compressedImageUrl, translatedPrompt || currentPrompt);
+
             // Reset states
             setGeneratedImages([]);
             setCurrentPrompt('');
@@ -222,10 +227,21 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
                     <div className="relative">
                         <div className={`grid grid-cols-2 md:grid-cols-${numImages === 2 ? '2' : '4'} gap-4 p-4`}>
                             {isGenerating ? (
-                                <div className="col-span-full flex items-center justify-center py-8">
+                                <div className="col-span-full flex flex-col items-center justify-center py-8 space-y-3">
                                     <div className="flex items-center gap-2">
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                         <p className="text-sm">{t(currentLanguage, 'ui.imageGeneration.generating')}</p>
+                                    </div>
+                                    <div className="w-full max-w-[200px] space-y-2">
+                                        <div className="w-full bg-accent h-1">
+                                            <div
+                                                className="bg-green-500 h-1 transition-all duration-300"
+                                                style={{
+                                                    width: `${generationProgress}%`,
+                                                    transition: 'width 0.5s ease-in-out'
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ) : (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ModelPreview } from './LibraryModelPreview';
+import { AssetPreview } from './AssetPreview';
 import { Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from "@/lib/actions/utils";
@@ -29,6 +29,28 @@ export function AssetCard({
 }: AssetCardProps) {
     const [showModel, setShowModel] = useState(false);
     const [imageError, setImageError] = useState(false);
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+    // Function to get full URL
+    const getFullUrl = (path: string | undefined, type: 'model' | 'image') => {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+
+        const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (!baseUrl) return null;
+
+        const bucket = type === 'model' ? 'product-models' : 'product-images';
+        const cleanPath = path.replace(`${bucket}/`, '');
+        return `${baseUrl}/storage/v1/object/public/${bucket}/${cleanPath}`;
+    };
+
+    // Set up image URL
+    useEffect(() => {
+        if (imagePath) {
+            const fullImageUrl = getFullUrl(imagePath, 'image');
+            setImageUrl(fullImageUrl);
+        }
+    }, [imagePath]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -40,12 +62,7 @@ export function AssetCard({
 
     const handleClick = () => {
         if (onClick) {
-            // Only handle product-models bucket URLs
-            const modelUrl = modelPath?.startsWith('http')
-                ? modelPath
-                : modelPath
-                    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${modelPath}`
-                    : null;
+            const modelUrl = modelPath ? getFullUrl(modelPath, 'model') : null;
             onClick(imagePath || null, modelUrl);
         }
     };
@@ -54,6 +71,54 @@ export function AssetCard({
         e.preventDefault();
         e.stopPropagation();
         window.location.href = `/studio?prompt=${encodeURIComponent(description || '')}&image=${encodeURIComponent(imagePath || '')}`;
+    };
+
+    const renderPreview = () => {
+        if (!showModel || !modelPath) {
+            return (
+                <div className="w-full h-full flex items-center justify-center bg-accent/10">
+                    {imageUrl ? (
+                        <Image
+                            src={imageUrl}
+                            alt={title}
+                            width={512}
+                            height={512}
+                            className="w-full h-full object-cover"
+                            priority
+                        />
+                    ) : (
+                        <Package className="w-8 h-8 text-muted-foreground" />
+                    )}
+                </div>
+            );
+        }
+
+        return (
+            <div className="w-full h-full relative">
+                {/* Keep showing the image while model loads */}
+                {imageUrl && (
+                    <div className="absolute inset-0 z-0">
+                        <Image
+                            src={imageUrl}
+                            alt={title}
+                            width={512}
+                            height={512}
+                            className="w-full h-full object-cover"
+                            priority
+                        />
+                    </div>
+                )}
+                <div className="relative z-10">
+                    <AssetPreview
+                        modelUrl={modelPath}
+                        imageUrl={imagePath}
+                        small
+                        bucket={modelPath?.startsWith('default-assets/') ? 'default-assets' : 'product-models'}
+                        canvasId={`asset-preview-${id}`}
+                    />
+                </div>
+            </div>
+        );
     };
 
     if (layout === 'stack') {
@@ -79,21 +144,7 @@ export function AssetCard({
                         )}
                         onClick={handleClick}
                     >
-                        {modelPath && showModel ? (
-                            <div className="w-full h-full relative">
-                                <ModelPreview
-                                    modelUrl={modelPath}
-                                    imageUrl={imagePath}
-                                    small
-                                    bucket={modelPath.startsWith('default-assets/') ? 'default-assets' : 'product-models'}
-                                    canvasId={`asset-preview-${id}`}
-                                />
-                            </div>
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-accent/10">
-                                <Package className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                        )}
+                        {renderPreview()}
                     </div>
 
                     {/* Generate More Button */}
@@ -131,21 +182,7 @@ export function AssetCard({
                     )}
                     onClick={handleClick}
                 >
-                    {modelPath && showModel ? (
-                        <div className="w-full h-full relative">
-                            <ModelPreview
-                                modelUrl={modelPath}
-                                imageUrl={imagePath}
-                                small
-                                bucket={modelPath.startsWith('default-assets/') ? 'default-assets' : 'product-models'}
-                                canvasId={`asset-preview-${id}`}
-                            />
-                        </div>
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-accent/10">
-                            <Package className="w-12 h-12 text-muted-foreground" />
-                        </div>
-                    )}
+                    {renderPreview()}
                 </div>
 
                 {/* Generate More Button */}

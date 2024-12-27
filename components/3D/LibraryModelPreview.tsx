@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Html, Environment, ContactShadows, Stage } from '@react-three/drei';
 import Loader from '@/components/design/loader';
@@ -13,18 +13,11 @@ interface ModelPreviewProps {
     small?: boolean;
     bucket?: string;
     canvasId?: string;
-    onError?: (error: Error) => void;
 }
 
-export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvasId = 'preview-canvas', onError }: ModelPreviewProps) {
+export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvasId = 'preview-canvas' }: ModelPreviewProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (error && onError) {
-            onError(new Error(error));
-        }
-    }, [error, onError]);
 
     const getStorageUrl = (path: string) => {
         try {

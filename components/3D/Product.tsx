@@ -6,7 +6,7 @@ import { Mesh, Box3, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { ProductProps } from '@/types/components';
 
-const INITIAL_ROTATION: [number, number, number] = [0, Math.PI, 0];
+const INITIAL_ROTATION: [number, number, number] = [0, 0, 0];
 
 export function Product({
   modelUrl,

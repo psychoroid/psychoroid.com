@@ -263,25 +263,6 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
       }
     }
 
-    /*
-    // Original server health check
-    const checkServerHealth = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/health')
-        if (!response.ok) {
-          throw new Error('Server is offline')
-        }
-        return true
-      } catch (error) {
-        toast.error(t(currentLanguage, 'ui.server.offline'), {
-          description: t(currentLanguage, 'ui.server.offline_description')
-        })
-        resetStates()
-        return false
-      }
-    }
-    */
-
     try {
       if (!user) {
         setShowAuthModal(true);
@@ -295,13 +276,7 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
         .eq('user_id', user.id)
         .single();
 
-      if (roidsError) {
-        toast.error('Error checking ROIDS balance');
-        resetStates();
-        return;
-      }
-
-      if (!userRoids || userRoids.balance < 25) {
+      if (roidsError || !userRoids || userRoids.balance < 25) {
         toast.error('Insufficient ROIDS balance', {
           description: 'You need 25 ROIDS to generate a 3D model'
         });
@@ -331,25 +306,27 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
       setProcessingStartTime(Date.now());
 
       for (const file of validFiles) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}_${file.name}`;
-        const filePath = fileName;
-
+        let filePath = '';
         try {
-          /* Original server health check (commented out)
-          // Check server health before starting upload
-          const isServerHealthy = await checkServerHealth()
-          if (!isServerHealthy) {
-            resetStates()
-            return;
-          }
-          */
-
           setUploading(true);
-          // Upload the image to Supabase storage
+
+          // Compress image before uploading
+          const compressedBlob = await compressImageFile(file);
+          const compressedFile = new File([compressedBlob], file.name, {
+            type: 'image/jpeg'
+          });
+
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}_${file.name}`;
+          filePath = fileName;
+
+          // Upload the compressed image to Supabase storage
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('product-images')
-            .upload(filePath, file);
+            .upload(filePath, compressedFile, {
+              cacheControl: '3600',
+              upsert: true
+            });
 
           if (uploadError) {
             toast.error(t(currentLanguage, 'ui.upload.failed'));
@@ -372,13 +349,17 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
             continue;
           }
 
-          // Create form data for FAL.AI conversion
+          // Create form data with compressed image
           const formData = new FormData();
-          formData.append('image', file);
+          formData.append('image', compressedFile);
 
-          // Call FAL.AI conversion endpoint
+          // Call FAL.AI conversion endpoint with optimized headers
           const falResponse = await fetch('/api/fal-conversion', {
             method: 'POST',
+            headers: {
+              'Priority': 'high',
+              'Purpose': 'conversion'
+            },
             body: formData
           });
 
@@ -389,9 +370,11 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
 
           const { modelUrl } = await falResponse.json();
 
-          // Download the model from FAL.AI
-          const modelResponse = await fetch(modelUrl);
-          const modelBlob = await modelResponse.blob();
+          // Download and process the model in parallel with metadata generation
+          const [modelBlob, metadata] = await Promise.all([
+            fetch(modelUrl).then(res => res.blob()),
+            generateAssetMetadata()
+          ]);
 
           // Create model path for storage
           const modelPath = `${user.id}/${Date.now()}_${file.name.split('.')[0]}.glb`;
@@ -401,15 +384,13 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
             .from('product-models')
             .upload(modelPath, modelBlob, {
               contentType: 'model/gltf-binary',
+              cacheControl: '3600',
               upsert: true
             });
 
           if (modelUploadError) {
             throw modelUploadError;
           }
-
-          // Generate metadata for the update
-          const metadata = generateAssetMetadata();
 
           // Update the product with model path and metadata
           const { data: updatedProduct, error: updateError } = await supabase.rpc('update_product', {
@@ -469,6 +450,66 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
     setCurrentMessage
   ]);
 
+  // Add the image compression utility function
+  const compressImageFile = async (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          resolve(file); // Fallback to original if canvas not supported
+          return;
+        }
+
+        // Target size: 1024x1024 max while maintaining aspect ratio
+        const maxSize = 1024;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+        } else if (height > maxSize) {
+          width *= maxSize / height;
+          height = maxSize;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Use better quality settings
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Compress to JPEG
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              resolve(file); // Fallback to original if compression fails
+            }
+          },
+          'image/jpeg',
+          0.85
+        );
+      };
+
+      img.onerror = () => resolve(file); // Fallback to original on error
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => resolve(file); // Fallback to original on error
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Update the progress message based on elapsed time
   useEffect(() => {
     if (!uploading) {
@@ -501,6 +542,21 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
 
     return () => clearInterval(intervalId);
   }, [uploading, processingStartTime, currentTimeRange]);
+
+  const getProgressPercentage = () => {
+    if (!uploading) return 0;
+    if (currentTimeRange === -1) return 0;
+
+    // Calculate base progress based on current time range
+    const baseProgress = (currentTimeRange / (PROGRESS_MESSAGES.length - 1)) * 90;
+
+    // If we're in the last time range and the model URL is set, go to 100%
+    if (currentTimeRange === PROGRESS_MESSAGES.length - 1 && modelUrl) {
+      return 100;
+    }
+
+    return baseProgress;
+  };
 
   const handleGeneratedImageSelect = async (imageUrl: string, prompt?: string) => {
     try {
@@ -548,9 +604,22 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
 
       {uploading && currentMessage && (
         <div className="fixed bottom-40 left-0 right-0 flex justify-center">
-          <div className="flex items-center gap-2 px-4 py-2 text-sm bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-black/10 dark:border-white/10 text-black dark:text-white shadow-sm">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>{currentMessage}</span>
+          <div className="flex flex-col items-center gap-2 px-4 py-2 text-sm bg-background border border-input text-foreground shadow-sm">
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="font-medium">{currentMessage}</span>
+            </div>
+            <div className="w-full max-w-[200px] space-y-2">
+              <div className="w-full bg-accent h-1">
+                <div
+                  className="bg-green-500 h-1 transition-all duration-300"
+                  style={{
+                    width: `${getProgressPercentage()}%`,
+                    transition: 'width 0.5s ease-in-out'
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}

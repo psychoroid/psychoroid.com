@@ -2,22 +2,29 @@
 
 import React, { Suspense, useRef, useState, useEffect, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Stage, Environment, ContactShadows } from '@react-three/drei';
+import { OrbitControls, Environment, AccumulativeShadows, RandomizedLight } from '@react-three/drei';
+import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
 import { Product } from '@/components/community/CommunityProduct3D';
 import { ModelState } from '@/types/components';
-import { Vector3 } from 'three';
+import { Vector3, MOUSE } from 'three';
 import { ProductControls } from '@/components/3D/ProductControls';
 import { DownloadModal } from '@/components/community/DownloadModal';
 import type { CommunityProduct } from '@/types/community';
 
-// Update initial state constants for centered view
-const INITIAL_CAMERA_POSITION: [number, number, number] = [0, 0, 2.5];
+// Update initial state constants for better front view
+const ANGLE = Math.PI * (45 / 180); // 45 degrees for a better isometric view
+const DISTANCE = 6; // Fixed distance for consistent view
+const INITIAL_CAMERA_POSITION: [number, number, number] = [
+    DISTANCE * Math.cos(ANGLE), // X position
+    DISTANCE * 0.5, // Y position at half height
+    DISTANCE * Math.sin(ANGLE)  // Z position
+];
 const INITIAL_TARGET: [number, number, number] = [0, 0, 0];
-const INITIAL_ZOOM = 1.5;
+const INITIAL_ZOOM = 1;
 const INITIAL_MODEL_ROTATION: [number, number, number] = [0, 0, 0];
 const INITIAL_MODEL_POSITION: [number, number, number] = [0, 0, 0];
-const INITIAL_MODEL_SCALE: [number, number, number] = [0.5, 0.5, 0.5];
-const ROTATION_SPEED = 1;
+const INITIAL_MODEL_SCALE: [number, number, number] = [1, 1, 1];
+const ROTATION_SPEED = 0.5;
 
 interface CommunityProductViewerProps {
     imagePath?: string;
@@ -40,7 +47,7 @@ export function CommunityProductViewer({
     const [modelState, setModelState] = useState<ModelState>({
         rotation: INITIAL_MODEL_ROTATION,
         position: INITIAL_MODEL_POSITION,
-        scale: [1, 1, 1]
+        scale: INITIAL_MODEL_SCALE
     });
     const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(INITIAL_CAMERA_POSITION);
     const [controlsState, setControlsState] = useState({
@@ -65,11 +72,11 @@ export function CommunityProductViewer({
         : undefined;
 
     // Update zoom constants
-    const ZOOM_STEP = 1.2;
+    const ZOOM_STEP = 1.1; // Reduced for finer control
     const MIN_ZOOM = 0.5;
     const MAX_ZOOM = 10;
-    const MIN_DISTANCE = 1;  // Reduced from 2
-    const MAX_DISTANCE = 50; // Increased from 20
+    const MIN_DISTANCE = 2;  // Increased minimum distance
+    const MAX_DISTANCE = 20; // Reduced maximum distance
 
     // Handle zoom in
     const handleZoomIn = () => {
@@ -167,98 +174,6 @@ export function CommunityProductViewer({
         });
     };
 
-    const renderCanvas = (expanded: boolean) => (
-        <div className="w-full h-full" style={{ contain: 'strict', isolation: 'isolate' }}>
-            <Canvas
-                id={`viewer-canvas-${expanded ? 'expanded' : 'normal'}`}
-                frameloop="demand"
-                gl={{
-                    preserveDrawingBuffer: true,
-                    alpha: true,
-                    antialias: true,
-                    failIfMajorPerformanceCaveat: false,
-                    powerPreference: 'high-performance',
-                    toneMapping: 3, // ACESFilmicToneMapping
-                    toneMappingExposure: 1.2
-                }}
-                camera={{ position: cameraPositionVector }}
-                style={{ width: '100%', height: '100%' }}
-            >
-                <PerspectiveCamera
-                    makeDefault
-                    position={cameraPositionVector}
-                    zoom={controlsState.zoom}
-                    fov={45}
-                />
-
-                {/* Main lighting setup using Stage */}
-                <Stage
-                    intensity={1}
-                    environment="city"
-                    adjustCamera={false}
-                    shadows={false}
-                >
-                    <Suspense fallback={null}>
-                        <Product
-                            imageUrl={imageUrl}
-                            modelUrl={processedModelUrl}
-                            isRotating={isAutoRotating}
-                            zoom={zoom}
-                            modelState={{
-                                ...modelState,
-                                position: INITIAL_MODEL_POSITION,
-                                scale: INITIAL_MODEL_SCALE
-                            }}
-                            onModelStateChange={handleModelStateChange}
-                            showGrid={false}
-                            scale={INITIAL_MODEL_SCALE}
-                        />
-                    </Suspense>
-                </Stage>
-
-                {/* Additional lighting for better visibility */}
-                <ambientLight intensity={0.8} />
-                <directionalLight
-                    position={[5, 5, 5]}
-                    intensity={1.5}
-                    castShadow={false}
-                />
-                <directionalLight
-                    position={[-5, 5, -5]}
-                    intensity={1}
-                    castShadow={false}
-                />
-
-                {/* Environment and effects */}
-                <Environment preset="city" />
-                <ContactShadows
-                    opacity={0.4}
-                    scale={10}
-                    blur={2}
-                    far={4}
-                    resolution={256}
-                    color="#000000"
-                />
-
-                <OrbitControls
-                    ref={controlsRef}
-                    enableZoom={true}
-                    enablePan={true}
-                    enableRotate={true}
-                    autoRotate={isAutoRotating}
-                    autoRotateSpeed={ROTATION_SPEED}
-                    onChange={handleControlsChange}
-                    target={new Vector3(...INITIAL_TARGET)}
-                    minDistance={0.5}
-                    maxDistance={5}
-                    zoomSpeed={1}
-                    makeDefault
-                    zoomToCursor={isZoomToCursor}
-                />
-            </Canvas>
-        </div>
-    );
-
     const handleModelStateChange = (newState: ModelState) => {
         setModelState(newState);
     };
@@ -291,6 +206,143 @@ export function CommunityProductViewer({
         };
     }, [isExpanded, handleClose]);
 
+    const renderCanvas = (expanded: boolean) => (
+        <div className="relative w-full h-full">
+            <Canvas
+                gl={{
+                    preserveDrawingBuffer: true,
+                    alpha: true,
+                    antialias: false,
+                    toneMapping: 3,
+                    toneMappingExposure: 1.5,
+                    outputColorSpace: "srgb"
+                }}
+                camera={{
+                    position: cameraPositionVector,
+                    fov: 45,
+                    near: 0.1,
+                    far: 1000
+                }}
+                shadows
+                style={{ width: '100%', height: '100%' }}
+                className="bg-background dark:bg-background"
+                id="main-product-viewer"
+            >
+                <Suspense fallback={null}>
+                    {processedModelUrl && (
+                        <Product
+                            modelUrl={processedModelUrl}
+                            isRotating={isAutoRotating}
+                            zoom={zoom}
+                            modelState={modelState}
+                            onModelStateChange={handleModelStateChange}
+                            scale={[1, 1, 1]}
+                        />
+                    )}
+                </Suspense>
+
+                {/* Enhanced lighting setup */}
+                <directionalLight
+                    position={[5, 5, 5]}
+                    intensity={1.5}
+                    castShadow
+                    shadow-mapSize={[1024, 1024]}
+                    shadow-bias={-0.0001}
+                />
+                <directionalLight
+                    position={[-5, 5, -5]}
+                    intensity={0.8}
+                    castShadow
+                    shadow-mapSize={[1024, 1024]}
+                    shadow-bias={-0.0001}
+                />
+                <spotLight
+                    position={[10, 10, 5]}
+                    angle={0.15}
+                    penumbra={1}
+                    intensity={1}
+                    castShadow
+                    shadow-bias={-0.0001}
+                />
+                <ambientLight intensity={0.3} />
+
+                {/* Enhanced environment and effects */}
+                <Environment
+                    preset="warehouse"
+                    background={false}
+                    blur={0.8}
+                />
+                <AccumulativeShadows
+                    temporal
+                    frames={100}
+                    alphaTest={0.95}
+                    scale={20}
+                    position={[0, -0.005, 0]}
+                    color="#000000"
+                    opacity={0.5}
+                    blend={100}
+                >
+                    <RandomizedLight
+                        amount={4}
+                        radius={15}
+                        ambient={0.8}
+                        intensity={0.8}
+                        position={[5, 10, 5]}
+                        bias={0.001}
+                    />
+                </AccumulativeShadows>
+
+                {/* Post-processing effects */}
+                <EffectComposer multisampling={0}>
+                    <Bloom
+                        intensity={0.4}
+                        luminanceThreshold={0.9}
+                        luminanceSmoothing={0.4}
+                    />
+                    <SMAA />
+                </EffectComposer>
+
+                <OrbitControls
+                    ref={controlsRef}
+                    enableZoom={true}
+                    enablePan={true}
+                    enableRotate={true}
+                    autoRotate={isAutoRotating}
+                    autoRotateSpeed={ROTATION_SPEED}
+                    onChange={handleControlsChange}
+                    target={targetVector}
+                    minDistance={MIN_DISTANCE}
+                    maxDistance={MAX_DISTANCE}
+                    zoomSpeed={1.5}
+                    maxPolarAngle={Math.PI / 1.5}
+                    minPolarAngle={Math.PI / 6}
+                    rotateSpeed={0.8}
+                    mouseButtons={{
+                        LEFT: MOUSE.ROTATE,
+                        MIDDLE: MOUSE.DOLLY,
+                        RIGHT: MOUSE.PAN
+                    }}
+                    screenSpacePanning={true}
+                    enableDamping={true}
+                    dampingFactor={0.05}
+                    zoomToCursor={isZoomToCursor}
+                />
+            </Canvas>
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <ProductControls
+                    isRotating={isAutoRotating}
+                    onRotateToggle={handleRotateToggle}
+                    onZoomIn={handleZoomIn}
+                    onZoomOut={handleZoomOut}
+                    onDownload={() => setShowDownloadModal(true)}
+                    hideExpand
+                    isZoomToCursor={isZoomToCursor}
+                    onZoomModeToggle={handleZoomModeToggle}
+                />
+            </div>
+        </div>
+    );
+
     return (
         <>
             {isExpanded ? (
@@ -307,18 +359,6 @@ export function CommunityProductViewer({
                             >
                                 ESC
                             </button>
-                        </div>
-                        <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                            <ProductControls
-                                isRotating={isAutoRotating}
-                                onRotateToggle={handleRotateToggle}
-                                onZoomIn={handleZoomIn}
-                                onZoomOut={handleZoomOut}
-                                onDownload={() => setShowDownloadModal(true)}
-                                hideExpand
-                                isZoomToCursor={isZoomToCursor}
-                                onZoomModeToggle={handleZoomModeToggle}
-                            />
                         </div>
                     </div>
                 </div>

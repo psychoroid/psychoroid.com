@@ -48,7 +48,7 @@ interface UserAssetsListProps {
     error?: string | null;
 }
 
-const ITEMS_PER_PAGE = 15
+const ITEMS_PER_PAGE = 25
 
 // Create a separate memoized asset card component
 const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onSelect }: {
@@ -58,19 +58,8 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
     currentLanguage: string;
     onSelect: () => void;
 }) => {
-    const [showModel, setShowModel] = useState(false)
     const [imageError, setImageError] = useState(false)
     const [showDownloadModal, setShowDownloadModal] = useState(false);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (index < 5) {
-                setShowModel(true)
-            }
-        }, index < 5 ? 0 : index * 200)
-
-        return () => clearTimeout(timer)
-    }, [index])
 
     const handleDownload = () => {
         // Just show the download modal, it will handle the download recording
@@ -78,8 +67,15 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
     };
 
     const renderPreview = () => {
-        if (asset.model_path && showModel) {
+        console.log(`[Debug] Rendering preview for asset: ${asset.name}`, {
+            hasModelPath: !!asset.model_path,
+            modelPath: asset.model_path,
+            imageError: imageError
+        });
+
+        if (asset.model_path) {
             try {
+                console.log(`[Debug] Attempting to render 3D model for: ${asset.name}`);
                 const isDefaultModel = asset.model_path.startsWith('default-assets/');
                 return (
                     <div className="w-full h-full relative">
@@ -88,11 +84,15 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
                             imageUrl={`product-images/${asset.image_path}`}
                             small
                             bucket={isDefaultModel ? 'default-assets' : 'product-models'}
+                            onError={(error: Error) => {
+                                console.error(`[Debug] ModelPreview error for ${asset.name}:`, error);
+                                setImageError(true);
+                            }}
                         />
                     </div>
                 )
             } catch (error) {
-                console.error('Error loading model:', error);
+                console.error(`[Debug] Error in renderPreview for ${asset.name}:`, error);
                 return (
                     <div className="w-full h-full bg-accent/10 flex items-center justify-center">
                         <div className="relative w-24 h-24">
@@ -102,7 +102,10 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
                                 fill
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 className="object-cover"
-                                onError={() => setImageError(true)}
+                                onError={() => {
+                                    console.log(`[Debug] Image error fallback for ${asset.name}`);
+                                    setImageError(true);
+                                }}
                                 priority={index < 5}
                             />
                         </div>
@@ -110,6 +113,10 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
                 )
             }
         }
+
+        console.log(`[Debug] Falling back to image for ${asset.name}`, {
+            reason: !asset.model_path ? 'No model path' : 'Unknown'
+        });
 
         if (!asset.image_path || imageError) {
             return (
@@ -403,21 +410,21 @@ export const UserAssetsList = memo(function UserAssetsList({
                                 <Button
                                     variant="ghost"
                                     size="icon"
+                                    className="h-6 w-6"
                                     onClick={() => onPageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="rounded-none"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
                                 </Button>
-                                <span className="text-sm">
-                                    {t(currentLanguage, 'ui.assets.page')} {currentPage} {t(currentLanguage, 'ui.assets.of')} {totalPages}
+                                <span className="text-xs text-muted-foreground">
+                                    {currentPage} / {totalPages}
                                 </span>
                                 <Button
                                     variant="ghost"
                                     size="icon"
+                                    className="h-6 w-6"
                                     onClick={() => onPageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="rounded-none"
                                 >
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
