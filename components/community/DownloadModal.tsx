@@ -22,16 +22,16 @@ import { getStorageUrl } from '@/lib/utils/storage';
 const EXPORT_FORMATS: FormatCategories = {
     '3D & Gaming': [
         { name: 'GLB', ext: 'glb', desc: 'Standard 3D format' },
+        { name: 'OBJ', ext: 'obj', desc: 'For 3D modeling' },
         { name: 'GLTF', ext: 'gltf', desc: 'For web & three.js' },
+        { name: 'FBX', ext: 'fbx', desc: 'For 3D modeling' },
     ],
     'CAD & Manufacturing': [
-        { name: 'OBJ', ext: 'obj', desc: 'For 3D modeling' },
         { name: 'STL', ext: 'stl', desc: 'For 3D printing' },
         { name: 'STEP', ext: 'step', desc: 'For CAD software' },
     ],
     'E-commerce & Web': [
         { name: 'USDZ', ext: 'usdz', desc: 'For Apple AR' },
-        { name: 'GLB', ext: 'glb', desc: 'For web AR/VR' },
     ]
 };
 

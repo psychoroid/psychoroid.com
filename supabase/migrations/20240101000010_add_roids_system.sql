@@ -209,7 +209,7 @@ BEGIN
             updated_at
         ) VALUES (
             NEW.id,
-            50,
+            75,
             'free'::subscription_type_enum,
             false,
             'unpaid'::subscription_status_enum,
@@ -237,7 +237,7 @@ BEGIN
             updated_at
         ) VALUES (
             NEW.id,
-            'My First Asset',
+            'WELCOME',
             'Welcome to psychoroid.com! This is your first asset.',
             'private'::visibility_type_enum,
             0,

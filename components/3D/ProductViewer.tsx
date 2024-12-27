@@ -12,6 +12,7 @@ import { DownloadModal } from '@/components/community/DownloadModal';
 import type { CommunityProduct } from '@/types/community';
 import { ProductCustomization } from './ProductCustomization';
 import { supabase } from '@/lib/supabase/supabase';
+import SoftwareIntegration from './SoftwareIntegration';
 
 // Update initial state constants for better front view
 const ANGLE = Math.PI * (45 / 180); // 45 degrees for a better isometric view
@@ -177,6 +178,8 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
 
     const renderCanvas = (expanded: boolean) => (
         <div className="relative w-full h-full">
+            {fullModelUrl && <SoftwareIntegration modelUrl={fullModelUrl} />}
+
             <Canvas
                 gl={{
                     preserveDrawingBuffer: true,
