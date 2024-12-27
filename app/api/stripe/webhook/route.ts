@@ -17,38 +17,52 @@ export const dynamic = 'force-dynamic';
 export const preferredRegion = 'auto';
 export const maxDuration = 60;
 
+// Disable body parsing, we need the raw body for signature verification
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
+
 export async function POST(req: Request) {
     try {
-        const text = await req.text();
+        // Get the raw request body as a string
+        const rawBody = await req.text();
+        
+        // Get the Stripe signature from headers
         const headersList = headers();
         const signature = headersList.get('stripe-signature');
 
         if (!signature) {
-            console.log('⚠️ No signature found in webhook request');
-            return new Response('No signature found', { status: 400 });
+            console.error('⚠️ No Stripe signature found in webhook request');
+            return new Response('No Stripe signature found', { status: 400 });
         }
 
-        if (!process.env.STRIPE_WEBHOOK_SECRET) {
+        const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        if (!webhookSecret) {
             console.error('❌ STRIPE_WEBHOOK_SECRET is not configured');
             return new Response('Webhook secret is not configured', { status: 500 });
         }
 
-        // Log request details for debugging
+        // Log request details for debugging (but not the raw body to avoid security issues)
         console.log('📝 Webhook Request Details:', {
             signature,
-            bodyLength: text.length,
-            headers: Object.fromEntries(headersList.entries())
+            bodyLength: rawBody.length,
+            headers: {
+                'stripe-signature': signature,
+                'content-type': headersList.get('content-type'),
+            }
         });
 
         // Verify the event with Stripe
         let event: Stripe.Event;
         try {
             event = await stripe.webhooks.constructEventAsync(
-                text,
+                rawBody,
                 signature,
-                process.env.STRIPE_WEBHOOK_SECRET
+                webhookSecret
             );
-            console.log('✅ Webhook signature verified successfully');
+            console.log('✅ Webhook signature verified successfully for event:', event.type);
         } catch (err) {
             const error = err as Error;
             console.error('❌ Webhook signature verification failed:', {
@@ -129,6 +143,7 @@ export async function POST(req: Request) {
                         });
 
                         if (error) {
+                            console.error('❌ Failed to handle expired session:', error);
                             throw error;
                         }
                         
