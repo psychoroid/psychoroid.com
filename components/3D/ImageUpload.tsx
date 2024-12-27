@@ -323,14 +323,17 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
       });
 
       if (validFiles.length === 0) {
-        resetStates()
+        resetStates();
         return;
       }
 
-      const uploadPromises = validFiles.map(async (file, index) => {
+      setUploading(true);
+      setProcessingStartTime(Date.now());
+
+      for (const file of validFiles) {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}_${index}.${fileExt}`;
-        const filePath = `${fileName}`;
+        const fileName = `${user.id}/${Date.now()}_${file.name}`;
+        const filePath = fileName;
 
         try {
           /* Original server health check (commented out)
@@ -350,92 +353,120 @@ export function ImageUpload({ onImageUpload, onModelUrlChange, onProgressUpdate 
 
           if (uploadError) {
             toast.error(t(currentLanguage, 'ui.upload.failed'));
-            resetStates()
-            throw uploadError;
+            continue;
           }
 
-          if (uploadData) {
-            setIsLoading(true);
+          setIsLoading(true);
 
-            // Create initial product record with just the image
-            const { data: initialProduct, error: initialProductError } = await supabase.rpc('create_product', {
-              p_name: 'Processing...',
-              p_description: event.prompt || 'Generated from image',
-              p_image_path: filePath,
-              p_model_path: null,
-              p_user_id: user.id
+          // Create initial product record
+          const { data: initialProduct, error: initialProductError } = await supabase.rpc('create_product', {
+            p_name: 'Processing...',
+            p_description: event.prompt || 'Generated from image',
+            p_image_path: filePath,
+            p_model_path: null,
+            p_user_id: user.id
+          });
+
+          if (initialProductError) {
+            console.error('Initial product creation error:', initialProductError);
+            continue;
+          }
+
+          // Create form data for FAL.AI conversion
+          const formData = new FormData();
+          formData.append('image', file);
+
+          // Call FAL.AI conversion endpoint
+          const falResponse = await fetch('/api/fal-conversion', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!falResponse.ok) {
+            const errorData = await falResponse.json();
+            throw new Error(`FAL.AI conversion failed: ${JSON.stringify(errorData)}`);
+          }
+
+          const { modelUrl } = await falResponse.json();
+
+          // Download the model from FAL.AI
+          const modelResponse = await fetch(modelUrl);
+          const modelBlob = await modelResponse.blob();
+
+          // Create model path for storage
+          const modelPath = `${user.id}/${Date.now()}_${file.name.split('.')[0]}.glb`;
+
+          // Upload to Supabase storage
+          const { error: modelUploadError } = await supabase.storage
+            .from('product-models')
+            .upload(modelPath, modelBlob, {
+              contentType: 'model/gltf-binary',
+              upsert: true
             });
 
-            if (initialProductError) {
-              console.error('Initial product creation error:', initialProductError);
-              throw initialProductError;
-            }
-
-            try {
-              const modelUrl = await generate3DModel(filePath, (progress) => {
-                onProgressUpdate(filePath, progress);
-              });
-
-              // Generate metadata for the update
-              const metadata = generateAssetMetadata();
-
-              // Update the product with model path, name, and tags
-              const { data: updatedProduct, error: updateError } = await supabase.rpc('update_product', {
-                p_image_path: filePath,
-                p_model_path: modelUrl,
-                p_user_id: user.id,
-                p_name: metadata.name,
-                p_tags: metadata.tags
-              });
-
-              if (updateError) {
-                console.error('Error updating product:', updateError);
-                throw new Error('Failed to update product');
-              }
-
-              setImagePaths(prev => [...prev, filePath]);
-              onImageUpload(filePath);
-              router.push(`/studio?image=${filePath}&model=${modelUrl}`);
-
-              return updatedProduct;
-            } catch (error: any) {
-              console.error('Error during 3D processing:', error);
-              /* Original server error handling (commented out)
-              if (error.message.includes('Server is offline')) {
-                // Delete the uploaded image since we couldn't process it
-                await supabase.storage
-                  .from('product-images')
-                  .remove([filePath]);
-              } else {
-                toast.error(t(currentLanguage, 'ui.upload.processing_failed'));
-              }
-              */
-              toast.error(t(currentLanguage, 'ui.upload.processing_failed'));
-              resetStates()
-            }
+          if (modelUploadError) {
+            throw modelUploadError;
           }
-        } catch (error) {
-          console.error('Error during upload:', error);
-          toast.error(t(currentLanguage, 'ui.upload.error') + String(error));
-          resetStates()
-        }
-      });
 
-      await Promise.all(uploadPromises);
+          // Generate metadata for the update
+          const metadata = generateAssetMetadata();
+
+          // Update the product with model path and metadata
+          const { data: updatedProduct, error: updateError } = await supabase.rpc('update_product', {
+            p_image_path: filePath,
+            p_model_path: modelPath,
+            p_user_id: user.id,
+            p_name: metadata.name,
+            p_tags: metadata.tags
+          });
+
+          if (updateError) {
+            console.error('Error updating product:', updateError);
+            throw new Error('Failed to update product');
+          }
+
+          setImagePaths(prev => [...prev, filePath]);
+          onImageUpload(filePath);
+
+          // Construct the studio URL with both image and model parameters
+          const studioUrl = `/studio?image=${encodeURIComponent(filePath)}&model=${encodeURIComponent(modelPath)}`;
+          router.push(studioUrl);
+
+          // Deduct ROIDS after successful conversion
+          await supabase.rpc('deduct_roids', {
+            p_user_id: user.id,
+            p_amount: 25
+          });
+
+        } catch (error: any) {
+          console.error('Error processing file:', error);
+          toast.error(t(currentLanguage, 'ui.upload.processing_failed'));
+
+          // Clean up the uploaded image if processing failed
+          await supabase.storage
+            .from('product-images')
+            .remove([filePath]);
+        }
+      }
     } catch (error) {
       console.error('Error uploading images:', error);
       toast.error(t(currentLanguage, 'ui.upload.error_multiple') + String(error));
     } finally {
-      resetStates()
+      resetStates();
     }
   }, [
-    onImageUpload,
-    onProgressUpdate,
-    generate3DModel,
     user,
     currentLanguage,
     router,
-    isValidFile
+    isValidFile,
+    onImageUpload,
+    setImagePaths,
+    setShowAuthModal,
+    setUploading,
+    setIsLoading,
+    setProcessingStartTime,
+    setCurrentTimeRange,
+    setCurrentMessage
   ]);
 
   // Update the progress message based on elapsed time

@@ -62,13 +62,25 @@ export default function WorkspacePage() {
 
                 if (data && data.length > 0) {
                     const firstAsset = data[0];
+
+                    // Skip default assets
+                    if (firstAsset.model_path?.includes('default-assets/')) {
+                        return;
+                    }
+
                     const modelUrl = firstAsset.model_path?.startsWith('http')
                         ? firstAsset.model_path
                         : firstAsset.model_path
-                            ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${firstAsset.model_path}`
+                            ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${firstAsset.model_path.replace('product-models/', '')}`
                             : null;
 
-                    setSelectedImage(firstAsset.image_path);
+                    const imagePath = firstAsset.image_path?.startsWith('http')
+                        ? firstAsset.image_path
+                        : firstAsset.image_path
+                            ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${firstAsset.image_path}`
+                            : null;
+
+                    setSelectedImage(imagePath);
                     setModelUrl(modelUrl);
                 }
             } catch (error) {
@@ -80,6 +92,10 @@ export default function WorkspacePage() {
     }, [user?.id, searchParams]);
 
     const handleImageClick = (imagePath: string | null, modelUrl: string | null) => {
+        // Skip if it's a default asset
+        if (modelUrl?.includes('default-assets/')) {
+            return;
+        }
         setSelectedImage(imagePath);
         setModelUrl(modelUrl);
     };

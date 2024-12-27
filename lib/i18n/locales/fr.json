@@ -88,7 +88,8 @@
     "faq": "FAQ",
     "privacy": "Confidentialité",
     "terms": "Conditions",
-    "recommend": "Laissez-nous un avis"
+    "recommend": "Laissez-nous un avis",
+    "blog": "Blog"
   },
   "faq": {
     "title": "FAQ",
@@ -188,6 +189,9 @@
     },
     "loading": {
       "message": "Chargement..."
+    },
+    "errors": {
+      "loadFailed": "Échec du chargement des produits de la communauté. Veuillez réessayer."
     }
   },
   "auth": {
@@ -721,7 +725,13 @@
         "message": "Message",
         "message_placeholder": "Comment pouvons-nous vous aider ?",
         "submit": "Soumettre un ticket de support",
-        "submitting": "Envoi en cours..."
+        "submitting": "Soumission...",
+        "image": {
+          "upload_prompt": "Télécharger une image",
+          "invalid_type": "Veuillez télécharger un fichier image",
+          "size_limit": "La taille de l'image doit être inférieure à 5 Mo",
+          "drag_drop": "Glisser-déposer ici"
+        }
       },
       "errors": {
         "category_required": "Veuillez sélectionner une catégorie",
@@ -743,13 +753,24 @@
     },
     "community": {
       "errors": {
-        "loadFailed": "Échec du chargement des produits de la communauté. Veuillez réessayer."
+        "loadFailed": "Échec du chargement des produits communautaires. Veuillez réessayer."
       },
       "noSearchResults": "Aucun produit ne correspond à votre recherche.",
       "noResults": "Aucun produit n'est encore disponible dans la communauté.",
-      "perPage": "éléments par page",
+      "perPage": "par page",
       "page": "Page",
-      "of": "sur"
+      "of": "sur",
+      "filters": {
+        "trending": "Tendances",
+        "new": "Nouveau",
+        "downloads": "Plus téléchargés"
+      }
     }
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Dernières mises à jour, tutoriels et perspectives sur psychoroid.com, la création d'assets 3D et l'IA.",
+    "readMore": "Lire la suite",
+    "publishedOn": "Publié le"
   }
 } 

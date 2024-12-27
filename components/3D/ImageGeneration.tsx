@@ -85,33 +85,41 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
 
             console.log('Original prompt:', prompt);
 
-            // Check if text contains non-ASCII characters (needs translation)
-            const nonAsciiCount = (prompt.match(/[^\x00-\x7F]/g) || []).length;
-            const needsTranslation = nonAsciiCount > 0;
-
+            // Always translate non-English prompts
             let finalPrompt = prompt;
-            if (needsTranslation) {
-                // Only translate if text contains non-English characters
-                const translationResponse = await fetch('/api/translate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ text: prompt, sourceLang: 'ja' }),
-                });
+            if (currentLanguage !== 'en') {
+                try {
+                    const translationResponse = await fetch('/api/translate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: prompt,
+                            sourceLang: currentLanguage,
+                            targetLang: 'en'
+                        }),
+                    });
 
-                if (!translationResponse.ok) {
-                    throw new Error('Translation failed');
+                    if (!translationResponse.ok) {
+                        throw new Error('Translation failed');
+                    }
+
+                    const translationData = await translationResponse.json();
+                    if (translationData.translation) {
+                        finalPrompt = translationData.translation;
+                        setTranslatedPrompt(translationData.translation);
+                        console.log('Original prompt:', prompt);
+                        console.log('Translated prompt:', finalPrompt);
+                    }
+                } catch (error) {
+                    console.error('Translation error:', error);
+                    // Continue with original prompt if translation fails
+                    finalPrompt = prompt;
                 }
-
-                const translationData = await translationResponse.json();
-                finalPrompt = translationData.translation || prompt;
-                console.log('Translation received:', finalPrompt);
-            } else {
-                console.log('Text is already in English, skipping translation');
             }
 
-            // Use the translated text for image generation
+            // Clean up the prompt and remove 3D-related terms
             const cleanPrompt = finalPrompt.replace(/\b(3d|3D|three dimensional|3-d)\b/g, '').trim();
             console.log('Final prompt being sent to image generation:', cleanPrompt);
 
@@ -143,9 +151,8 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
             setShowModal(false);
         } finally {
             setIsGenerating(false);
-            setTranslatedPrompt(''); // Reset translated prompt for next use
         }
-    }, [user, setShowAuthModal]);
+    }, [user, setShowAuthModal, currentLanguage]);
 
     const handleImageClick = useCallback((imageUrl: string) => {
         setSelectedImageUrl(imageUrl === selectedImageUrl ? null : imageUrl);
@@ -185,6 +192,20 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
                     value={inputValue}
                     onChange={setInputValue}
                 />
+                {currentPrompt && currentLanguage !== 'en' && (
+                    <div className="mt-2 text-sm text-muted-foreground">
+                        <div className="flex flex-col space-y-1">
+                            <span className="font-medium">{t(currentLanguage, 'ui.prompt.original')}:</span>
+                            <span>{currentPrompt}</span>
+                            {translatedPrompt && (
+                                <>
+                                    <span className="font-medium mt-1">{t(currentLanguage, 'ui.prompt.translated')}:</span>
+                                    <span>{translatedPrompt}</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
                 {currentPrompt && (
                     <PromptTranslator
                         originalPrompt={currentPrompt}

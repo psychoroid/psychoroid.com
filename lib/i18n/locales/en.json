@@ -83,7 +83,7 @@
     "sign_out": "Sign out"
   },
   "footer": {
-    "copyright": "© 2024 Psychoroid Studios. All rights reserved.",
+    "copyright": "Copyright © 2025 — psychoroid.com",
     "faq": "FAQ",
     "privacy": "Privacy",
     "terms": "Terms",
@@ -723,8 +723,14 @@
         "select_category": "Select a category",
         "message": "Message",
         "message_placeholder": "How can we help you?",
-        "submit": "Submit a support ticket",
-        "submitting": "Submitting..."
+        "submit": "Submit support ticket",
+        "submitting": "Submitting...",
+        "image": {
+          "upload_prompt": "Upload image",
+          "invalid_type": "Please upload an image file",
+          "size_limit": "Image size must be less than 5MB",
+          "drag_drop": "Drag & drop here"
+        }
       },
       "errors": {
         "category_required": "Please select a category",

@@ -1,76 +1,42 @@
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-12-18.acacia'
 });
-
-// Initialize Supabase client for edge runtime
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 export const preferredRegion = 'auto';
 export const maxDuration = 60;
 
-// Disable body parsing, we need the raw body for signature verification
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
-
 export async function POST(req: Request) {
     try {
-        // Get the raw request body as a string
-        const rawBody = await req.text();
-        
-        // Get the Stripe signature from headers
-        const headersList = headers();
-        const signature = headersList.get('stripe-signature');
+        const body = await req.text();
+        const signature = headers().get('stripe-signature');
 
         if (!signature) {
-            console.error('⚠️ No Stripe signature found in webhook request');
-            return new Response('No Stripe signature found', { status: 400 });
+            console.log('⚠️ No signature found in webhook request');
+            return new Response('No signature found', { status: 400 });
         }
-
-        const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-        if (!webhookSecret) {
-            console.error('❌ STRIPE_WEBHOOK_SECRET is not configured');
-            return new Response('Webhook secret is not configured', { status: 500 });
-        }
-
-        // Log request details for debugging (but not the raw body to avoid security issues)
-        console.log('📝 Webhook Request Details:', {
-            signature,
-            bodyLength: rawBody.length,
-            headers: {
-                'stripe-signature': signature,
-                'content-type': headersList.get('content-type'),
-            }
-        });
 
         // Verify the event with Stripe
         let event: Stripe.Event;
         try {
-            event = await stripe.webhooks.constructEventAsync(
-                rawBody,
+            event = stripe.webhooks.constructEvent(
+                body,
                 signature,
-                webhookSecret
+                process.env.STRIPE_WEBHOOK_SECRET!
             );
-            console.log('✅ Webhook signature verified successfully for event:', event.type);
         } catch (err) {
             const error = err as Error;
-            console.error('❌ Webhook signature verification failed:', {
-                error: error.message,
-                stack: error.stack
-            });
+            console.log(`⚠️ Webhook signature verification failed:`, error.message);
             return new Response(`Webhook Error: ${error.message}`, { status: 400 });
         }
+
+        const supabase = createRouteHandlerClient({ cookies });
 
         // Handle the event
         switch (event.type) {
@@ -87,7 +53,7 @@ export async function POST(req: Request) {
                     try {
                         // Get subscription details from Stripe
                         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-                        
+
                         // Add subscription credits and update subscription details
                         await supabase.rpc('add_subscription_credits', {
                             p_user_id: userId,
@@ -137,20 +103,17 @@ export async function POST(req: Request) {
 
                 if (userId) {
                     try {
-                        const { error } = await supabase.rpc('handle_expired_session', {
-                            p_user_id: userId,
-                            p_session_id: session.id
+                        await supabase.from('roids_transactions').insert({
+                            user_id: userId,
+                            amount: 0,
+                            transaction_type: 'expired',
+                            stripe_session_id: session.id,
+                            description: 'Checkout session expired',
+                            status: 'expired'
                         });
-
-                        if (error) {
-                            console.error('❌ Failed to handle expired session:', error);
-                            throw error;
-                        }
-                        
                         console.log('✅ Recorded expired session:', session.id);
                     } catch (error) {
                         console.error('❌ Failed to record expired session:', error);
-                        // Don't throw the error, just log it and continue
                     }
                 }
                 break;

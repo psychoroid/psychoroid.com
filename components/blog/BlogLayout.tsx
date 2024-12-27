@@ -27,7 +27,7 @@ export default function BlogLayout({ posts, totalPages, postsPerPage, currentPag
         <div className="grid grid-cols-12 gap-8">
             {/* Left side - Title */}
             <div className="col-span-4">
-                <div className="flex flex-col space-y-1 sticky top-4">
+                <div className="flex flex-col space-y-1 mt-3">
                     <h1 className="text-xl font-semibold text-foreground">
                         {t(currentLanguage, 'blog.title')}
                     </h1>
@@ -41,7 +41,7 @@ export default function BlogLayout({ posts, totalPages, postsPerPage, currentPag
             <div className="col-span-8">
                 <div className="divide-y divide-border">
                     {posts.map((post) => (
-                        <article key={post._id} className="group py-10 first:pt-0 last:pb-0">
+                        <article key={post._id} className="group py-10 first:pt-6 last:pb-0">
                             <Link href={`/blog/${post.slug.current}`} className="block space-y-3">
                                 <div className="flex gap-6">
                                     {post.mainImage && (

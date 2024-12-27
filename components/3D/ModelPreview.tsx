@@ -140,7 +140,9 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvas
                 <OrbitControls
                     enableZoom={false}
                     enablePan={false}
-                    enableRotate={false}
+                    enableRotate={true}
+                    autoRotate={true}
+                    autoRotateSpeed={2}
                     makeDefault
                 />
             </Canvas>

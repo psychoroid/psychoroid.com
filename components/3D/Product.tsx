@@ -18,42 +18,57 @@ export function Product({
 }: ProductProps) {
   const meshRef = useRef<Mesh>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Only load if we have a URL
-  const gltf = useLoader(GLTFLoader, modelUrl || '', (loader) => {
-    loader.setCrossOrigin('anonymous');
-  });
+  // Only load if we have a valid URL
+  const gltf = useLoader(
+    GLTFLoader,
+    modelUrl || '',
+    (loader) => {
+      loader.setCrossOrigin('anonymous');
+    },
+    (error) => {
+      console.error('Error loading model:', error);
+      setError('Failed to load model');
+    }
+  );
 
   // Initialize model position and scale once
   useEffect(() => {
-    if (!modelUrl || !meshRef.current || !gltf || isInitialized) return;
+    if (!modelUrl || !meshRef.current || !gltf || isInitialized || error) return;
 
-    // Calculate bounding box
-    const box = new Box3().setFromObject(gltf.scene);
-    const center = box.getCenter(new Vector3());
-    const size = box.getSize(new Vector3());
+    try {
+      // Calculate bounding box
+      const box = new Box3().setFromObject(gltf.scene);
+      const center = box.getCenter(new Vector3());
+      const size = box.getSize(new Vector3());
 
-    // Calculate scale to normalize model size
-    const maxDimension = Math.max(size.x, size.y, size.z);
-    const targetScale = 3 / maxDimension;
+      // Calculate scale to normalize model size
+      const maxDimension = Math.max(size.x, size.y, size.z);
+      const targetScale = 3 / maxDimension;
 
-    // Position model at the center
-    const newPosition: [number, number, number] = [0, 0, 0];
+      // Position model at the center
+      const newPosition: [number, number, number] = [0, 0, 0];
 
-    // Center the model
-    gltf.scene.position.set(-center.x, -center.y, -center.z);
+      // Center the model
+      gltf.scene.position.set(-center.x, -center.y, -center.z);
 
-    // Update model state once
-    onModelStateChange?.({
-      rotation: INITIAL_ROTATION,
-      position: newPosition,
-      scale: [targetScale, targetScale, targetScale]
-    });
+      // Update model state once
+      onModelStateChange?.({
+        rotation: INITIAL_ROTATION,
+        position: newPosition,
+        scale: [targetScale, targetScale, targetScale]
+      });
 
-    setIsInitialized(true);
-  }, [modelUrl, onModelStateChange, gltf, isInitialized]);
+      setIsInitialized(true);
+    } catch (err) {
+      console.error('Error initializing model:', err);
+      setError('Failed to initialize model');
+    }
+  }, [modelUrl, onModelStateChange, gltf, isInitialized, error]);
 
-  if (!gltf || !modelUrl) {
+  // Skip rendering if it's a default asset or there's an error
+  if (!gltf || !modelUrl || error || modelUrl?.includes('default-assets/')) {
     return null;
   }
 

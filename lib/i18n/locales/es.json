@@ -87,7 +87,8 @@
     "faq": "FAQ",
     "privacy": "Privacidad",
     "terms": "Términos",
-    "recommend": "Recomendar"
+    "recommend": "Recomendar",
+    "blog": "Blog"
   },
   "faq": {
     "title": "FAQ",
@@ -187,6 +188,9 @@
     },
     "loading": {
       "message": "Cargando..."
+    },
+    "errors": {
+      "loadFailed": "Error al cargar los productos de la comunidad. Por favor, inténtelo de nuevo."
     }
   },
   "auth": {
@@ -709,7 +713,13 @@
         "message": "Mensaje",
         "message_placeholder": "¿Cómo podemos ayudarte?",
         "submit": "Enviar ticket de soporte",
-        "submitting": "Enviando..."
+        "submitting": "Enviando...",
+        "image": {
+          "upload_prompt": "Subir imagen",
+          "invalid_type": "Por favor, sube un archivo de imagen",
+          "size_limit": "El tamaño de la imagen debe ser menor a 5MB",
+          "drag_drop": "Arrastra y suelta aquí"
+        }
       },
       "errors": {
         "category_required": "Por favor selecciona una categoría",
@@ -748,7 +758,18 @@
       "noResults": "Aún no hay productos disponibles en la comunidad.",
       "perPage": "elementos por página",
       "page": "Página",
-      "of": "de"
+      "of": "de",
+      "filters": {
+        "trending": "Tendencias",
+        "new": "Nuevo",
+        "downloads": "Más descargados"
+      }
     }
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Últimas actualizaciones, tutoriales y perspectivas sobre psychoroid.com, creación de assets 3D e IA.",
+    "readMore": "Leer más",
+    "publishedOn": "Publicado el"
   }
 }

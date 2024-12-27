@@ -52,7 +52,7 @@ export function AssetLibrary({ searchQuery: externalSearchQuery, onSearchChange,
 
             // Transform and filter data
             const transformedData = data
-                .filter(item => !item.model_path?.startsWith('default-assets/'))
+                .filter(item => !item.model_path?.includes('default-assets/'))
                 .map((item: any) => ({
                     ...item,
                     created_at: new Date(item.created_at).toISOString(),

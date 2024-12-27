@@ -87,7 +87,8 @@
     "faq": "FAQ",
     "privacy": "개인정보",
     "terms": "이용약관",
-    "recommend": "리뷰 남기기"
+    "recommend": "리뷰 남기기",
+    "blog": "블로그"
   },
   "faq": {
     "title": "FAQ",
@@ -187,6 +188,9 @@
     },
     "loading": {
       "message": "로딩 중..."
+    },
+    "errors": {
+      "loadFailed": "커뮤니티 제품을 불러오는데 실패했습니다. 다시 시도해 주세요."
     }
   },
   "auth": {
@@ -708,7 +712,13 @@
         "message": "메시지",
         "message_placeholder": "어떻게 도와드릴까요?",
         "submit": "지원 티켓 제출",
-        "submitting": "제출 중..."
+        "submitting": "제출 중...",
+        "image": {
+          "upload_prompt": "이미지 업로드",
+          "invalid_type": "이미지 파일을 업로드해 주세요",
+          "size_limit": "이미지 크기는 5MB 미만이어야 합니다",
+          "drag_drop": "여기에 드래그 앤 드롭"
+        }
       },
       "errors": {
         "category_required": "카테고리를 선택해 주세요",
@@ -747,7 +757,18 @@
       "noResults": "아직 커뮤니티에 제품이 없습니다.",
       "perPage": "개/페이지",
       "page": "페이지",
-      "of": "/"
+      "of": "/",
+      "filters": {
+        "trending": "인기",
+        "new": "최신",
+        "downloads": "다운로드순"
+      }
     }
+  },
+  "blog": {
+    "title": "블로그",
+    "subtitle": "psychoroid.com, 3D 에셋 제작 및 AI에 대한 최신 업데이트, 튜토리얼, 인사이트.",
+    "readMore": "더 보기",
+    "publishedOn": "게시일:"
   }
 }

@@ -84,10 +84,11 @@
   },
   "footer": {
     "copyright": "Copyright © 2025 — psychoroid.com",
-    "faq": "FAQ",
-    "privacy": "隐私",
-    "terms": "条款",
-    "recommend": "留下评论"
+    "faq": "常见问题",
+    "privacy": "隐私政策",
+    "terms": "使用条款",
+    "recommend": "给我们评价",
+    "blog": "博客"
   },
   "faq": {
     "title": "FAQ",
@@ -708,7 +709,13 @@
         "message": "消息",
         "message_placeholder": "我们如何帮助您？",
         "submit": "提交支持工单",
-        "submitting": "提交中..."
+        "submitting": "提交中...",
+        "image": {
+          "upload_prompt": "上传图片",
+          "invalid_type": "请上传图片文件",
+          "size_limit": "图片大小必须小于5MB",
+          "drag_drop": "拖放至此"
+        }
       },
       "errors": {
         "category_required": "请选择类别",
@@ -747,7 +754,18 @@
       "noResults": "社区中暂无可用产品。",
       "perPage": "条/页",
       "page": "页",
-      "of": "/"
+      "of": "/",
+      "filters": {
+        "trending": "热门",
+        "new": "最新",
+        "downloads": "下载量"
+      }
     }
+  },
+  "blog": {
+    "title": "博客",
+    "subtitle": "关于psychoroid.com、3D资产创建和人工智能的最新更新、教程和见解。",
+    "readMore": "阅读更多",
+    "publishedOn": "发布于"
   }
 } 

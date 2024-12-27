@@ -87,7 +87,8 @@
     "faq": "FAQ",
     "privacy": "プライバシー",
     "terms": "利用規約",
-    "recommend": "レビューを残す"
+    "recommend": "レビューを書く",
+    "blog": "ブログ"
   },
   "faq": {
     "title": "FAQ",
@@ -187,6 +188,9 @@
     },
     "loading": {
       "message": "読み込み中..."
+    },
+    "errors": {
+      "loadFailed": "コミュニティ製品の読み込みに失敗しました。もう一度お試しください。"
     }
   },
   "auth": {
@@ -785,7 +789,18 @@
       "noResults": "コミュニティにはまだ製品がありません。",
       "perPage": "件/ページ",
       "page": "ページ",
-      "of": "/"
+      "of": "/",
+      "filters": {
+        "trending": "トレンド",
+        "new": "新着",
+        "downloads": "ダウンロード数"
+      }
     }
+  },
+  "blog": {
+    "title": "ブログ",
+    "subtitle": "psychoroid.com、3Dアセット作成、AIに関する最新情報、チュートリアル、インサイト。",
+    "readMore": "続きを読む",
+    "publishedOn": "公開日："
   }
 }
