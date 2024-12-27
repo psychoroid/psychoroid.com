@@ -21,7 +21,7 @@ RETURNS TABLE (
     user_id UUID,
     username TEXT,
     total_count BIGINT
-) LANGUAGE plpgsql SECURITY DEFINER AS $$
+) LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
     v_offset INT;
     v_total_count BIGINT;
@@ -32,7 +32,7 @@ BEGIN
     -- Get total count for pagination
     SELECT COUNT(*)
     INTO v_total_count
-    FROM products p
+    FROM public.products p
     WHERE p.visibility = 'public'
     AND (
         p_search_query = '' OR
@@ -59,8 +59,8 @@ BEGIN
         p.user_id,
         pr.username,
         v_total_count as total_count
-    FROM products p
-    LEFT JOIN profiles pr ON p.user_id = pr.id
+    FROM public.products p
+    LEFT JOIN public.profiles pr ON p.user_id = pr.id
     WHERE p.visibility = 'public'
     AND (
         p_search_query = '' OR
