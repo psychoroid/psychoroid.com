@@ -80,6 +80,11 @@ const nextConfig = {
             asyncWebAssembly: true,
         };
 
+        config.externals.push({
+            'utf-8-validate': 'commonjs utf-8-validate',
+            'bufferutil': 'commonjs bufferutil',
+        })
+
         return config;
     },
 
@@ -89,6 +94,7 @@ const nextConfig = {
             {
                 protocol: 'https',
                 hostname: 'peyzpnmmgsxjydvpussg.supabase.co',
+                port: '',
                 pathname: '/storage/v1/object/public/**',
             },
             {
@@ -111,7 +117,7 @@ const nextConfig = {
                 hostname: 'cdn.sanity.io',
             },
         ],
-        unoptimized: false,
+        unoptimized: true,
         minimumCacheTTL: 60,
         deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],

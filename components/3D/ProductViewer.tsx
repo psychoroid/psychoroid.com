@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useRef, useState, useEffect, useCallback } from 'react';
+import React, { Suspense, useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Stage, Environment, ContactShadows, AccumulativeShadows, RandomizedLight } from '@react-three/drei';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
@@ -367,15 +367,33 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                 const { data, error } = await supabase
                     .from('products')
                     .select('*')
-                    .eq('model_path', modelPath)
-                    .single();
+                    .or(`model_path.eq.${modelPath},model_path.eq.product-models/${modelPath}`)
+                    .limit(1);
 
                 if (error) throw error;
 
-                if (data) {
+                if (data && data.length > 0) {
                     setLoadedProduct({
-                        ...data,
+                        ...data[0],
                         username: '' // We might want to fetch this separately if needed
+                    });
+                } else {
+                    // Fallback to default product if no match found
+                    setLoadedProduct({
+                        id: 'temp-id',
+                        name: 'Untitled Model',
+                        description: '',
+                        model_path: modelUrl || '',
+                        image_path: imagePath || '',
+                        visibility: 'public',
+                        likes_count: 0,
+                        downloads_count: 0,
+                        views_count: 0,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                        user_id: '',
+                        tags: [],
+                        username: ''
                     });
                 }
             } catch (error) {
@@ -404,22 +422,28 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
     }, [modelUrl, product, imagePath]);
 
     // Use the loaded product or the provided product or fallback to default
-    const currentProduct = product || loadedProduct || {
-        id: 'temp-id',
-        name: 'Untitled Model',
-        description: '',
-        model_path: modelUrl || '',
-        image_path: imagePath || '',
-        visibility: 'public',
-        likes_count: 0,
-        downloads_count: 0,
-        views_count: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        user_id: '',
-        tags: [],
-        username: ''
-    };
+    const currentProduct = useMemo(() => {
+        if (product) return product;
+        if (loadedProduct) return loadedProduct;
+
+        // Create a default product with the current modelUrl and imagePath
+        return {
+            id: modelUrl ? modelUrl.split('/').slice(-2)[0] : 'temp-id', // Use the folder UUID as id if available
+            name: 'Untitled Model',
+            description: '',
+            model_path: modelUrl || '',
+            image_path: imagePath || '',
+            visibility: 'public' as const,
+            likes_count: 0,
+            downloads_count: 0,
+            views_count: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: '',
+            tags: [],
+            username: ''
+        } as CommunityProduct;
+    }, [product, loadedProduct, modelUrl, imagePath]);
 
     return (
         <>
@@ -457,22 +481,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
             <DownloadModal
                 isOpen={showDownloadModal}
                 onClose={() => setShowDownloadModal(false)}
-                product={product || {
-                    id: 'temp-id',
-                    name: 'Model',
-                    description: 'Temporary model preview',
-                    model_path: fullModelUrl || '',
-                    image_path: imageUrl || '',
-                    visibility: 'public',
-                    likes_count: 0,
-                    downloads_count: 0,
-                    views_count: 0,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    user_id: '',
-                    tags: [],
-                    username: ''
-                } as CommunityProduct}
+                product={currentProduct}
                 onDownload={() => {
                     setShowDownloadModal(false);
                 }}

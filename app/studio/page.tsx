@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { ProductViewer } from '@/components/3D/ProductViewer'
 import { AssetLibrary } from '@/components/3D/AssetLibrary'
@@ -46,50 +46,132 @@ export default function WorkspacePage() {
     }, [searchParams])
 
     // Fetch and display first asset if no URL params
-    useEffect(() => {
-        const fetchFirstAsset = async () => {
-            if (!user?.id || searchParams.get('image') || searchParams.get('model')) return;
+    const fetchFirstAsset = useCallback(async () => {
+        if (!user?.id || searchParams.get('image') || searchParams.get('model')) return;
 
-            try {
-                const { data, error } = await supabase.rpc('search_user_products', {
-                    p_user_id: user.id,
-                    p_search_query: '',
-                    p_page_size: 1,
-                    p_page: 1
-                });
+        try {
+            const { data, error } = await supabase.rpc('search_user_products', {
+                p_user_id: user.id,
+                p_search_query: '',
+                p_page_size: 1,
+                p_page: 1
+            });
 
-                if (error) throw error;
+            if (error) throw error;
 
-                if (data && data.length > 0) {
-                    const firstAsset = data[0];
+            if (data && data.length > 0) {
+                const firstAsset = data[0];
 
-                    // Skip default assets
-                    if (firstAsset.model_path?.includes('default-assets/')) {
-                        return;
-                    }
-
-                    const modelUrl = firstAsset.model_path?.startsWith('http')
-                        ? firstAsset.model_path
-                        : firstAsset.model_path
-                            ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${firstAsset.model_path.replace('product-models/', '')}`
-                            : null;
-
-                    const imagePath = firstAsset.image_path?.startsWith('http')
-                        ? firstAsset.image_path
-                        : firstAsset.image_path
-                            ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${firstAsset.image_path}`
-                            : null;
-
-                    setSelectedImage(imagePath);
-                    setModelUrl(modelUrl);
+                // Skip default assets
+                if (firstAsset.model_path?.includes('default-assets/')) {
+                    return;
                 }
-            } catch (error) {
-                console.error('Error fetching first asset:', error);
-            }
-        };
 
-        fetchFirstAsset();
+                // Check if the files exist in storage
+                try {
+                    // Get the folder path (user UUID)
+                    const folderPath = firstAsset.model_path?.split('/')[0];
+
+                    if (folderPath) {
+                        // List all files in the user's folder
+                        const { data: files, error: listError } = await supabase
+                            .storage
+                            .from('product-models')
+                            .list(folderPath);
+
+                        if (listError) {
+                            console.error('Error listing files:', listError);
+                            return;
+                        }
+
+                        // Get the filenames we're looking for
+                        const modelFilename = firstAsset.model_path?.split('/').pop();
+                        const imageFilename = firstAsset.image_path?.split('/').pop();
+
+                        // Check if files exist
+                        const modelExists = files?.some(file => file.name === modelFilename);
+                        const imageExists = files?.some(file => file.name === imageFilename);
+
+                        console.log('Storage check:', {
+                            modelExists,
+                            imageExists,
+                            modelFilename,
+                            imageFilename,
+                            filesInFolder: files?.map(f => f.name)
+                        });
+
+                        // Only proceed if at least one file exists
+                        if (!modelExists && !imageExists) {
+                            console.error('No files found in storage');
+                            return;
+                        }
+
+                        // Get signed URLs instead of public URLs
+                        let modelUrl = null;
+                        let imagePath = null;
+
+                        if (modelExists && firstAsset.model_path) {
+                            const { data: signedModelUrl } = await supabase
+                                .storage
+                                .from('product-models')
+                                .createSignedUrl(firstAsset.model_path, 3600); // 1 hour expiry
+
+                            if (signedModelUrl?.signedUrl) {
+                                modelUrl = signedModelUrl.signedUrl;
+                                console.log('Model URL created:', modelUrl);
+                            } else {
+                                console.error('Failed to create signed URL for model');
+                            }
+                        }
+
+                        if (imageExists && firstAsset.image_path) {
+                            const { data: signedImageUrl } = await supabase
+                                .storage
+                                .from('product-models')
+                                .createSignedUrl(firstAsset.image_path, 3600); // 1 hour expiry
+
+                            if (signedImageUrl?.signedUrl) {
+                                imagePath = signedImageUrl.signedUrl;
+                                console.log('Image URL created:', imagePath);
+                            } else {
+                                console.error('Failed to create signed URL for image');
+                            }
+                        }
+
+                        // Log URLs for debugging
+                        console.log('Asset details:', {
+                            modelUrl,
+                            imagePath,
+                            originalModelPath: firstAsset.model_path,
+                            originalImagePath: firstAsset.image_path,
+                            assetId: firstAsset.id,
+                            modelExists,
+                            imageExists
+                        });
+
+                        // Set state only if we have valid URLs
+                        if (modelUrl || imagePath) {
+                            setSelectedImage(imagePath);
+                            setModelUrl(modelUrl);
+                            console.log('State updated with URLs');
+                        } else {
+                            console.error('No valid URLs available to set state');
+                        }
+                    }
+                } catch (storageError) {
+                    console.error('Error checking storage:', storageError);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching first asset:', error);
+        }
     }, [user?.id, searchParams]);
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchFirstAsset();
+        }
+    }, [user?.id, fetchFirstAsset]);
 
     const handleImageClick = (imagePath: string | null, modelUrl: string | null) => {
         // Skip if it's a default asset

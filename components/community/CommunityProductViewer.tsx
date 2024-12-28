@@ -364,7 +364,6 @@ export function CommunityProductViewer({
         <>
             {isExpanded ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-8" onClick={handleClose}>
-                    <div className="absolute inset-0 bg-black bg-opacity-80"></div>
                     <div className="relative w-full h-[500px] max-w-2xl mx-auto cursor-default bg-background border border-border/40 dark:border-border/40 rounded-none shadow-lg p-4" onClick={(e) => e.stopPropagation()}>
                         <div className="w-full h-full flex items-center justify-center">
                             {renderCanvas(true)}
