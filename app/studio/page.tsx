@@ -37,17 +37,9 @@ export default function WorkspacePage() {
         }
     }, [user, router])
 
-    // Handle URL params
-    useEffect(() => {
-        const image = searchParams.get('image')
-        const model = searchParams.get('model')
-        if (image) setSelectedImage(image)
-        if (model) setModelUrl(model)
-    }, [searchParams])
-
-    // Fetch and display first asset if no URL params
+    // Simple fetch first asset function
     const fetchFirstAsset = useCallback(async () => {
-        if (!user?.id || searchParams.get('image') || searchParams.get('model')) return;
+        if (!user?.id) return;
 
         try {
             const { data, error } = await supabase.rpc('search_user_products', {
@@ -61,117 +53,30 @@ export default function WorkspacePage() {
 
             if (data && data.length > 0) {
                 const firstAsset = data[0];
-
-                // Skip default assets
-                if (firstAsset.model_path?.includes('default-assets/')) {
-                    return;
-                }
-
-                // Check if the files exist in storage
-                try {
-                    // Get the folder path (user UUID)
-                    const folderPath = firstAsset.model_path?.split('/')[0];
-
-                    if (folderPath) {
-                        // List all files in the user's folder
-                        const { data: files, error: listError } = await supabase
-                            .storage
-                            .from('product-models')
-                            .list(folderPath);
-
-                        if (listError) {
-                            console.error('Error listing files:', listError);
-                            return;
-                        }
-
-                        // Get the filenames we're looking for
-                        const modelFilename = firstAsset.model_path?.split('/').pop();
-                        const imageFilename = firstAsset.image_path?.split('/').pop();
-
-                        // Check if files exist
-                        const modelExists = files?.some(file => file.name === modelFilename);
-                        const imageExists = files?.some(file => file.name === imageFilename);
-
-                        console.log('Storage check:', {
-                            modelExists,
-                            imageExists,
-                            modelFilename,
-                            imageFilename,
-                            filesInFolder: files?.map(f => f.name)
-                        });
-
-                        // Only proceed if at least one file exists
-                        if (!modelExists && !imageExists) {
-                            console.error('No files found in storage');
-                            return;
-                        }
-
-                        // Get signed URLs instead of public URLs
-                        let modelUrl = null;
-                        let imagePath = null;
-
-                        if (modelExists && firstAsset.model_path) {
-                            const { data: signedModelUrl } = await supabase
-                                .storage
-                                .from('product-models')
-                                .createSignedUrl(firstAsset.model_path, 3600); // 1 hour expiry
-
-                            if (signedModelUrl?.signedUrl) {
-                                modelUrl = signedModelUrl.signedUrl;
-                                console.log('Model URL created:', modelUrl);
-                            } else {
-                                console.error('Failed to create signed URL for model');
-                            }
-                        }
-
-                        if (imageExists && firstAsset.image_path) {
-                            const { data: signedImageUrl } = await supabase
-                                .storage
-                                .from('product-models')
-                                .createSignedUrl(firstAsset.image_path, 3600); // 1 hour expiry
-
-                            if (signedImageUrl?.signedUrl) {
-                                imagePath = signedImageUrl.signedUrl;
-                                console.log('Image URL created:', imagePath);
-                            } else {
-                                console.error('Failed to create signed URL for image');
-                            }
-                        }
-
-                        // Log URLs for debugging
-                        console.log('Asset details:', {
-                            modelUrl,
-                            imagePath,
-                            originalModelPath: firstAsset.model_path,
-                            originalImagePath: firstAsset.image_path,
-                            assetId: firstAsset.id,
-                            modelExists,
-                            imageExists
-                        });
-
-                        // Set state only if we have valid URLs
-                        if (modelUrl || imagePath) {
-                            setSelectedImage(imagePath);
-                            setModelUrl(modelUrl);
-                            console.log('State updated with URLs');
-                        } else {
-                            console.error('No valid URLs available to set state');
-                        }
-                    }
-                } catch (storageError) {
-                    console.error('Error checking storage:', storageError);
+                if (!firstAsset.model_path?.includes('default-assets/')) {
+                    setSelectedImage(firstAsset.image_path);
+                    setModelUrl(firstAsset.model_path);
                 }
             }
         } catch (error) {
             console.error('Error fetching first asset:', error);
         }
-    }, [user?.id, searchParams]);
+    }, [user?.id]);
 
+    // Handle URL params
     useEffect(() => {
-        if (user?.id) {
+        const image = searchParams.get('image')
+        const model = searchParams.get('model')
+        if (image) setSelectedImage(image)
+        if (model) setModelUrl(model)
+    }, [searchParams])
+
+    // Fetch first asset only once when component mounts
+    useEffect(() => {
+        if (user?.id && !searchParams.get('image') && !searchParams.get('model')) {
             fetchFirstAsset();
         }
-    }, [user?.id, fetchFirstAsset]);
+    }, [user?.id, searchParams, fetchFirstAsset]);
 
     const handleImageClick = (imagePath: string | null, modelUrl: string | null) => {
         // Skip if it's a default asset

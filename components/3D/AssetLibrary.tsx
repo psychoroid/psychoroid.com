@@ -75,17 +75,20 @@ export function AssetLibrary({ searchQuery: externalSearchQuery, onSearchChange,
         }, 300)
         , [fetchAssets]);
 
-    // Effect for search query changes
+    // Effect for search query changes only
     useEffect(() => {
-        debouncedSearch(searchQuery);
+        if (searchQuery) {
+            debouncedSearch(searchQuery);
+        }
         return () => debouncedSearch.cancel();
     }, [searchQuery, debouncedSearch]);
 
-    // Initial fetch
+    // Initial fetch only when component mounts and user exists
     useEffect(() => {
-        fetchAssets(searchQuery);
-        return () => setAssets([]); // Cleanup
-    }, [fetchAssets, searchQuery]);
+        if (user?.id) {
+            fetchAssets('');
+        }
+    }, [user?.id, fetchAssets]);
 
     const handleSearch = useCallback((query: string) => {
         if (onSearchChange) {

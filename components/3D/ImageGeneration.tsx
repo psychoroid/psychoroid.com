@@ -227,7 +227,7 @@ export function ImageGeneration({ onImageSelect, numImages = 4, user, setShowAut
                     <div className="relative">
                         <div className={`grid grid-cols-2 md:grid-cols-${numImages === 2 ? '2' : '4'} gap-4 p-4`}>
                             {isGenerating ? (
-                                <div className="col-span-full flex flex-col items-center justify-center py-8 space-y-3">
+                                <div className="col-span-full flex flex-col items-center justify-center py-8 space-y-3 pointer-events-none" tabIndex={-1}>
                                     <div className="flex items-center gap-2">
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                         <p className="text-sm">{t(currentLanguage, 'ui.imageGeneration.generating')}</p>

@@ -9,6 +9,7 @@ import { cn } from "@/lib/actions/utils";
 import { getTagColor } from '@/lib/utils/tagColors';
 import { motion } from 'framer-motion';
 import { debounce } from 'lodash';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProductCustomizationProps {
     product: CommunityProduct;
@@ -56,9 +57,18 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
         };
     }, [debouncedSave]);
 
-    // Fetch product details on mount and update local state
+    // Fetch product details only once on mount
     useEffect(() => {
         const fetchProductDetails = async () => {
+            if (product.id === 'temp-id') {
+                setIsLoading(false);
+                setName(product.name);
+                setDescription(product.description || '');
+                setTags(product.tags || []);
+                setVisibility(product.visibility);
+                return;
+            }
+
             try {
                 setIsLoading(true);
                 const { data, error } = await supabase.rpc('get_product_by_id', {
@@ -82,15 +92,7 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
             }
         };
 
-        if (product.id !== 'temp-id') {
-            fetchProductDetails();
-        } else {
-            setIsLoading(false);
-            setName(product.name);
-            setDescription(product.description || '');
-            setTags(product.tags || []);
-            setVisibility(product.visibility);
-        }
+        fetchProductDetails();
     }, [product.id, product.name, product.description, product.tags, product.visibility]);
 
     const handleVisibilityToggle = async () => {
@@ -160,20 +162,26 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="absolute bottom-4 left-4 flex items-center gap-2">
-                <div className="animate-pulse flex items-center gap-2">
-                    <div className="h-8 w-8 bg-accent/50 rounded-none"></div>
-                    <div className="h-8 w-8 bg-accent/50 rounded-none"></div>
-                </div>
-            </div>
-        );
-    }
-
     // Return nothing if it's a temporary product
     if (product.id === 'temp-id') {
         return null;
+    }
+
+    if (isLoading) {
+        return (
+            <div className="absolute bottom-4 left-4 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-6 w-16" />
+                </div>
+                <Skeleton className="h-4 w-64" />
+                <div className="flex items-center gap-1">
+                    <Skeleton className="h-[22px] w-16" />
+                    <Skeleton className="h-[22px] w-16" />
+                    <Skeleton className="h-[22px] w-16" />
+                </div>
+            </div>
+        );
     }
 
     return (
