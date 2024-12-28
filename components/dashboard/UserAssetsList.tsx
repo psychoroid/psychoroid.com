@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Package, ChevronLeft, ChevronRight, Eye, Heart, Download } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { Search, Package, ChevronLeft, ChevronRight, Eye, Heart, Download, Plus } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,15 +51,26 @@ interface UserAssetsListProps {
 const ITEMS_PER_PAGE = 25
 
 // Create a separate memoized asset card component
-const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onSelect }: {
+const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onSelect, onEditStart, onEditEnd }: {
     asset: UserAsset;
     index: number;
     onVisibilityToggle: (asset: UserAsset, index: number) => Promise<void>;
     currentLanguage: string;
     onSelect: () => void;
+    onEditStart: () => void;
+    onEditEnd: () => void;
 }) => {
     const [imageError, setImageError] = useState(false)
     const [showDownloadModal, setShowDownloadModal] = useState(false);
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
+    const [editingTag, setEditingTag] = useState<number | null>(null);
+    const [showTagInput, setShowTagInput] = useState(false);
+    const [newTagInput, setNewTagInput] = useState('');
+    const [localAsset, setLocalAsset] = useState(asset);
+
+    const inputRef = useRef<HTMLInputElement>(null);
+    const textareaRef = useRef<HTMLInputElement>(null);
 
     const handleDownload = () => {
         // Just show the download modal, it will handle the download recording
@@ -143,6 +154,107 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
         )
     }
 
+    const handleNameSubmit = useCallback(async () => {
+        if (!localAsset.name.trim()) return;
+        setIsEditingName(false);
+
+        try {
+            const { error } = await supabase.rpc('update_product_name', {
+                p_product_id: localAsset.id,
+                p_name: localAsset.name.trim()
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error updating name:', error);
+        }
+    }, [localAsset]);
+
+    const handleDescriptionSubmit = useCallback(async () => {
+        setIsEditingDescription(false);
+
+        try {
+            const { error } = await supabase.rpc('update_product_description', {
+                p_product_id: localAsset.id,
+                p_description: localAsset.description?.trim() || ''
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error updating description:', error);
+        }
+    }, [localAsset]);
+
+    const handleTagEdit = useCallback(async (index: number, tag: string) => {
+        if (!tag.trim()) return;
+
+        const newTags = [...localAsset.tags];
+        newTags[index] = tag.trim();
+        setLocalAsset(prev => ({ ...prev, tags: newTags }));
+        setEditingTag(null);
+
+        try {
+            const { error } = await supabase.rpc('update_product_tags', {
+                p_product_id: localAsset.id,
+                p_tags: newTags
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error updating tags:', error);
+            // Silently fail and keep UI state
+        }
+    }, [localAsset]);
+
+    const handleAddTag = useCallback(async () => {
+        if (!newTagInput.trim()) {
+            setShowTagInput(false);
+            setNewTagInput('');
+            return;
+        }
+
+        const newTags = [...localAsset.tags, newTagInput.trim()];
+        setLocalAsset(prev => ({ ...prev, tags: newTags }));
+        setNewTagInput('');
+        setShowTagInput(false);
+
+        try {
+            const { error } = await supabase.rpc('update_product_tags', {
+                p_product_id: localAsset.id,
+                p_tags: newTags
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error adding tag:', error);
+        }
+    }, [newTagInput, localAsset]);
+
+    const handleRemoveTag = useCallback(async (indexToRemove: number) => {
+        const newTags = localAsset.tags.filter((_, i) => i !== indexToRemove);
+        setLocalAsset(prev => ({ ...prev, tags: newTags }));
+
+        try {
+            const { error } = await supabase.rpc('update_product_tags', {
+                p_product_id: localAsset.id,
+                p_tags: newTags
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error removing tag:', error);
+            // Silently fail and keep UI state
+        }
+    }, [localAsset]);
+
+    const startEditing = useCallback(() => {
+        setIsEditingName(true);
+    }, []);
+
+    const startDescriptionEditing = useCallback(() => {
+        setIsEditingDescription(true);
+    }, []);
+
+    const startTagEditing = useCallback((index: number) => {
+        onEditStart();
+        setEditingTag(index);
+    }, [onEditStart]);
+
     return (
         <>
             <div className="flex flex-col sm:flex-row gap-4 p-3 border border-border rounded-none hover:bg-accent/50 transition-colors min-h-[160px] sm:min-h-0 sm:h-[120px] group">
@@ -153,9 +265,24 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
                 {/* Content */}
                 <div className="flex-grow space-y-2 sm:space-y-1">
                     <div className="flex items-start justify-between">
-                        <h3 className="font-medium text-foreground text-sm truncate pr-2">
-                            {asset.name}
-                        </h3>
+                        {isEditingName ? (
+                            <Input
+                                ref={inputRef}
+                                value={localAsset.name}
+                                onChange={(e) => setLocalAsset(prev => ({ ...prev, name: e.target.value }))}
+                                onBlur={handleNameSubmit}
+                                onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
+                                className="h-6 min-w-0 w-auto max-w-[200px] text-sm font-medium rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                autoFocus
+                            />
+                        ) : (
+                            <h3
+                                className="font-medium text-foreground text-sm truncate pr-2 cursor-pointer hover:text-accent"
+                                onClick={startEditing}
+                            >
+                                {localAsset.name}
+                            </h3>
+                        )}
                         <Badge
                             variant={asset.visibility === 'public' ? 'default' : 'secondary'}
                             className={cn(
@@ -173,46 +300,99 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
                         </Badge>
                     </div>
 
-                    <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1">
-                        {asset.description}
-                    </p>
+                    {isEditingDescription ? (
+                        <Input
+                            ref={textareaRef as any}
+                            value={localAsset.description || ''}
+                            onChange={(e) => setLocalAsset(prev => ({ ...prev, description: e.target.value }))}
+                            onBlur={handleDescriptionSubmit}
+                            onKeyDown={(e) => e.key === 'Enter' && handleDescriptionSubmit()}
+                            className="h-5 min-w-0 w-full text-xs rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                            autoFocus
+                        />
+                    ) : (
+                        <p
+                            className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1 cursor-pointer hover:text-accent"
+                            onClick={startDescriptionEditing}
+                        >
+                            {localAsset.description}
+                        </p>
+                    )}
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1 translate-y-[3px]">
-                        {asset.tags?.slice(0, 4).map((tag, index) => (
-                            <Badge
-                                key={index}
-                                variant="outline"
-                                className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50`}
-                            >
-                                {tag}
-                            </Badge>
-                        ))}
-                        {asset.tags && asset.tags.length > 4 && (
-                            <div className="relative group">
+                        {localAsset.tags?.map((tag, index) => (
+                            editingTag === index ? (
+                                <Input
+                                    key={index}
+                                    value={tag}
+                                    onChange={(e) => {
+                                        const newTags = [...localAsset.tags];
+                                        newTags[index] = e.target.value;
+                                        setLocalAsset(prev => ({ ...prev, tags: newTags }));
+                                    }}
+                                    onBlur={() => handleTagEdit(index, tag)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleTagEdit(index, tag);
+                                        if (e.key === 'Escape') setEditingTag(null);
+                                        if (e.key === 'Backspace' && !tag) handleRemoveTag(index);
+                                    }}
+                                    className="h-[22px] min-w-0 w-20 text-xs rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-accent/30"
+                                    autoFocus
+                                />
+                            ) : (
                                 <Badge
+                                    key={index}
                                     variant="outline"
-                                    className="text-xs rounded-none bg-primary/10 text-primary border-primary/20 hover:bg-accent/50"
+                                    className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50 cursor-pointer h-[22px] flex items-center px-2 group`}
+                                    onClick={() => startTagEditing(index)}
                                 >
-                                    +{asset.tags.length - 4}
+                                    {tag}
                                 </Badge>
-                                {/* Hover popup */}
-                                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-10">
-                                    <div className="bg-popover border border-border shadow-lg rounded-none p-2 min-w-[120px]">
-                                        <div className="flex flex-wrap gap-1">
-                                            {asset.tags.slice(4).map((tag, index) => (
-                                                <Badge
-                                                    key={index}
-                                                    variant="outline"
-                                                    className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50`}
-                                                >
-                                                    {tag}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </div>
+                            )
+                        ))}
+                        {showTagInput ? (
+                            <Input
+                                value={newTagInput}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setNewTagInput(value);
+                                    if (!value.trim()) {
+                                        setShowTagInput(false);
+                                        setNewTagInput('');
+                                    }
+                                }}
+                                onBlur={() => {
+                                    setTimeout(() => {
+                                        setShowTagInput(false);
+                                        setNewTagInput('');
+                                    }, 100);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && newTagInput.trim()) {
+                                        handleAddTag();
+                                    }
+                                    if (e.key === 'Escape') {
+                                        setShowTagInput(false);
+                                        setNewTagInput('');
+                                    }
+                                }}
+                                className="h-[22px] min-w-0 w-16 text-xs rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-accent/30"
+                                autoFocus
+                            />
+                        ) : (
+                            <Badge
+                                variant="outline"
+                                className="text-xs cursor-pointer hover:bg-accent/50 rounded-none h-[22px] w-[22px] flex items-center justify-center relative group"
+                                onClick={() => {
+                                    setShowTagInput(true);
+                                    setNewTagInput('');
+                                }}
+                            >
+                                <div className="absolute inset-0 flex items-center justify-center bg-accent/0 group-hover:bg-accent/30 transition-colors">
+                                    <Plus className="h-3 w-3 text-white" />
                                 </div>
-                            </div>
+                            </Badge>
                         )}
                     </div>
 
@@ -311,11 +491,27 @@ export const UserAssetsList = memo(function UserAssetsList({
         setSearchQuery('');
     }, [pathname]);
 
-    // Force refresh of assets periodically when visible
+    // Add editing state to prevent refreshes while editing
+    const [isEditing, setIsEditing] = useState(false);
+
+    // Modify the refresh effect to respect editing state
     useEffect(() => {
-        if (document.visibilityState === 'visible' && onAssetUpdate) {
-            const interval = setInterval(onAssetUpdate, 30000); // Refresh every 30 seconds
+        if (document.visibilityState === 'visible' && onAssetUpdate && !isEditing) {
+            const interval = setInterval(onAssetUpdate, 30000);
             return () => clearInterval(interval);
+        }
+    }, [onAssetUpdate, isEditing]);
+
+    // Modify AssetCard to handle editing state
+    const handleEditStart = useCallback(() => {
+        setIsEditing(true);
+    }, []);
+
+    const handleEditEnd = useCallback(() => {
+        setIsEditing(false);
+        // Optional: Trigger a single refresh after editing
+        if (onAssetUpdate) {
+            setTimeout(onAssetUpdate, 500);
         }
     }, [onAssetUpdate]);
 
@@ -397,6 +593,8 @@ export const UserAssetsList = memo(function UserAssetsList({
                                 onVisibilityToggle={handleVisibilityToggle}
                                 currentLanguage={currentLanguage}
                                 onSelect={() => { }}
+                                onEditStart={handleEditStart}
+                                onEditEnd={handleEditEnd}
                             />
                         ))}
                     </div>

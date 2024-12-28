@@ -14,7 +14,7 @@ export function CommunityGrid({
     const publicProducts = products.filter(product => product.visibility === 'public');
 
     return (
-        <div className="w-full">
+        <div className="w-full h-[calc(100vh-200px)]">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                 {publicProducts.map((product) => (
                     <CommunityItem
