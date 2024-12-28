@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Globe, Lock, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase/supabase';
 import { toast } from 'sonner';
@@ -9,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/actions/utils";
 import { getTagColor } from '@/lib/utils/tagColors';
 import { motion } from 'framer-motion';
+import { debounce } from 'lodash';
 
 interface ProductCustomizationProps {
     product: CommunityProduct;
@@ -28,10 +28,39 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
     const inputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Fetch product details on mount
+    const debouncedSave = useMemo(
+        () => debounce(async (updates: { name?: string; description?: string; tags?: string[] }) => {
+            if (!product.id || product.id === 'temp-id') return;
+
+            try {
+                const { error } = await supabase.rpc('update_product_content', {
+                    p_product_id: product.id,
+                    p_name: updates.name || name,
+                    p_description: updates.description || description || null,
+                    p_tags: updates.tags || tags || []
+                });
+
+                if (error) throw error;
+            } catch (error) {
+                console.error('Error updating product:', error);
+                toast.error('Failed to save changes');
+            }
+        }, 1000),
+        [product.id, name, description, tags]
+    );
+
+    // Cleanup debounce on unmount
+    useEffect(() => {
+        return () => {
+            debouncedSave.cancel();
+        };
+    }, [debouncedSave]);
+
+    // Fetch product details on mount and update local state
     useEffect(() => {
         const fetchProductDetails = async () => {
             try {
+                setIsLoading(true);
                 const { data, error } = await supabase.rpc('get_product_by_id', {
                     p_product_id: product.id
                 });
@@ -90,47 +119,32 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
         }
     };
 
-    const saveChanges = async () => {
-        if (!product.id || product.id === 'temp-id') return;
-
-        try {
-            const { error } = await supabase.rpc('update_product_content', {
-                p_product_id: product.id,
-                p_name: name,
-                p_description: description || null,
-                p_tags: tags || []
-            });
-
-            if (error) throw error;
-            toast.success('Changes saved');
-        } catch (error) {
-            console.error('Error updating product:', error);
-            toast.error('Failed to save changes');
-        }
-    };
-
     const handleNameSubmit = async () => {
+        if (!name.trim()) return;
         setIsEditingName(false);
-        await saveChanges();
+        debouncedSave({ name: name.trim() });
     };
 
     const handleDescriptionSubmit = async () => {
         setIsEditingDescription(false);
-        await saveChanges();
+        debouncedSave({ description: description?.trim() || '' });
     };
 
     const handleTagEdit = async (index: number, newValue: string) => {
-        const newTags = [...tags];
-        if (newValue.trim()) {
-            newTags[index] = newValue.trim();
+        if (!newValue.trim()) {
+            // If tag is empty, remove it
+            const newTags = tags.filter((_, i) => i !== index);
             setTags(newTags);
-            await saveChanges();
-        } else {
-            newTags.splice(index, 1);
-            setTags(newTags);
-            await saveChanges();
+            setEditingTag(null);
+            debouncedSave({ tags: newTags });
+            return;
         }
+
+        const newTags = [...tags];
+        newTags[index] = newValue.trim();
+        setTags(newTags);
         setEditingTag(null);
+        debouncedSave({ tags: newTags });
     };
 
     const handleAddTag = async () => {
@@ -139,7 +153,10 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
             setTags(newTags);
             setNewTagInput('');
             setShowTagInput(false);
-            await saveChanges();
+            debouncedSave({ tags: newTags });
+        } else {
+            setShowTagInput(false);
+            setNewTagInput('');
         }
     };
 
@@ -164,7 +181,7 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute bottom-4 left-4 flex flex-col gap-2"
+            className="absolute bottom-4 left-[19px] flex flex-col gap-2"
         >
             {/* Name and Visibility */}
             <motion.div
@@ -181,11 +198,14 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
                             onChange={(e) => setName(e.target.value)}
                             onBlur={handleNameSubmit}
                             onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
-                            className="w-48 text-sm rounded-none"
+                            className="h-6 min-w-0 w-auto max-w-[200px] text-sm font-medium rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent hover:bg-accent/10"
                             autoFocus
                         />
                     ) : (
-                        <span className="text-sm text-foreground cursor-pointer hover:text-accent" onClick={() => setIsEditingName(true)}>
+                        <span
+                            className="text-sm text-foreground cursor-pointer hover:text-accent"
+                            onClick={() => setIsEditingName(true)}
+                        >
                             {name}
                         </span>
                     )
@@ -212,6 +232,7 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.2 }}
+                    className="w-full max-w-[700px]"
                 >
                     {isEditingDescription ? (
                         <Input
@@ -219,12 +240,13 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             onBlur={handleDescriptionSubmit}
-                            className="w-auto min-w-[200px] text-sm rounded-none"
+                            onKeyDown={(e) => e.key === 'Enter' && handleDescriptionSubmit()}
+                            className="h-5 w-full min-w-[700px] text-xs rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent hover:bg-accent/10"
                             autoFocus
                         />
                     ) : (
                         <span
-                            className="text-sm text-muted-foreground cursor-pointer hover:text-accent"
+                            className="text-xs text-muted-foreground cursor-pointer hover:text-accent"
                             onClick={() => setIsEditingDescription(true)}
                         >
                             {description}
@@ -246,10 +268,38 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
                             <Input
                                 key={index}
                                 value={tag}
-                                onChange={(e) => handleTagEdit(index, e.target.value)}
-                                onBlur={() => handleTagEdit(index, tag)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleTagEdit(index, tag)}
-                                className="w-24 text-xs rounded-none"
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    const newTags = [...tags];
+                                    newTags[index] = e.target.value;
+                                    setTags(newTags);
+                                }}
+                                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                                    const value = e.target.value;
+                                    if (!value.trim()) {
+                                        // Remove empty tags on blur
+                                        const newTags = tags.filter((_, i) => i !== index);
+                                        setTags(newTags);
+                                        setEditingTag(null);
+                                        debouncedSave({ tags: newTags });
+                                    } else {
+                                        handleTagEdit(index, value);
+                                    }
+                                }}
+                                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                    if (e.key === 'Enter') {
+                                        handleTagEdit(index, e.currentTarget.value);
+                                    }
+                                    if (e.key === 'Escape') {
+                                        setEditingTag(null);
+                                    }
+                                    if (e.key === 'Backspace' && !e.currentTarget.value) {
+                                        const newTags = tags.filter((_, i) => i !== index);
+                                        setTags(newTags);
+                                        setEditingTag(null);
+                                        debouncedSave({ tags: newTags });
+                                    }
+                                }}
+                                className="h-[22px] min-w-0 w-20 text-xs rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent hover:bg-accent/10"
                                 autoFocus
                             />
                         ) : (
@@ -257,40 +307,67 @@ export function ProductCustomization({ product }: ProductCustomizationProps) {
                                 key={index}
                                 variant="outline"
                                 className={cn(
-                                    "text-xs cursor-pointer hover:bg-accent/50 rounded-[4px]",
+                                    "text-xs cursor-pointer hover:bg-accent/50 rounded-none h-[22px] flex items-center px-2 group",
                                     getTagColor(tag)
                                 )}
                                 onClick={() => setEditingTag(index)}
                             >
                                 {tag}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const newTags = tags.filter((_, i) => i !== index);
+                                        setTags(newTags);
+                                        debouncedSave({ tags: newTags });
+                                    }}
+                                    className="ml-1 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                                >
+                                    ×
+                                </button>
                             </Badge>
                         )
                     ))}
                     {showTagInput ? (
                         <Input
                             value={newTagInput}
-                            onChange={(e) => setNewTagInput(e.target.value)}
-                            onBlur={() => {
-                                handleAddTag();
-                                setShowTagInput(false);
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleAddTag();
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setNewTagInput(value);
+                                if (!value.trim()) {
                                     setShowTagInput(false);
+                                    setNewTagInput('');
                                 }
                             }}
-                            placeholder="Add tag..."
-                            className="w-24 text-xs rounded-none"
+                            onBlur={() => {
+                                setTimeout(() => {
+                                    setShowTagInput(false);
+                                    setNewTagInput('');
+                                }, 100);
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newTagInput.trim()) {
+                                    handleAddTag();
+                                }
+                                if (e.key === 'Escape') {
+                                    setShowTagInput(false);
+                                    setNewTagInput('');
+                                }
+                            }}
+                            className="h-[22px] min-w-0 w-16 text-xs rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent hover:bg-accent/10"
                             autoFocus
                         />
                     ) : (
                         <Badge
                             variant="outline"
-                            className="text-xs cursor-pointer hover:bg-accent/50 rounded-[4px] h-[22px] flex items-center justify-center"
-                            onClick={() => setShowTagInput(true)}
+                            className="text-xs cursor-pointer hover:bg-accent/50 rounded-none h-[22px] w-[22px] flex items-center justify-center relative group"
+                            onClick={() => {
+                                setShowTagInput(true);
+                                setNewTagInput('');
+                            }}
                         >
-                            <Plus className="h-3 w-3" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-accent/0 group-hover:bg-accent/30 transition-colors">
+                                <Plus className="h-3 w-3 text-white" />
+                            </div>
                         </Badge>
                     )}
                 </motion.div>

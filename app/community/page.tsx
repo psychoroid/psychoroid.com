@@ -18,6 +18,22 @@ import { debounce } from 'lodash';
 import { CommunityFilters, type SortFilter } from '@/components/community/CommunityFilters';
 
 export default function CommunityPage() {
+    // Add font preload optimization
+    useEffect(() => {
+        // Preload fonts only when they're needed
+        const fontLink = document.createElement('link');
+        fontLink.rel = 'preload';
+        fontLink.as = 'font';
+        fontLink.type = 'font/woff2';
+        fontLink.href = '/_next/static/media/a34f9d1faa5f3315-s.p.woff2';
+        fontLink.crossOrigin = 'anonymous';
+        document.head.appendChild(fontLink);
+
+        return () => {
+            document.head.removeChild(fontLink);
+        };
+    }, []);
+
     const { user } = useUser();
     const { currentLanguage } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
@@ -110,39 +126,35 @@ export default function CommunityPage() {
 
     // Initial fetch and refetch on page/filter change
     useEffect(() => {
-        if (currentPage === 1) {
-            // For page 1, use the current search query
-            debouncedSearch(searchQuery);
-        } else {
-            // For other pages, use the immediate fetch
-            fetchCommunityProducts(currentPage, searchQuery, activeFilter);
-        }
+        const fetchData = async () => {
+            if (currentPage === 1) {
+                await fetchCommunityProducts(1, searchQuery, activeFilter);
+            } else {
+                await fetchCommunityProducts(currentPage, searchQuery, activeFilter);
+            }
+        };
+
+        fetchData();
 
         if (user?.id) {
             fetchUserLikes();
         }
-    }, [currentPage, user?.id, fetchUserLikes, fetchCommunityProducts, activeFilter, debouncedSearch, searchQuery]);
+    }, [currentPage, user?.id, activeFilter, fetchUserLikes, fetchCommunityProducts, searchQuery]);
 
+    // Remove the auto-refresh interval as it's not needed for filter changes
     useEffect(() => {
-        // Set up auto-refresh interval
-        const interval = setInterval(() => {
-            fetchCommunityProducts(currentPage, searchQuery);
-        }, 5 * 60 * 1000); // Refreshes every 5 minutes
-
-        // Also refresh when tab becomes visible
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                fetchCommunityProducts(currentPage, searchQuery);
+                fetchCommunityProducts(currentPage, searchQuery, activeFilter);
             }
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
         return () => {
-            clearInterval(interval);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [fetchCommunityProducts, currentPage, searchQuery]);
+    }, [fetchCommunityProducts, currentPage, searchQuery, activeFilter]);
 
     const handleLike = async (productId: string) => {
         if (!user) return;
@@ -213,16 +225,23 @@ export default function CommunityPage() {
         setSelectedProduct(product);
     };
 
-    const handleFilterChange = (filter: SortFilter) => {
+    const handleFilterChange = useCallback((filter: SortFilter) => {
         setActiveFilter(filter);
         setCurrentPage(1);
+        // Use the current searchQuery from state
         fetchCommunityProducts(1, searchQuery, filter);
-    };
+    }, [searchQuery, fetchCommunityProducts]);
 
     return (
         <div className="h-svh bg-background flex flex-col overflow-hidden">
             <CommunityNavbar className="sticky top-0 z-50" />
-            <main className="flex-grow p-4 md:p-8 pt-24 md:pt-24 overflow-y-auto">
+            <main
+                className="flex-grow p-4 md:p-8 pt-24 md:pt-24 overflow-y-auto scrollbar-hide"
+                style={{
+                    WebkitOverflowScrolling: 'touch',
+                    overscrollBehavior: 'contain'
+                }}
+            >
                 <div className="container mx-auto">
                     <div className="max-w-3xl mx-auto mb-8">
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">

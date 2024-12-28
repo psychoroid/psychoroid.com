@@ -8,7 +8,7 @@ import { Mesh, Box3, Vector3 } from 'three';
 interface PreviewModelProps {
     url: string;
     small?: boolean;
-    onLoad?: () => void;
+    onLoad?: (model?: THREE.Group) => void;
     onError?: (error: Error) => void;
     gridView?: boolean;
 }

@@ -288,7 +288,7 @@ const SoftwareIntegration: FC<SoftwareIntegrationProps> = ({ modelUrl }) => {
     };
 
     return (
-        <div className="absolute left-4 top-4 z-10" ref={menuRef}>
+        <div className="absolute left-[19px] top-4 z-10" ref={menuRef}>
             <div className="relative flex items-center gap-1">
                 <Button
                     variant="ghost"

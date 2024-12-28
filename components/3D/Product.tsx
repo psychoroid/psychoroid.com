@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useLoader } from '@react-three/fiber';
 import { Mesh, Box3, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { Html } from '@react-three/drei';
 import { ProductProps } from '@/types/components';
 
 const INITIAL_ROTATION: [number, number, number] = [0, 0, 0];
@@ -19,6 +20,7 @@ export function Product({
   const meshRef = useRef<Mesh>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Only load if we have a valid URL
   const gltf = useLoader(
@@ -27,9 +29,12 @@ export function Product({
     (loader) => {
       loader.setCrossOrigin('anonymous');
     },
-    (error) => {
-      console.error('Error loading model:', error);
-      setError('Failed to load model');
+    (event) => {
+      // Only handle actual errors, ignore progress events
+      if (event instanceof Error) {
+        console.error('Error loading model:', event.message);
+        setError(event.message);
+      }
     }
   );
 
@@ -67,8 +72,19 @@ export function Product({
     }
   }, [modelUrl, onModelStateChange, gltf, isInitialized, error]);
 
-  // Skip rendering if it's a default asset or there's an error
-  if (!gltf || !modelUrl || error || modelUrl?.includes('default-assets/')) {
+  // Show error message if any
+  if (error) {
+    return (
+      <Html center>
+        <div className="text-red-500 text-sm bg-black/50 px-3 py-1 rounded-none backdrop-blur-sm">
+          {error}
+        </div>
+      </Html>
+    );
+  }
+
+  // Skip rendering if conditions not met
+  if (!gltf || !modelUrl || modelUrl?.includes('default-assets/')) {
     return null;
   }
 

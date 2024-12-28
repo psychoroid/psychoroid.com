@@ -60,17 +60,47 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
     onEditStart: () => void;
     onEditEnd: () => void;
 }) => {
-    const [imageError, setImageError] = useState(false)
-    const [showDownloadModal, setShowDownloadModal] = useState(false);
+    const [localAsset, setLocalAsset] = useState(asset);
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingDescription, setIsEditingDescription] = useState(false);
     const [editingTag, setEditingTag] = useState<number | null>(null);
     const [showTagInput, setShowTagInput] = useState(false);
     const [newTagInput, setNewTagInput] = useState('');
-    const [localAsset, setLocalAsset] = useState(asset);
-
+    const [imageError, setImageError] = useState(false);
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
-    const textareaRef = useRef<HTMLInputElement>(null);
+
+    const debouncedSave = useMemo(
+        () => debounce(async (updates: { name?: string; description?: string; tags?: string[] }) => {
+            try {
+                const { error } = await supabase.rpc('update_product_content', {
+                    p_product_id: localAsset.id,
+                    p_name: updates.name || localAsset.name,
+                    p_description: updates.description || localAsset.description || null,
+                    p_tags: updates.tags || localAsset.tags || []
+                });
+
+                if (error) throw error;
+                onEditEnd();
+            } catch (error) {
+                console.error('Error updating asset:', error);
+                toast.error('Failed to save changes');
+            }
+        }, 1000),
+        [localAsset, onEditEnd]
+    );
+
+    // Update local state when prop changes
+    useEffect(() => {
+        setLocalAsset(asset);
+    }, [asset]);
+
+    // Cleanup debounce on unmount
+    useEffect(() => {
+        return () => {
+            debouncedSave.cancel();
+        };
+    }, [debouncedSave]);
 
     const handleDownload = () => {
         // Just show the download modal, it will handle the download recording
@@ -157,49 +187,35 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
     const handleNameSubmit = useCallback(async () => {
         if (!localAsset.name.trim()) return;
         setIsEditingName(false);
-
-        try {
-            const { error } = await supabase.rpc('update_product_name', {
-                p_product_id: localAsset.id,
-                p_name: localAsset.name.trim()
-            });
-            if (error) throw error;
-        } catch (error) {
-            console.error('Error updating name:', error);
-        }
-    }, [localAsset]);
+        debouncedSave({ name: localAsset.name.trim() });
+    }, [localAsset.name, debouncedSave]);
 
     const handleDescriptionSubmit = useCallback(async () => {
         setIsEditingDescription(false);
+        debouncedSave({ description: localAsset.description?.trim() || '' });
+    }, [localAsset.description, debouncedSave]);
 
+    const handleRemoveTag = useCallback(async (indexToRemove: number) => {
         try {
-            const { error } = await supabase.rpc('update_product_description', {
+            const newTags = localAsset.tags.filter((_, i) => i !== indexToRemove);
+
+            // Update local state first
+            setLocalAsset(prev => ({ ...prev, tags: newTags }));
+
+            // Save to database
+            const { error } = await supabase.rpc('update_product_content', {
                 p_product_id: localAsset.id,
-                p_description: localAsset.description?.trim() || ''
-            });
-            if (error) throw error;
-        } catch (error) {
-            console.error('Error updating description:', error);
-        }
-    }, [localAsset]);
-
-    const handleTagEdit = useCallback(async (index: number, tag: string) => {
-        if (!tag.trim()) return;
-
-        const newTags = [...localAsset.tags];
-        newTags[index] = tag.trim();
-        setLocalAsset(prev => ({ ...prev, tags: newTags }));
-        setEditingTag(null);
-
-        try {
-            const { error } = await supabase.rpc('update_product_tags', {
-                p_product_id: localAsset.id,
+                p_name: localAsset.name,
+                p_description: localAsset.description || null,
                 p_tags: newTags
             });
+
             if (error) throw error;
         } catch (error) {
-            console.error('Error updating tags:', error);
-            // Silently fail and keep UI state
+            console.error('Error removing tag:', error);
+            toast.error('Failed to remove tag');
+            // Revert local state on error
+            setLocalAsset(prev => ({ ...prev, tags: localAsset.tags }));
         }
     }, [localAsset]);
 
@@ -210,37 +226,63 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
             return;
         }
 
-        const newTags = [...localAsset.tags, newTagInput.trim()];
-        setLocalAsset(prev => ({ ...prev, tags: newTags }));
-        setNewTagInput('');
-        setShowTagInput(false);
-
         try {
-            const { error } = await supabase.rpc('update_product_tags', {
+            const newTags = [...localAsset.tags, newTagInput.trim()];
+
+            // Update local state first
+            setLocalAsset(prev => ({ ...prev, tags: newTags }));
+
+            // Save to database
+            const { error } = await supabase.rpc('update_product_content', {
                 p_product_id: localAsset.id,
+                p_name: localAsset.name,
+                p_description: localAsset.description || null,
                 p_tags: newTags
             });
+
             if (error) throw error;
+
+            // Clear input state
+            setNewTagInput('');
+            setShowTagInput(false);
         } catch (error) {
             console.error('Error adding tag:', error);
+            toast.error('Failed to add tag');
+            // Revert local state on error
+            setLocalAsset(prev => ({ ...prev, tags: localAsset.tags }));
         }
     }, [newTagInput, localAsset]);
 
-    const handleRemoveTag = useCallback(async (indexToRemove: number) => {
-        const newTags = localAsset.tags.filter((_, i) => i !== indexToRemove);
-        setLocalAsset(prev => ({ ...prev, tags: newTags }));
+    const handleTagEdit = useCallback(async (index: number, tag: string) => {
+        if (!tag.trim()) {
+            handleRemoveTag(index);
+            return;
+        }
 
         try {
-            const { error } = await supabase.rpc('update_product_tags', {
+            const newTags = [...localAsset.tags];
+            newTags[index] = tag.trim();
+
+            // Update local state first
+            setLocalAsset(prev => ({ ...prev, tags: newTags }));
+            setEditingTag(null);
+
+            // Save to database
+            const { error } = await supabase.rpc('update_product_content', {
                 p_product_id: localAsset.id,
+                p_name: localAsset.name,
+                p_description: localAsset.description || null,
                 p_tags: newTags
             });
+
             if (error) throw error;
         } catch (error) {
-            console.error('Error removing tag:', error);
-            // Silently fail and keep UI state
+            console.error('Error editing tag:', error);
+            toast.error('Failed to edit tag');
+            // Revert local state on error
+            setLocalAsset(prev => ({ ...prev, tags: localAsset.tags }));
         }
-    }, [localAsset]);
+    }, [localAsset, handleRemoveTag]);
 
     const startEditing = useCallback(() => {
         setIsEditingName(true);
@@ -302,7 +344,7 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
 
                     {isEditingDescription ? (
                         <Input
-                            ref={textareaRef as any}
+                            ref={inputRef as any}
                             value={localAsset.description || ''}
                             onChange={(e) => setLocalAsset(prev => ({ ...prev, description: e.target.value }))}
                             onBlur={handleDescriptionSubmit}
@@ -331,23 +373,60 @@ const AssetCard = memo(({ asset, index, onVisibilityToggle, currentLanguage, onS
                                         newTags[index] = e.target.value;
                                         setLocalAsset(prev => ({ ...prev, tags: newTags }));
                                     }}
-                                    onBlur={() => handleTagEdit(index, tag)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') handleTagEdit(index, tag);
-                                        if (e.key === 'Escape') setEditingTag(null);
-                                        if (e.key === 'Backspace' && !tag) handleRemoveTag(index);
+                                    onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                                        const value = e.target.value;
+                                        if (!value.trim()) {
+                                            // Remove empty tags on blur
+                                            const newTags = localAsset.tags.filter((_, i) => i !== index);
+                                            setLocalAsset(prev => ({ ...prev, tags: newTags }));
+                                            setEditingTag(null);
+                                            debouncedSave({ tags: newTags });
+                                        } else {
+                                            handleTagEdit(index, value);
+                                        }
                                     }}
-                                    className="h-[22px] min-w-0 w-20 text-xs rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-accent/30"
+                                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                        if (e.key === 'Enter') {
+                                            handleTagEdit(index, e.currentTarget.value);
+                                        }
+                                        if (e.key === 'Escape') {
+                                            // Restore original tag on escape
+                                            setEditingTag(null);
+                                        }
+                                        if (e.key === 'Backspace' && !e.currentTarget.value) {
+                                            // Remove tag when backspace is pressed on empty tag
+                                            const newTags = localAsset.tags.filter((_, i) => i !== index);
+                                            setLocalAsset(prev => ({ ...prev, tags: newTags }));
+                                            setEditingTag(null);
+                                            debouncedSave({ tags: newTags });
+                                        }
+                                    }}
+                                    className="h-[22px] min-w-0 w-20 text-xs rounded-none px-1 py-0 border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent hover:bg-accent/10"
                                     autoFocus
                                 />
                             ) : (
                                 <Badge
                                     key={index}
                                     variant="outline"
-                                    className={`text-xs rounded-none ${getTagColor(tag)} hover:bg-accent/50 cursor-pointer h-[22px] flex items-center px-2 group`}
-                                    onClick={() => startTagEditing(index)}
+                                    className={cn(
+                                        "text-xs cursor-pointer hover:bg-accent/50 rounded-none h-[22px] flex items-center px-2 group",
+                                        getTagColor(tag)
+                                    )}
+                                    onClick={() => {
+                                        onEditStart();
+                                        setEditingTag(index);
+                                    }}
                                 >
                                     {tag}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveTag(index);
+                                        }}
+                                        className="ml-1 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                                    >
+                                        ×
+                                    </button>
                                 </Badge>
                             )
                         ))}

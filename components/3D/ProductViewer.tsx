@@ -51,16 +51,31 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
     const [isAutoRotating, setIsAutoRotating] = useState(false);
     const [isZoomToCursor, setIsZoomToCursor] = useState(false);
 
-    // Construct URLs
-    const imageUrl = imagePath ?
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${imagePath}` :
-        undefined;
+    // Construct URLs with proper handling
+    const getStorageUrl = (path: string, type: 'image' | 'model') => {
+        if (!path) return undefined;
+        if (path.startsWith('http')) return path;
 
-    const fullModelUrl = modelUrl ?
-        modelUrl.startsWith('http') ?
-            modelUrl :
-            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-models/${modelUrl}` :
-        undefined;
+        const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (!baseUrl) return path;
+
+        // Extract UUID and filename if present
+        const uuidMatch = path.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+        const uuid = uuidMatch ? uuidMatch[1] : null;
+
+        if (uuid && path.includes('_generated-')) {
+            // For generated images, keep them in the product-models bucket with their UUID folder
+            return `${baseUrl}/storage/v1/object/public/product-models/${uuid}/${path.split('/').pop()}`;
+        }
+
+        // For regular assets
+        const bucket = type === 'image' ? 'product-images' : 'product-models';
+        const cleanPath = path.replace(`${bucket}/`, '').replace(/^\//, '');
+        return `${baseUrl}/storage/v1/object/public/${bucket}/${cleanPath}`;
+    };
+
+    const imageUrl = imagePath ? getStorageUrl(imagePath, 'image') : undefined;
+    const fullModelUrl = modelUrl ? getStorageUrl(modelUrl, 'model') : undefined;
 
     // Update zoom constants
     const ZOOM_STEP = 1.1; // Reduced for finer control
@@ -269,7 +284,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                     enablePan={true}
                     enableRotate={true}
                     autoRotate={isAutoRotating}
-                    autoRotateSpeed={0.5}
+                    autoRotateSpeed={1}
                     onChange={handleControlsChange}
                     target={targetVector}
                     minDistance={MIN_DISTANCE}
@@ -289,7 +304,7 @@ export function ProductViewer({ imagePath, modelUrl, isRotating = false, zoom = 
                     zoomToCursor={isZoomToCursor}
                 />
             </Canvas>
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+            <div className="absolute right-[19px] top-1/2 transform -translate-y-1/2">
                 <ProductControls
                     isRotating={isAutoRotating}
                     onRotateToggle={handleRotateToggle}
