@@ -17,8 +17,9 @@ import { getLocalStorageItem, setLocalStorageItem, clearAuthState } from '@/lib/
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
 import { ResourcesDropdown } from './dropdowns/DevelopersDropdown';
+import { cn } from '@/lib/actions/utils';
 
-export function Navbar() {
+export function Navbar({ className }: { className?: string }) {
     const router = useRouter();
     const { session, roidsBalance, signOut } = useUser();
     const { theme, setTheme } = useTheme();
@@ -162,7 +163,7 @@ export function Navbar() {
 
     return (
         <Dock>
-            <nav className="bg-background">
+            <nav className={cn("bg-background", className)}>
                 <div className="max-w-3xl mx-auto pl-2 pr-4">
                     <div className="flex items-center justify-between h-12">
                         <div className="flex items-center space-x-4">

@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Html, Environment, ContactShadows, Stage } from '@react-three/drei';
+import { OrbitControls, Html, Environment, ContactShadows, Stage, PerspectiveCamera } from '@react-three/drei';
 import Loader from '@/components/design/loader';
 import Image from 'next/image';
 import { PreviewModel } from '../3D/PreviewModel';
@@ -26,14 +26,11 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvas
             const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
             if (!baseUrl) throw new Error('Supabase URL not configured');
 
-            // For default model, use the provided bucket
             if (bucket) {
-                // Remove bucket name if it's already in the path
                 const cleanPath = path.replace(`${bucket}/`, '');
                 return `${baseUrl}/storage/v1/object/public/${bucket}/${cleanPath}`;
             }
 
-            // For user models, use the path as is
             const parts = path.split('/');
             if (parts.length < 2) throw new Error('Invalid storage path format');
 
@@ -71,14 +68,7 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvas
     return (
         <div className="relative w-full h-full" style={{ contain: 'strict' }}>
             <Canvas
-                id={canvasId}
                 frameloop="demand"
-                camera={{
-                    position: [0, 0, small ? 2.2 : 2.4],
-                    fov: 45,
-                    near: 0.1,
-                    far: 1000
-                }}
                 style={{ background: 'none' }}
                 gl={{
                     alpha: true,
@@ -86,16 +76,25 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvas
                     preserveDrawingBuffer: true,
                     premultipliedAlpha: false,
                     failIfMajorPerformanceCaveat: false,
-                    toneMapping: 3, // ACESFilmicToneMapping
+                    toneMapping: 3,
                     toneMappingExposure: 1.2
                 }}
             >
-                {/* Main lighting setup */}
+                <PerspectiveCamera
+                    makeDefault
+                    position={[0, 0, small ? 2.2 : 2.4]}
+                    fov={45}
+                    near={0.1}
+                    far={1000}
+                />
+
                 <Stage
                     intensity={1}
                     environment="city"
                     adjustCamera={false}
                     shadows={false}
+                    preset="rembrandt"
+                    scale={1}
                 >
                     <Suspense fallback={
                         <Html center>
@@ -107,13 +106,12 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvas
                         <PreviewModel
                             url={getStorageUrl(modelUrl)}
                             small={small}
-                            onLoad={() => setIsLoading(false)}
                             gridView={!small}
+                            onLoad={() => setIsLoading(false)}
                         />
                     </Suspense>
                 </Stage>
 
-                {/* Additional lighting for better visibility */}
                 <ambientLight intensity={0.8} />
                 <directionalLight
                     position={[5, 5, 5]}
@@ -126,7 +124,6 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvas
                     castShadow={false}
                 />
 
-                {/* Environment and effects */}
                 <Environment preset="city" />
                 <ContactShadows
                     opacity={0.4}
@@ -140,8 +137,12 @@ export function ModelPreview({ modelUrl, imageUrl, small = false, bucket, canvas
                 <OrbitControls
                     enableZoom={false}
                     enablePan={false}
-                    enableRotate={false}
+                    enableRotate={true}
+                    autoRotate={true}
+                    autoRotateSpeed={1.8}
                     makeDefault
+                    minPolarAngle={Math.PI / 2}
+                    maxPolarAngle={Math.PI / 2}
                 />
             </Canvas>
         </div>

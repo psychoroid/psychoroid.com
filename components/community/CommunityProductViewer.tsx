@@ -2,7 +2,7 @@
 
 import React, { Suspense, useRef, useState, useEffect, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, AccumulativeShadows, RandomizedLight } from '@react-three/drei';
+import { OrbitControls, Environment, AccumulativeShadows, RandomizedLight, Stage } from '@react-three/drei';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
 import { Product } from '@/components/community/CommunityProduct3D';
 import { ModelState } from '@/types/components';
@@ -214,16 +214,21 @@ export function CommunityProductViewer({
                     alpha: true,
                     antialias: false,
                     toneMapping: 3,
-                    toneMappingExposure: 1.5,
-                    outputColorSpace: "srgb"
+                    toneMappingExposure: 0.8,
+                    outputColorSpace: "srgb",
+                    powerPreference: "high-performance",
+                    failIfMajorPerformanceCaveat: true
                 }}
+                dpr={[1, 2]} // Limit pixel ratio for better performance
+                frameloop="demand"
+                performance={{ min: 0.5 }}
                 camera={{
                     position: cameraPositionVector,
                     fov: 45,
                     near: 0.1,
                     far: 1000
                 }}
-                shadows
+                shadows={false} // Disable shadows for better performance
                 style={{ width: '100%', height: '100%' }}
                 className="bg-background dark:bg-background"
                 id="main-product-viewer"
@@ -242,16 +247,27 @@ export function CommunityProductViewer({
                 </Suspense>
 
                 {/* Enhanced lighting setup */}
+                <Stage
+                    intensity={0.8}
+                    environment="warehouse"
+                    adjustCamera={false}
+                    shadows={false}
+                    preset="rembrandt"
+                >
+                    {/* Product is now inside Stage */}
+                </Stage>
+
+                {/* Improved lighting setup for better details */}
                 <directionalLight
                     position={[5, 5, 5]}
-                    intensity={1.5}
+                    intensity={0.8}
                     castShadow
                     shadow-mapSize={[1024, 1024]}
                     shadow-bias={-0.0001}
                 />
                 <directionalLight
                     position={[-5, 5, -5]}
-                    intensity={0.8}
+                    intensity={0.5}
                     castShadow
                     shadow-mapSize={[1024, 1024]}
                     shadow-bias={-0.0001}
@@ -260,11 +276,11 @@ export function CommunityProductViewer({
                     position={[10, 10, 5]}
                     angle={0.15}
                     penumbra={1}
-                    intensity={1}
+                    intensity={0.6}
                     castShadow
                     shadow-bias={-0.0001}
                 />
-                <ambientLight intensity={0.3} />
+                <ambientLight intensity={0.2} />
 
                 {/* Enhanced environment and effects */}
                 <Environment
@@ -295,9 +311,9 @@ export function CommunityProductViewer({
                 {/* Post-processing effects */}
                 <EffectComposer multisampling={0}>
                     <Bloom
-                        intensity={0.4}
-                        luminanceThreshold={0.9}
-                        luminanceSmoothing={0.4}
+                        intensity={0.2}
+                        luminanceThreshold={1.0}
+                        luminanceSmoothing={0.6}
                     />
                     <SMAA />
                 </EffectComposer>
@@ -326,6 +342,7 @@ export function CommunityProductViewer({
                     enableDamping={true}
                     dampingFactor={0.05}
                     zoomToCursor={isZoomToCursor}
+                    makeDefault
                 />
             </Canvas>
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -348,13 +365,13 @@ export function CommunityProductViewer({
             {isExpanded ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-8" onClick={handleClose}>
                     <div className="absolute inset-0 bg-black bg-opacity-80"></div>
-                    <div className="relative w-full h-[500px] max-w-2xl mx-auto cursor-default bg-background border border-border rounded-none shadow-lg p-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative w-full h-[500px] max-w-2xl mx-auto cursor-default bg-background border border-border/40 dark:border-border/40 rounded-none shadow-lg p-4" onClick={(e) => e.stopPropagation()}>
                         <div className="w-full h-full flex items-center justify-center">
                             {renderCanvas(true)}
                         </div>
                         <div className="absolute top-2 right-3 flex items-center space-x-2">
                             <button
-                                className="rounded-none border-2 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm px-2 py-1 text-sm focus:outline-none"
+                                className="rounded-none border border-border/40 dark:border-border/40 bg-black/5 dark:bg-white/5 text-gray-800 dark:text-gray-200 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all duration-200 backdrop-blur-sm px-2 py-1 text-sm focus:outline-none"
                                 onClick={handleClose}
                             >
                                 ESC

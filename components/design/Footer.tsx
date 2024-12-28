@@ -9,12 +9,13 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/lib/contexts/TranslationContext';
 import { t } from '@/lib/i18n/translations';
 import { PHIcon } from '@/components/icons/PHIcon';
+import { cn } from '@/lib/actions/utils';
 
-export function Footer() {
+export function Footer({ className }: { className?: string }) {
     const { currentLanguage } = useTranslation();
 
     return (
-        <nav className="bg-background/80 backdrop-blur-sm border-t border-border relative z-50">
+        <nav className={cn("bg-background/80 backdrop-blur-sm border-t border-border relative z-50", className)}>
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="flex items-center justify-end h-8">
                     <div className="hidden lg:flex items-center text-xs text-muted-foreground">
