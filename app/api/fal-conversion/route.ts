@@ -20,6 +20,7 @@ interface Hyper3dRodinInput {
   tier?: Tier;
   use_hyper?: boolean;
   addons?: Addons;
+  bbox_condition?: [number, number, number];
 }
 
 interface Hyper3dRodinOutput {
@@ -82,37 +83,31 @@ export async function POST(request: Request) {
     const image = data.get('image') as File;
     const prompt = data.get('prompt') as string;
     
-    // Quality optimization: default to medium for balanced quality/cost
-    const quality = (data.get('quality') as string) || 'medium';
+    // Quality optimization: default to high for best results
+    const quality = (data.get('quality') as string) || 'high';
     const format = (data.get('format') as string) || 'glb';
     
     // Only enable these for explicit high-quality needs
     const useHighPack = false; // Disabled by default to keep costs reasonable
     const useHyper = true;     // Enabled by default as it gives good quality boost for minimal cost
     
-    // Validate inputs and enhance prompt if provided
-    if (!image && !prompt) {
-      return NextResponse.json(
-        { error: 'Either an image or a prompt must be provided' },
-        { status: 400 }
-      );
-    }
-
-    // If both image and prompt are provided, enhance the prompt for better results
+    // Enhanced prompt for better quality
+    const qualityTerms = "ultra high detail, professional 3D model, perfect topology, clean geometry, high-resolution textures"
     const enhancedPrompt = prompt && image 
-      ? `${prompt}. Ensure high detail, clean geometry, and proper scale. Optimize for 3D printing and real-world use.`
-      : prompt;
+      ? `${prompt}. ${qualityTerms}. Ensure professional quality suitable for real-time rendering and close-up viewing.`
+      : prompt ? `${prompt}. ${qualityTerms}. Generate with emphasis on detail preservation.` 
+      : undefined;
 
     let imageUrl: string | undefined;
     
-    // Upload image if provided with optimized timeout
+    // Upload image if provided
     if (image) {
       imageUrl = await retryOperation(
         async () => {
           const uploadPromise = Promise.race([
             fal.storage.upload(image),
             new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Upload timeout')), 45000) // Increased for larger files
+              setTimeout(() => reject(new Error('Upload timeout')), 60000)
             )
           ]);
           return await uploadPromise as string;
@@ -120,24 +115,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Optimized model configuration for quality/cost balance
+    // Optimized model configuration for quality
     const modelConfig: Hyper3dRodinInput = {
       ...(imageUrl && { input_image_urls: [imageUrl] }),
       ...(enhancedPrompt && { prompt: enhancedPrompt }),
       condition_mode: imageUrl ? "concat" : undefined,
       geometry_file_format: format as GeometryFileFormat,
-      material: "PBR",        // Best for realistic materials
+      material: "PBR",
       quality: quality as Quality,
       tier: "Regular" as Tier,
-      use_hyper: useHyper,   // Good quality boost for minimal cost
-      seed: Math.floor(Math.random() * 65535)
+      use_hyper: useHyper,
+      seed: Math.floor(Math.random() * 65535),
+      bbox_condition: [1024, 1024, 1024] // Balanced dimensions for better quality
     };
 
     // Adjust timeout based on input type and quality
     const baseTimeout = 180000; // 3 minutes base
     const timeoutDuration = baseTimeout * (
-      (quality === 'high' ? 1.5 : 1) * 
-      (image && prompt ? 1.2 : 1)  // Slightly longer timeout when using both
+      (quality === 'high' ? 2 : quality === 'medium' ? 1.5 : 1) * 
+      (image && prompt ? 1.3 : 1)
     );
 
     // Call FAL.AI Hyper3D model with retries and better error handling
