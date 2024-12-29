@@ -19,19 +19,26 @@ import type {
 } from '@/types/models';
 import { getStorageUrl } from '@/lib/utils/storage';
 
-const EXPORT_FORMATS: FormatCategories = {
+interface FormatInfo {
+    name: string;
+    ext: ModelFormat;
+    desc: string;
+    disabled?: boolean;
+}
+
+const EXPORT_FORMATS: Record<string, FormatInfo[]> = {
     '3D & Gaming': [
         { name: 'GLB', ext: 'glb', desc: 'Standard 3D format' },
         { name: 'OBJ', ext: 'obj', desc: 'For 3D modeling' },
         { name: 'GLTF', ext: 'gltf', desc: 'For web & three.js' },
-        { name: 'FBX', ext: 'fbx', desc: 'For 3D modeling' },
+        { name: 'FBX', ext: 'fbx', desc: 'For 3D modeling (Coming Soon)', disabled: true },
     ],
     'CAD & Manufacturing': [
         { name: 'STL', ext: 'stl', desc: 'For 3D printing' },
-        { name: 'STEP', ext: 'step', desc: 'For CAD software' },
+        { name: 'STEP', ext: 'step', desc: 'For CAD software (Coming Soon)', disabled: true },
     ],
     'E-commerce & Web': [
-        { name: 'USDZ', ext: 'usdz', desc: 'For Apple AR' },
+        { name: 'USDZ', ext: 'usdz', desc: 'For Apple AR (Coming Soon)', disabled: true },
     ]
 };
 
@@ -432,8 +439,9 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                                         {formats.map((format) => (
                                             <button
                                                 key={format.ext}
-                                                onClick={() => handleDownload(format.ext)}
-                                                className="w-full text-left px-2 py-1.5 hover:bg-accent text-sm flex items-center justify-between group"
+                                                onClick={() => !format.disabled && handleDownload(format.ext)}
+                                                className={`w-full text-left px-2 py-1.5 hover:bg-accent text-sm flex items-center justify-between group ${format.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                disabled={format.disabled}
                                             >
                                                 <div>
                                                     <span className="font-medium">{format.name}</span>
@@ -441,7 +449,9 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                                                         {format.desc}
                                                     </span>
                                                 </div>
-                                                <Download className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                {!format.disabled && (
+                                                    <Download className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                )}
                                             </button>
                                         ))}
                                     </div>
