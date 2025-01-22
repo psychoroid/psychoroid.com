@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { ProductViewer } from '@/components/3D/ProductViewer'
 import { AssetLibrary } from '@/components/3D/AssetLibrary'
 import { ModelGenerator } from '@/components/3D/ModelGenerator'
 import { useUser } from '@/lib/contexts/UserContext'
@@ -17,7 +16,7 @@ const DynamicProductViewer = dynamic(() => import('@/components/3D/ProductViewer
     loading: () => <div className="w-full h-full bg-card/50 animate-pulse" />
 })
 
-export default function WorkspacePage() {
+export default function StudioPage() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const { user } = useUser()

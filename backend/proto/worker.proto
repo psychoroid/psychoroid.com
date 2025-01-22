@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package worker;
+
+service WorkerService {
+  rpc ProcessModel (ProcessModelRequest) returns (ProcessModelResponse);
+  rpc ConvertToCAD (ConvertToCADRequest) returns (ConvertToCADResponse);
+  rpc GenerateModel (GenerateModelRequest) returns (GenerateModelResponse);
+  rpc OptimizeModel (OptimizeModelRequest) returns (OptimizeModelResponse);
+}
+
+message ProcessModelRequest {
+  bytes model_data = 1;
+  string target_format = 2;
+  string quality = 3;
+  bool optimize = 4;
+  map<string, string> metadata = 5;
+}
+
+message ProcessModelResponse {
+  bool success = 1;
+  bytes model_data = 2;
+  string error = 3;
+  map<string, string> metadata = 4;
+}
+
+message ConvertToCADRequest {
+  bytes model_data = 1;
+  string target_format = 2;
+  string quality = 3;
+  map<string, string> parameters = 4;
+}
+
+message ConvertToCADResponse {
+  bool success = 1;
+  bytes cad_data = 2;
+  string error = 3;
+  map<string, string> metadata = 4;
+}
+
+message GenerateModelRequest {
+  string prompt = 1;
+  bytes reference_image = 2;
+  string style = 3;
+  map<string, string> parameters = 4;
+}
+
+message GenerateModelResponse {
+  bool success = 1;
+  bytes model_data = 2;
+  string error = 3;
+  map<string, string> metadata = 4;
+}
+
+message OptimizeModelRequest {
+  bytes model_data = 1;
+  string target_use = 2;
+  map<string, string> parameters = 3;
+}
+
+message OptimizeModelResponse {
+  bool success = 1;
+  bytes optimized_data = 2;
+  string error = 3;
+  map<string, string> metadata = 4;
+} 
