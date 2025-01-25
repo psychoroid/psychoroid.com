@@ -1,0 +1,109 @@
+// Sheet Metal Bracket
+// A component typically made from flat sheet metal through various manufacturing processes such as bending, punching, cutting, and forming. These brackets are used to support, attach, or mount other hardware components, often providing a structural or functional base for assembly.
+
+
+// Define constants such as sheet metal thickness, bend radius, flange length, bolt diameter size, etc.
+thickness = 0.090
+bendRad = 0.08
+outsideBendRad = bendRad + thickness
+flangeLength = 0.5
+hatHeight = 3
+hatWidth = 5
+boltSize = 0.25
+flangeWidth = 1.5
+
+// Sketch and extrude the base shape and fillet the inside and outside edges.
+baseExtrusion = startSketchOn('-XZ')
+  |> startProfileAt([0, 0], %)
+  |> line([0, thickness], %, $e1)
+  |> line([flangeLength, 0], %, $e2)
+  |> line([0, hatHeight], %, $e3)
+  |> line([hatWidth, 0], %, $e4)
+  |> line([0, -hatHeight], %, $e5)
+  |> line([flangeLength, 0], %, $e6)
+  |> line([0, -thickness], %, $e7)
+  |> line([-flangeLength - thickness, 0], %, $e8)
+  |> line([0, hatHeight], %, $e9)
+  |> line([-hatWidth + 2 * thickness, 0], %, $e10)
+  |> line([0, -hatHeight], %, $e11)
+  |> close(%, $e12)
+  |> extrude(hatWidth, %)
+  |> fillet({
+       radius = bendRad,
+       tags = [getNextAdjacentEdge(e2)]
+     }, %)
+  |> fillet({
+       radius = outsideBendRad,
+       tags = [getNextAdjacentEdge(e3)]
+     }, %)
+  |> fillet({
+       radius = outsideBendRad,
+       tags = [getNextAdjacentEdge(e4)]
+     }, %)
+  |> fillet({
+       radius = bendRad,
+       tags = [getNextAdjacentEdge(e5)]
+     }, %)
+  |> fillet({
+       radius = outsideBendRad,
+       tags = [getNextAdjacentEdge(e8)]
+     }, %)
+  |> fillet({
+       radius = bendRad,
+       tags = [getNextAdjacentEdge(e9)]
+     }, %)
+  |> fillet({
+       radius = bendRad,
+       tags = [getNextAdjacentEdge(e10)]
+     }, %)
+  |> fillet({
+       radius = outsideBendRad,
+       tags = [getNextAdjacentEdge(e11)]
+     }, %)
+
+// Define the flanges and place the bolt holes
+flange1 = startSketchOn('XY')
+  |> startProfileAt([0, 0], %)
+  |> line([0, hatWidth], %)
+  |> line([flangeWidth, 0], %, $e13)
+  |> line([0, -hatWidth], %, $e14)
+  |> close(%)
+  |> hole(circle({
+       center = [0.75, 1],
+       radius = boltSize
+     }, %), %)
+  |> hole(circle({
+       center = [0.75, 4],
+       radius = boltSize
+     }, %), %)
+  |> extrude(thickness, %)
+  |> fillet({
+       radius = 0.5,
+       tags = [
+         getNextAdjacentEdge(e13),
+         getNextAdjacentEdge(e14)
+       ]
+     }, %)
+
+flange2 = startSketchOn('XY')
+  |> startProfileAt([-6, 0], %)
+  |> line([0, hatWidth], %)
+  |> line([-flangeWidth, 0], %, $e15)
+  |> line([0, -hatWidth], %, $e16)
+  |> close(%)
+  |> hole(circle({
+       center = [-6.75, 1],
+       radius = boltSize
+     }, %), %)
+  |> hole(circle({
+       center = [-6.75, 4],
+       radius = boltSize
+     }, %), %)
+  |> extrude(thickness, %)
+  |> fillet({
+       radius = 0.25,
+       tags = [
+         getNextAdjacentEdge(e15),
+         getNextAdjacentEdge(e16)
+       ]
+     }, %)
