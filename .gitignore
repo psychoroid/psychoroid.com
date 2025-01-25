@@ -2,7 +2,7 @@
 /node_modules
 /.pnp
 .pnp.js
-
+/ai-chatbot
 # Testing
 /coverage
 /.mypy_cache
@@ -13,7 +13,6 @@
 /.next/
 /out/
 .cache
-ai-chatbot
 
 # AI Prompts
 /lib/huggingface/prompts/
