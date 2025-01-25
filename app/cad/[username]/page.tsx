@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import { CADSidebar } from '@/components/CAD/sidebar/CADSidebarLeft'
+import { CADSidebar, ChatHistoryItem } from '@/components/CAD/sidebar/CADSidebarLeft'
 import CADParameters from '@/components/CAD/sidebar/CADSidebarRight'
 import { CADViewer } from '@/components/CAD/CADViewer'
 import { ChatInstance } from '@/components/CAD/CADChat'
@@ -26,8 +26,8 @@ interface CADMessage {
     id: string
     role: 'user' | 'assistant'
     content: string
-    timestamp: Date
     parameters?: any
+    created_at: string
 }
 
 interface CADParameters {
@@ -56,13 +56,6 @@ interface ColorParameter {
 }
 
 type Parameter = NumberParameter | ColorParameter;
-
-interface CADHistoryItem {
-    id: string
-    title: string
-    timestamp: Date
-    preview?: string
-}
 
 interface CADResponse {
     modelUrl?: string;
@@ -110,7 +103,7 @@ export default function CADPage({ params }: PageProps) {
     const [showSidebar, setShowSidebar] = useState(true)
     const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
     const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
-    const [history, setHistory] = useState<CADHistoryItem[]>([])
+    const [history, setHistory] = useState<ChatHistoryItem[]>([])
     const [canUndo, setCanUndo] = useState(false)
     const [canRedo, setCanRedo] = useState(false)
     const [activeOperation, setActiveOperation] = useState<string>('')
@@ -393,7 +386,7 @@ export default function CADPage({ params }: PageProps) {
                         <CADSidebar
                             user={user}
                             onNewProject={onNewProject}
-                            onHistoryItemClick={async (item: CADHistoryItem) => {
+                            onHistoryItemClick={async (item: ChatHistoryItem) => {
                                 if (item.id) {
                                     await loadChat(item.id)
                                     toast.success('Chat loaded successfully')

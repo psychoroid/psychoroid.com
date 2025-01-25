@@ -22,6 +22,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { languages } from '@/lib/i18n/config';
+import React, { memo, useMemo, useCallback } from 'react';
 
 interface UserMenuProps {
     user: User | undefined;
@@ -40,64 +41,87 @@ interface ExtendedUser extends User {
     image?: string;
 }
 
-export function UserMenu({ user, collapsed }: UserMenuProps) {
+const AvatarComponent = memo(({ avatarUrl, userEmail, displayName }: {
+    avatarUrl: string | null | undefined,
+    userEmail: string | null | undefined,
+    displayName: string | null | undefined
+}) => (
+    <Avatar className="h-8 w-8 rounded-sm">
+        {avatarUrl ? (
+            <AvatarImage
+                src={avatarUrl}
+                alt={userEmail || ''}
+                className="h-full w-full rounded-sm object-cover"
+                loading="eager"
+            />
+        ) : (
+            <AvatarImage
+                src={`https://avatar.vercel.sh/${encodeURIComponent(userEmail?.toLowerCase() || '')}?rounded=true`}
+                alt="Generated avatar"
+                className="h-full w-full rounded-sm object-cover"
+                loading="eager"
+            />
+        )}
+        <AvatarFallback className="rounded-sm">
+            {displayName?.charAt(0)?.toUpperCase() || 'U'}
+        </AvatarFallback>
+    </Avatar>
+));
+
+AvatarComponent.displayName = 'AvatarComponent';
+
+export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProps) {
     const { currentLanguage, setLanguage } = useTranslation();
     const { user: dbUser, signOut, roidsBalance } = useUser();
     const { theme, setTheme } = useTheme();
     const router = useRouter();
 
-    if (!user) {
-        return null;
-    }
+    // Memoize user metadata calculations
+    const {
+        avatarUrl,
+        displayName,
+        userEmail,
+        firstName,
+        lastName,
+        username,
+        metadata
+    } = useMemo(() => {
+        const extendedUser = dbUser as ExtendedUser;
+        const metadata = extendedUser?.user_metadata || {};
+        return {
+            avatarUrl: metadata.avatar_url || extendedUser?.image || user?.image,
+            firstName: metadata.first_name,
+            lastName: metadata.last_name,
+            username: metadata.username,
+            displayName: metadata.username || (metadata.first_name && metadata.last_name ? `${metadata.first_name} ${metadata.last_name}` : user?.email?.split('@')[0]),
+            userEmail: extendedUser?.email || user?.email,
+            metadata
+        };
+    }, [dbUser, user]);
 
-    // Get user metadata for proper name display
-    const extendedUser = dbUser as ExtendedUser;
-    const metadata = extendedUser?.user_metadata || {};
-    const avatarUrl = metadata.avatar_url || extendedUser?.image || user.image;
-    const firstName = metadata.first_name;
-    const lastName = metadata.last_name;
-    const username = metadata.username;
-    const displayName = username || (firstName && lastName ? `${firstName} ${lastName}` : user.email?.split('@')[0]);
-    const userEmail = extendedUser?.email || user.email;
-
-    const AvatarComponent = () => (
-        <Avatar className="h-8 w-8 rounded-sm">
-            {avatarUrl ? (
-                <AvatarImage
-                    src={avatarUrl}
-                    alt={userEmail || ''}
-                    className="h-full w-full rounded-sm object-cover"
-                    loading="lazy"
-                />
-            ) : (
-                <AvatarImage
-                    src={`https://avatar.vercel.sh/${encodeURIComponent(userEmail?.toLowerCase() || '')}?rounded=true`}
-                    alt="Generated avatar"
-                    className="h-full w-full rounded-sm object-cover"
-                />
-            )}
-            <AvatarFallback className="rounded-sm">
-                {displayName?.charAt(0)?.toUpperCase() || 'U'}
-            </AvatarFallback>
-        </Avatar>
-    );
-
-    const handleSignOut = async () => {
+    const handleSignOut = useCallback(async () => {
         try {
             await signOut();
             router.push('/');
         } catch (error) {
             console.error('Error signing out:', error);
         }
-    };
+    }, [signOut, router]);
 
-    const currentLangName = languages.find(l => l.code === currentLanguage)?.name;
+    const currentLangName = useMemo(() =>
+        languages.find(l => l.code === currentLanguage)?.name,
+        [currentLanguage]
+    );
 
-    const handleLanguageClick = () => {
+    const handleLanguageClick = useCallback(() => {
         const currentIndex = languages.findIndex(l => l.code === currentLanguage);
         const nextIndex = (currentIndex + 1) % languages.length;
         setLanguage(languages[nextIndex].code);
-    };
+    }, [currentLanguage, setLanguage]);
+
+    if (!user) {
+        return null;
+    }
 
     return (
         <DropdownMenu>
@@ -116,7 +140,11 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
                         layout
                         transition={{ duration: 0.2 }}
                     >
-                        <AvatarComponent />
+                        <AvatarComponent
+                            avatarUrl={avatarUrl}
+                            userEmail={userEmail}
+                            displayName={displayName}
+                        />
                     </motion.div>
                     {!collapsed && (
                         <motion.div
@@ -148,25 +176,11 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
             >
                 {/* User Info */}
                 <div className="px-4 py-3 border-b flex items-center gap-3">
-                    <Avatar className="h-8 w-8 rounded-sm">
-                        {avatarUrl ? (
-                            <AvatarImage
-                                src={avatarUrl}
-                                alt={userEmail || ''}
-                                className="h-full w-full rounded-sm object-cover"
-                                loading="lazy"
-                            />
-                        ) : (
-                            <AvatarImage
-                                src={`https://avatar.vercel.sh/${encodeURIComponent(userEmail?.toLowerCase() || '')}?rounded=true`}
-                                alt="Generated avatar"
-                                className="h-full w-full rounded-sm object-cover"
-                            />
-                        )}
-                        <AvatarFallback className="rounded-sm">
-                            {displayName?.charAt(0)?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                    </Avatar>
+                    <AvatarComponent
+                        avatarUrl={avatarUrl}
+                        userEmail={userEmail}
+                        displayName={displayName}
+                    />
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{displayName}</p>
                         <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
@@ -268,4 +282,6 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-} 
+});
+
+UserMenu.displayName = 'UserMenu'; 

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { User } from 'next-auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import {
     LayoutDashboard,
@@ -52,26 +52,31 @@ import {
 import { useSidebar } from "@/components/ui/sidebar";
 import Image from 'next/image';
 import { UserMenu } from './UserMenu';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
 
-interface CADHistoryItem {
+export interface ChatHistoryItem {
     id: string;
     title: string;
-    timestamp: Date;
-    preview?: string;
+    created_at: string;
+    updated_at: string;
+    last_message_at: string;
+    last_message: string;
+    metadata: any;
+}
+
+interface GroupedChats {
+    today: ChatHistoryItem[];
+    yesterday: ChatHistoryItem[];
+    lastWeek: ChatHistoryItem[];
+    lastMonth: ChatHistoryItem[];
+    older: ChatHistoryItem[];
 }
 
 interface NavItem {
     title: string;
     icon: React.ElementType;
     isActive?: boolean;
-    url: string;
-}
-
-interface ChatItem {
-    id: string;
-    title: string;
-    createdAt: Date;
-    icon: React.ElementType;
     url: string;
 }
 
@@ -94,81 +99,82 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const previousChats: ChatItem[] = [
-    {
-        id: "1",
-        title: "Engine Block Design",
-        createdAt: new Date(),
-        icon: FileCode,
-        url: "/chat/id/1"
-    },
-    {
-        id: "2",
-        title: "Custom Enclosure",
-        createdAt: subWeeks(new Date(), 1),
-        icon: Boxes,
-        url: "/chat/id/2"
-    },
-    {
-        id: "3",
-        title: "Bracket Assembly",
-        createdAt: subMonths(new Date(), 1),
-        icon: Library,
-        url: "/chat/id/3"
-    }
-];
-
-type GroupedChats = {
-    today: ChatItem[];
-    yesterday: ChatItem[];
-    lastWeek: ChatItem[];
-    lastMonth: ChatItem[];
-    older: ChatItem[];
-};
-
-const groupChatsByDate = (chats: ChatItem[]): GroupedChats => {
-    const now = new Date();
-    const oneWeekAgo = subWeeks(now, 1);
-    const oneMonthAgo = subMonths(now, 1);
-
-    return chats.reduce(
-        (groups, chat) => {
-            const chatDate = new Date(chat.createdAt);
-
-            if (isToday(chatDate)) {
-                groups.today.push(chat);
-            } else if (isYesterday(chatDate)) {
-                groups.yesterday.push(chat);
-            } else if (chatDate > oneWeekAgo) {
-                groups.lastWeek.push(chat);
-            } else if (chatDate > oneMonthAgo) {
-                groups.lastMonth.push(chat);
-            } else {
-                groups.older.push(chat);
-            }
-
-            return groups;
-        },
-        {
-            today: [],
-            yesterday: [],
-            lastWeek: [],
-            lastMonth: [],
-            older: [],
-        } as GroupedChats,
-    );
-};
-
 interface CADSidebarProps {
     user: User | undefined;
     onNewProject?: () => void;
-    onHistoryItemClick?: (item: CADHistoryItem) => void;
+    onHistoryItemClick?: (item: ChatHistoryItem) => void;
 }
 
 export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSidebarProps) {
     const router = useRouter();
-    const groupedChats = groupChatsByDate(previousChats);
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
     const { collapsed, setCollapsed } = useSidebar();
+
+    // Fetch chat history
+    useEffect(() => {
+        async function fetchChatHistory() {
+            try {
+                const { data, error } = await supabase
+                    .rpc('get_cad_chat_history_v2', { p_limit: 20 });
+
+                if (error) {
+                    console.error('Error fetching chat history:', error);
+                    return;
+                }
+
+                setChatHistory(data || []);
+            } catch (error) {
+                console.error('Error in chat history fetch:', error);
+            }
+        }
+
+        if (user) {
+            fetchChatHistory();
+        }
+    }, [user]);
+
+    // Group chats by date
+    const groupedChats = useMemo(() => {
+        return chatHistory.reduce(
+            (groups, chat) => {
+                const chatDate = new Date(chat.created_at);
+
+                if (isToday(chatDate)) {
+                    groups.today.push(chat);
+                } else if (isYesterday(chatDate)) {
+                    groups.yesterday.push(chat);
+                } else if (chatDate > subWeeks(new Date(), 1)) {
+                    groups.lastWeek.push(chat);
+                } else if (chatDate > subMonths(new Date(), 1)) {
+                    groups.lastMonth.push(chat);
+                } else {
+                    groups.older.push(chat);
+                }
+
+                return groups;
+            },
+            {
+                today: [],
+                yesterday: [],
+                lastWeek: [],
+                lastMonth: [],
+                older: [],
+            } as GroupedChats
+        );
+    }, [chatHistory]);
+
+    // Handle chat selection
+    const handleChatSelect = useCallback((chat: ChatHistoryItem) => {
+        // Navigate to the chat while preserving the username in the URL
+        const username = pathname.split('/')[2]; // Get username from /cad/[username]
+        router.push(`/cad/${username}?chat=${chat.id}`);
+
+        if (onHistoryItemClick) {
+            onHistoryItemClick(chat);
+        }
+    }, [router, pathname, onHistoryItemClick]);
 
     return (
         <div className="relative h-full flex">
@@ -311,18 +317,21 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                             <SidebarMenu className="space-y-1">
                                 {groupedChats.today.length > 0 && (
                                     <>
+                                        <div className="px-4 py-1 text-xs text-muted-foreground/50">Today</div>
                                         {groupedChats.today.map((chat) => (
                                             <SidebarMenuItem key={chat.id}>
                                                 <SidebarMenuButton
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        // Handle chat click
-                                                    }}
-                                                    className="px-4 h-10 hover:bg-accent group rounded-none"
+                                                    onClick={() => handleChatSelect(chat)}
+                                                    className={cn(
+                                                        "px-4 h-10 hover:bg-accent group rounded-none",
+                                                        searchParams.get('chat') === chat.id && "bg-accent"
+                                                    )}
                                                 >
                                                     <div className="flex items-center">
-                                                        <chat.icon className="h-4 w-4 mr-2" />
-                                                        <span className="text-xs flex-1 text-muted-foreground group-hover:text-foreground">{chat.title}</span>
+                                                        <FileCode className="h-4 w-4 mr-2" />
+                                                        <span className="text-xs flex-1 text-muted-foreground group-hover:text-foreground truncate">
+                                                            {chat.title}
+                                                        </span>
                                                     </div>
                                                 </SidebarMenuButton>
                                                 <DropdownMenu>
