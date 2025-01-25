@@ -9,9 +9,6 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-    DropdownMenuSub,
-    DropdownMenuSubTrigger,
-    DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/actions/utils";
@@ -190,45 +187,45 @@ export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProp
                 {/* Main Actions */}
                 <div className="py-2">
                     <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent transition-colors"
+                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent focus:bg-transparent active:bg-transparent"
                         onClick={() => router.push('/dashboard/settings/billing')}
                     >
-                        <CreditCard className="h-4 w-4" />
-                        <span className="text-sm text-muted-foreground hover:text-foreground transition-colors">Billing</span>
+                        <CreditCard className="h-4 w-4 text-cyan-500" />
+                        <span className="text-xs flex-1 text-muted-foreground hover:text-cyan-500 transition-colors">Billing</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent transition-colors"
+                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent focus:bg-transparent active:bg-transparent"
                         onClick={() => router.push('/dashboard/settings/account')}
                     >
-                        <Settings className="h-4 w-4" />
-                        <span className="text-sm text-muted-foreground hover:text-foreground transition-colors">Settings</span>
+                        <Settings className="h-4 w-4 text-purple-500" />
+                        <span className="text-xs flex-1 text-muted-foreground hover:text-purple-500 transition-colors">Settings</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent transition-colors text-red-600 dark:text-red-400"
+                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent focus:bg-transparent active:bg-transparent"
                         onClick={handleSignOut}
                     >
-                        <LogOut className="h-4 w-4" />
-                        <span className="text-sm text-muted-foreground hover:text-foreground transition-colors">Sign Out</span>
+                        <LogOut className="h-4 w-4 text-[#D73D57]" />
+                        <span className="text-xs flex-1 text-muted-foreground hover:text-[#D73D57] transition-colors">Sign Out</span>
                     </DropdownMenuItem>
                 </div>
 
                 <DropdownMenuSeparator className="my-0" />
 
                 {/* Preferences */}
-                <div className="py-2">
+                <div className="py-1">
                     <div className="px-4 py-1.5 text-xs font-semibold text-muted-foreground">
                         Preferences
                     </div>
-                    <div className="px-4 h-10 flex items-center justify-between rounded-none hover:bg-accent">
+                    <div className="px-4 h-10 flex items-center justify-between rounded-none hover:bg-transparent focus:bg-transparent active:bg-transparent">
                         <div className="flex items-center gap-2">
-                            <Monitor className="h-4 w-4" />
-                            <span className="text-sm">Theme</span>
+                            <Monitor className="h-4 w-4 text-blue-500" />
+                            <span className="text-xs flex-1 text-muted-foreground hover:text-blue-500 transition-colors">Theme</span>
                         </div>
-                        <div className="flex items-center gap-0.5 rounded-none border">
+                        <div className="flex items-center gap-0.5 rounded-none">
                             <button
                                 className={cn(
-                                    "rounded-none p-1.5 hover:bg-accent",
-                                    theme === 'light' && "bg-accent"
+                                    "rounded-none p-1.5 hover:bg-transparent focus:bg-transparent active:bg-transparent",
+                                    theme === 'light' ? "text-blue-500" : "text-muted-foreground hover:text-blue-500 transition-colors"
                                 )}
                                 onClick={() => setTheme('light')}
                             >
@@ -236,34 +233,25 @@ export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProp
                             </button>
                             <button
                                 className={cn(
-                                    "rounded-none p-1.5 hover:bg-accent",
-                                    theme === 'dark' && "bg-accent"
+                                    "rounded-none p-1.5 hover:bg-transparent focus:bg-transparent active:bg-transparent",
+                                    theme === 'dark' ? "text-blue-500" : "text-muted-foreground hover:text-blue-500 transition-colors"
                                 )}
                                 onClick={() => setTheme('dark')}
                             >
                                 <Moon className="h-4 w-4" />
                             </button>
-                            <button
-                                className={cn(
-                                    "rounded-none p-1.5 hover:bg-accent",
-                                    theme === 'system' && "bg-accent"
-                                )}
-                                onClick={() => setTheme('system')}
-                            >
-                                <Monitor className="h-4 w-4" />
-                            </button>
                         </div>
                     </div>
                     <div
                         onClick={handleLanguageClick}
-                        className="px-4 h-10 flex items-center justify-between rounded-none hover:bg-accent cursor-pointer"
+                        className="px-4 h-10 flex items-center justify-between rounded-none hover:bg-transparent focus:bg-transparent active:bg-transparent cursor-pointer"
                     >
                         <div className="flex items-center gap-2">
-                            <Languages className="h-4 w-4" />
-                            <span className="text-sm">Language</span>
+                            <Languages className="h-4 w-4 text-green-500" />
+                            <span className="text-xs flex-1 text-muted-foreground hover:text-green-500 transition-colors">Language</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-xs text-muted-foreground hover:text-green-500 transition-colors">
                                 {currentLangName}
                             </span>
                         </div>
@@ -271,9 +259,9 @@ export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProp
                 </div>
 
                 {/* Upgrade Plan */}
-                <div className="p-4 border-t bg-muted/50">
+                <div className="p-4 border-t">
                     <Button
-                        className="w-full h-10 rounded-sm text-sm font-medium bg-primary hover:bg-primary/90 text-primary-foreground"
+                        className="w-full h-10 rounded-sm text-sm font-medium bg-transparent hover:bg-transparent border border-foreground/20 text-foreground hover:border-foreground/40 transition-colors"
                         onClick={() => router.push('/dashboard/settings/billing')}
                     >
                         Upgrade

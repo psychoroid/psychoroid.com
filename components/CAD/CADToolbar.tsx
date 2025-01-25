@@ -73,6 +73,7 @@ export const CADToolbar = memo(function CADToolbar({
         { icon: isRotating ? PauseCircle : PlayCircle, label: isRotating ? 'Stop Auto-Rotate' : 'Start Auto-Rotate', action: onRotate },
         { icon: Ruler, label: 'Measure', action: onMeasure, operation: 'measure' },
         { icon: Copy, label: 'Array', action: onArray, operation: 'array' },
+        { icon: Expand, label: 'Fit to View', action: onExpand },
     ];
 
     const rightColumnTools = [
@@ -81,40 +82,39 @@ export const CADToolbar = memo(function CADToolbar({
         { icon: isZoomToCursor ? Crosshair : Focus, label: isZoomToCursor ? 'Cursor Zoom' : 'Center Zoom', action: onZoomModeToggle },
         { icon: Plus, label: 'Union', action: onUnion, operation: 'union' },
         { icon: Minus, label: 'Difference', action: onDifference, operation: 'difference' },
-        { icon: Expand, label: 'Fit to View', action: onExpand },
         { icon: Download, label: 'Export & Share', action: onExport }
     ];
 
     return (
         <div className={cn(
             "flex gap-2 p-2 rounded-none relative",
-            "bg-slate-50/60 dark:bg-zinc-900/50",
+            "bg-transparent backdrop-blur-[2px]",
             "before:absolute before:inset-0 before:border before:border-black/[0.08] dark:before:border-white/[0.08] before:z-[1]",
             "after:absolute after:inset-[0.25px] after:border after:border-black/[0.08] dark:after:border-white/[0.08] after:z-[2]",
             "before:rounded-none after:rounded-none",
-            "after:bg-slate-50/60 dark:after:bg-zinc-900/50",
-            "before:bg-slate-50/60 dark:before:bg-zinc-900/50",
+            "after:bg-transparent/5 dark:after:bg-transparent/5",
+            "before:bg-transparent/5 dark:before:bg-transparent/5",
             className
         )}>
-            <div className="absolute inset-0 bg-gradient-to-b from-muted/20 to-muted/10 rounded-none pointer-events-none z-[3]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-black/[0.02] dark:from-white/[0.02] dark:to-black/5 rounded-none pointer-events-none z-[3]" />
 
             {/* Two-column layout */}
             <div className="relative z-[4] flex gap-2">
                 {/* Left Column */}
-                <div className="flex flex-col gap-1 border-r pr-2 border-border/50">
+                <div className="flex flex-col gap-1 border-r-0 pr-2">
                     {leftColumnTools.map(({ icon: Icon, label, action, operation }) => (
                         <Tooltip key={label}>
                             <TooltipTrigger asChild>
                                 <Button
-                                    variant={operation && operation === activeOperation ? "default" : "ghost"}
+                                    variant="ghost"
                                     size="icon"
                                     className={cn(
                                         "h-7 w-7 rounded-none",
                                         "transition-all duration-200",
-                                        operation && operation === activeOperation && "bg-primary text-primary-foreground shadow-md",
-                                        "hover:bg-accent hover:text-accent-foreground",
-                                        "active:scale-95",
-                                        "focus:ring-1 focus:ring-primary"
+                                        operation && operation === activeOperation && "bg-primary/20 text-primary shadow-sm",
+                                        "hover:bg-transparent hover:scale-150",
+                                        "focus:ring-0",
+                                        "active:scale-95"
                                     )}
                                     onClick={action}
                                 >
@@ -134,15 +134,15 @@ export const CADToolbar = memo(function CADToolbar({
                         <Tooltip key={label}>
                             <TooltipTrigger asChild>
                                 <Button
-                                    variant={operation && operation === activeOperation ? "default" : "ghost"}
+                                    variant="ghost"
                                     size="icon"
                                     className={cn(
                                         "h-7 w-7 rounded-none",
                                         "transition-all duration-200",
-                                        operation && operation === activeOperation && "bg-primary text-primary-foreground shadow-md",
-                                        "hover:bg-accent hover:text-accent-foreground",
-                                        "active:scale-95",
-                                        "focus:ring-1 focus:ring-primary"
+                                        operation && operation === activeOperation && "bg-primary/20 text-primary shadow-sm",
+                                        "hover:bg-transparent hover:scale-150",
+                                        "focus:ring-0",
+                                        "active:scale-95"
                                     )}
                                     onClick={action}
                                 >

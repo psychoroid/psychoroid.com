@@ -22,7 +22,8 @@ import {
     Pencil,
     Archive,
     MessageSquareHeart,
-    HeartHandshake
+    HeartHandshake,
+    Zap
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -85,7 +86,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
     {
         title: "Feedback",
-        icon: MessageSquareHeart,
+        icon: Zap,
         subItems: [
             {
                 title: "Give us a review",
@@ -247,24 +248,21 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
 
     // Render chat item with animation
     const ChatItem = ({ chat }: { chat: ChatHistoryItem }) => (
-        <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            layout
-            className="relative group"
-        >
+        <div className="relative group">
             <SidebarMenuItem>
                 <SidebarMenuButton
                     onClick={() => handleChatSelect(chat)}
                     className={cn(
-                        "px-4 h-10 hover:bg-muted/30 transition-colors",
-                        searchParams.get('chat') === chat.id && "bg-muted/50"
+                        "px-4 h-10 hover:bg-transparent transition-colors",
+                        searchParams.get('chat') === chat.id && "bg-transparent"
                     )}
                 >
                     <div className="flex items-center">
                         <FileCode className="h-4 w-4 mr-2" />
-                        <span className="text-xs flex-1 text-muted-foreground group-hover:text-foreground transition-colors truncate">
+                        <span className={cn(
+                            "text-xs flex-1 text-muted-foreground group-hover:text-foreground transition-colors truncate",
+                            searchParams.get('chat') === chat.id && "text-foreground font-medium"
+                        )}>
                             {chat.title}
                         </span>
                         {chat.is_favorite && (
@@ -303,7 +301,7 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>
-        </motion.div>
+        </div>
     )
 
     return (
