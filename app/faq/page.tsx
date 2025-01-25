@@ -27,24 +27,24 @@ export default function FAQPage() {
                     <div className="grid grid-cols-12 gap-8">
                         {/* Left side - Title */}
                         <div className="col-span-4">
-                            <div className="flex flex-col space-y-1">
-                                <h1 className="text-xl font-semibold text-foreground">
+                            <div className="flex flex-col space-y-2">
+                                <h1 className="text-2xl font-medium tracking-tight text-foreground">
                                     {t(currentLanguage, 'faq.title')}
                                 </h1>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-sm text-muted-foreground/70">
                                     {t(currentLanguage, 'faq.subtitle')}
                                 </p>
                             </div>
                         </div>
 
                         {/* Right side - Content */}
-                        <div className="col-span-8 text-foreground text-xs">
+                        <div className="col-span-8 text-foreground">
                             {Object.entries(sections).map(([key, section]) => (
-                                <section key={key} className="mb-8 mt-4">
-                                    <h2 className="text-sm font-medium mb-4">
+                                <section key={key} className="mb-12">
+                                    <h2 className="text-base font-medium tracking-tight text-foreground mb-4">
                                         — {section.title}
                                     </h2>
-                                    <p className="text-xs mb-2">
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
                                         {section.content}
                                     </p>
                                 </section>

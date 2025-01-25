@@ -190,25 +190,25 @@ export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProp
                 {/* Main Actions */}
                 <div className="py-2">
                     <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none focus:bg-accent"
+                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent transition-colors"
                         onClick={() => router.push('/dashboard/settings/billing')}
                     >
                         <CreditCard className="h-4 w-4" />
-                        <span className="text-sm">Billing</span>
+                        <span className="text-sm text-muted-foreground hover:text-foreground transition-colors">Billing</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none focus:bg-accent"
+                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent transition-colors"
                         onClick={() => router.push('/dashboard/settings/account')}
                     >
                         <Settings className="h-4 w-4" />
-                        <span className="text-sm">Settings</span>
+                        <span className="text-sm text-muted-foreground hover:text-foreground transition-colors">Settings</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none focus:bg-accent text-red-600 dark:text-red-400"
+                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent transition-colors text-red-600 dark:text-red-400"
                         onClick={handleSignOut}
                     >
                         <LogOut className="h-4 w-4" />
-                        <span className="text-sm">Sign Out</span>
+                        <span className="text-sm text-muted-foreground hover:text-foreground transition-colors">Sign Out</span>
                     </DropdownMenuItem>
                 </div>
 

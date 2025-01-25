@@ -217,4 +217,113 @@ grant usage, select on all sequences in schema public to authenticated;
 grant execute on function public.create_cad_chat to authenticated;
 grant execute on function public.save_cad_message to authenticated;
 grant execute on function public.load_cad_chat to authenticated;
-grant execute on function public.get_user_cad_chats to authenticated; 
+grant execute on function public.get_user_cad_chats to authenticated;
+
+-- Function to rename a chat
+create or replace function public.rename_cad_chat(p_chat_id uuid, p_title text)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+    -- Log the action
+    perform public.log_action('rename_cad_chat', format('Renaming chat %s to %s', p_chat_id, p_title));
+    
+    update public.cad_chats
+    set title = p_title,
+        updated_at = now()
+    where id = p_chat_id
+    and user_id = auth.uid();
+end;
+$$;
+
+-- Function to toggle favorite status
+create or replace function public.toggle_cad_chat_favorite(p_chat_id uuid, p_is_favorite boolean)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+    -- Log the action
+    perform public.log_action('toggle_cad_chat_favorite', format('Toggling favorite status for chat %s to %s', p_chat_id, p_is_favorite));
+    
+    update public.cad_chats
+    set metadata = jsonb_set(
+        coalesce(metadata, '{}'::jsonb),
+        '{is_favorite}',
+        to_jsonb(p_is_favorite)
+    ),
+    updated_at = now()
+    where id = p_chat_id
+    and user_id = auth.uid();
+end;
+$$;
+
+-- Function to toggle archive status
+create or replace function public.toggle_cad_chat_archive(p_chat_id uuid, p_is_archived boolean)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+    -- Log the action
+    perform public.log_action('toggle_cad_chat_archive', format('Toggling archive status for chat %s to %s', p_chat_id, p_is_archived));
+    
+    update public.cad_chats
+    set is_archived = p_is_archived,
+        updated_at = now()
+    where id = p_chat_id
+    and user_id = auth.uid();
+end;
+$$;
+
+-- Grant execute permissions to authenticated users
+grant execute on function public.rename_cad_chat to authenticated;
+grant execute on function public.toggle_cad_chat_favorite to authenticated;
+grant execute on function public.toggle_cad_chat_archive to authenticated;
+
+-- Update the get_cad_chat_history_v2 function to include favorite and archive status
+create or replace function public.get_cad_chat_history_v2(p_limit int default 20)
+returns table (
+    id uuid,
+    title text,
+    created_at timestamptz,
+    updated_at timestamptz,
+    last_message_at timestamptz,
+    last_message text,
+    metadata jsonb,
+    is_archived boolean,
+    is_favorite boolean
+)
+language plpgsql
+security definer
+as $$
+begin
+    -- Log the history request
+    perform public.log_action('get_cad_chat_history', format('Fetching chat history with limit %s', p_limit));
+    
+    return query
+    select 
+        c.id,
+        c.title,
+        c.created_at,
+        c.updated_at,
+        c.last_message_at,
+        m.content as last_message,
+        c.metadata,
+        c.is_archived,
+        (c.metadata->>'is_favorite')::boolean as is_favorite
+    from public.cad_chats c
+    left join lateral (
+        select content
+        from public.cad_messages
+        where chat_id = c.id
+        and role = 'assistant'
+        order by created_at desc
+        limit 1
+    ) m on true
+    where c.user_id = auth.uid()
+    order by c.last_message_at desc
+    limit p_limit;
+end;
+$$; 
