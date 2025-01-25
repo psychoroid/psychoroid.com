@@ -1,3 +1,6 @@
+-- Create private schema if it doesn't exist
+create schema if not exists private;
+
 --------------- ENUMS ---------------
 
 CREATE TYPE subscription_type_enum AS ENUM ('free', 'automate', 'scale', 'enterprise');

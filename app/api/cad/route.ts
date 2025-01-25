@@ -49,18 +49,23 @@ export async function POST(req: Request) {
     // Validate environment variables
     if (!process.env.ZOO_API_URL || !process.env.ZOO_API_TOKEN) {
         console.error('CAD API: Missing required environment variables')
-        return Response.json({ error: 'Server configuration error' }, { status: 500 })
-    }
-
-    // Validate token format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    if (!uuidRegex.test(process.env.ZOO_API_TOKEN)) {
-        console.error('CAD API: Invalid API token format')
-        return Response.json({ error: 'Invalid API token format' }, { status: 500 })
+        return Response.json({ 
+            error: 'Server configuration error',
+            status: 'error'
+        }, { status: 500 })
     }
 
     try {
         const { prompt } = await req.json()
+        
+        // Validate prompt
+        if (!prompt || typeof prompt !== 'string' || prompt.trim().length < 3) {
+            return Response.json({
+                error: 'Please provide a detailed description of the CAD model you want to create',
+                status: 'error'
+            }, { status: 400 })
+        }
+
         console.log('CAD API: Received request parameters', { prompt })
 
         // First, create the text-to-cad request
@@ -73,7 +78,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
                 prompt,
-                formats: ['glb', 'step']  // Request GLB instead of GLTF
+                formats: ['glb', 'step']
             })
         })
 
@@ -81,7 +86,8 @@ export async function POST(req: Request) {
             const errorData = await response.json()
             console.error('CAD API: Zoo API error response', errorData)
             return Response.json({ 
-                error: `Zoo API Error: ${errorData.message || errorData.error || response.statusText}`,
+                error: errorData.message || 'Failed to generate CAD model',
+                status: 'error',
                 details: errorData
             }, { status: response.status })
         }
@@ -92,6 +98,7 @@ export async function POST(req: Request) {
         // Poll for completion
         let finalResult = result
         let retries = 0
+        
         while (!finalResult.completed_at && retries < MAX_RETRIES) {
             await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL))
             retries++
@@ -106,60 +113,70 @@ export async function POST(req: Request) {
             })
 
             if (!statusResponse.ok) {
-                const errorData = await statusResponse.json()
-                console.error('CAD API: Status check failed:', errorData)
-                throw new Error(`Failed to check CAD generation status: ${errorData.error || statusResponse.statusText}`)
+                throw new Error('Failed to check generation status')
             }
             
             finalResult = await statusResponse.json()
             console.log('CAD API: Current status:', finalResult.status)
 
-            // If the model failed, throw error immediately
+            // If the model failed, return error immediately
             if (finalResult.status === 'failed') {
-                throw new Error(finalResult.error || 'CAD generation failed')
+                return Response.json({ 
+                    error: finalResult.error || 'Failed to generate CAD model',
+                    status: 'error'
+                }, { status: 400 })
             }
 
             // If completed, break the loop
             if (finalResult.status === 'completed' && finalResult.outputs) {
-                console.log('CAD API: Model completed')
                 break
             }
         }
 
         if (retries >= MAX_RETRIES) {
-            throw new Error('CAD generation timed out')
+            return Response.json({ 
+                error: 'Generation timed out',
+                status: 'error'
+            }, { status: 408 })
         }
 
         if (!finalResult.outputs) {
-            throw new Error('No output files generated')
+            return Response.json({ 
+                error: 'No output files generated',
+                status: 'error'
+            }, { status: 400 })
         }
 
         // Get the GLB file
         const glbData = finalResult.outputs['source.glb']
         if (!glbData) {
-            throw new Error('No GLB file generated')
+            return Response.json({ 
+                error: 'No GLB file generated',
+                status: 'error'
+            }, { status: 400 })
         }
 
         console.log('CAD API: Successfully generated model', {
             modelId: finalResult.id,
             hasGlb: true,
-            dataLength: glbData.length
+            glbUrl: glbData
         })
 
-        // Create a proper data URL for the GLB file
-        const modelUrl = `data:model/gltf-binary;base64,${glbData}`
-
+        // Return in a format compatible with both React and Svelte apps
         return Response.json({
-            modelUrl,
+            modelUrl: glbData,  // For React app
+            dataUrl: glbData,   // For Svelte app
             format: 'glb',
             modelId: finalResult.id,
+            status: 'success',
             message: 'Model generated successfully'
         })
 
     } catch (error) {
         console.error('CAD API: Error:', error)
         return Response.json({ 
-            error: error instanceof Error ? error.message : 'Unknown error occurred'
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
+            status: 'error'
         }, { status: 500 })
     }
 } 

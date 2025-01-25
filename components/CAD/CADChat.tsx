@@ -8,6 +8,7 @@ import RippleButton from "@/components/ui/magic/ripple-button"
 import { Textarea } from "@/components/ui/textarea"
 import { useTheme } from 'next-themes'
 import { toast } from 'react-hot-toast'
+import { useCADChat } from '@/hooks/use-cad-chat'
 
 interface CADResponse {
     step?: string;
@@ -30,6 +31,7 @@ interface ChatInstanceProps {
     value?: string
     onChange?: (value: string) => void
     onSuccess?: (response: CADResponse) => void
+    sessionId?: string
 }
 
 export function ChatInstance({
@@ -40,7 +42,8 @@ export function ChatInstance({
     setShowAuthModal,
     value,
     onChange,
-    onSuccess
+    onSuccess,
+    sessionId
 }: ChatInstanceProps) {
     const [inputValue, setInputValue] = useState(value || '')
     const [mounted, setMounted] = useState(false)
@@ -50,10 +53,20 @@ export function ChatInstance({
     const progressInterval = useRef<NodeJS.Timeout>()
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const { theme } = useTheme()
+    const {
+        messages,
+        currentChat,
+        createChat,
+        loadChat,
+        saveMessage
+    } = useCADChat(sessionId)
 
     useEffect(() => {
         setMounted(true)
-    }, [])
+        if (sessionId) {
+            loadChat(sessionId)
+        }
+    }, [sessionId, loadChat])
 
     // Cleanup progress interval
     useEffect(() => {
@@ -101,6 +114,19 @@ export function ChatInstance({
             try {
                 setIsGenerating(true)
                 startProgressSimulation()
+
+                // Create a new chat if we don't have one
+                if (!currentChat && !sessionId) {
+                    const chat = await createChat(inputValue.trim())
+                    if (!chat) {
+                        throw new Error('Failed to create CAD chat')
+                    }
+                }
+
+                // Save user message
+                await saveMessage(inputValue.trim(), 'user')
+
+                // Call the API
                 const result = await onPromptSubmit(inputValue)
 
                 // Handle API errors
@@ -108,6 +134,15 @@ export function ChatInstance({
                     console.error('API Error:', result.error, result.details)
                     toast.error(result.error)
                     return
+                }
+
+                // Save assistant message
+                if (result?.message) {
+                    await saveMessage(result.message, 'assistant', {
+                        modelUrl: result.modelUrl,
+                        format: result.format,
+                        modelId: result.modelId
+                    })
                 }
 
                 // Validate model data
@@ -145,7 +180,7 @@ export function ChatInstance({
                 setTimeout(() => setProgress(0), 1000)
             }
         }
-    }, [user, setShowAuthModal, inputValue, onPromptSubmit, showPreview, isGenerating, onChange, onSuccess])
+    }, [user, setShowAuthModal, inputValue, onPromptSubmit, showPreview, isGenerating, onChange, onSuccess, currentChat, sessionId, createChat, saveMessage])
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey && !showPreview) {

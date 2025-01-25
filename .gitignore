@@ -2,11 +2,11 @@
 /node_modules
 /.pnp
 .pnp.js
-/ai-chatbot
+
 # Testing
 /coverage
 /.mypy_cache
-
+/code
 # Production
 /build
 /dist
