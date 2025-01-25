@@ -63,7 +63,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
             <div
                 ref={ref}
                 style={{
-                    width: collapsed ? '60px' : '320px'
+                    width: collapsed ? '60px' : '290px'
                 }}
                 className={cn(
                     "flex h-full flex-col overflow-hidden bg-background",
@@ -78,32 +78,68 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
 Sidebar.displayName = "Sidebar"
 
 export function SidebarHeader({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
+    const { collapsed } = useSidebar()
     return (
-        <div className={cn("flex flex-col gap-2 border-b", className)}>
+        <div className={cn(
+            "flex flex-col gap-2",
+            !collapsed && "border-b",
+            className
+        )}>
             {children}
         </div>
     )
 }
 
 export function SidebarContent({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
+    const { collapsed } = useSidebar()
     return (
-        <div className={cn("flex-1 overflow-auto", className)}>
+        <div className={cn(
+            "flex-1 overflow-auto",
+            !collapsed && "border-t",
+            className
+        )}>
             {children}
         </div>
     )
 }
 
 export function SidebarFooter({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
+    const { collapsed } = useSidebar()
     return (
-        <div className={cn("border-t", className)}>
+        <div className={cn(
+            !collapsed && "border-t",
+            className
+        )}>
             {children}
         </div>
     )
 }
 
-export function SidebarGroup({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
+export function SidebarRail({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+    const { collapsed, setCollapsed } = useSidebar()
+
     return (
-        <div className={cn("py-2", className)}>
+        <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setCollapsed(!collapsed)}
+            className={cn(
+                "absolute inset-y-0 right-0 z-20 w-1 cursor-col-resize transition-colors",
+                className
+            )}
+            {...props}
+        />
+    )
+}
+
+export function SidebarGroup({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
+    const { collapsed } = useSidebar()
+    return (
+        <div className={cn(
+            !collapsed && "py-2",
+            collapsed && "border-none",
+            className
+        )}>
             {children}
         </div>
     )

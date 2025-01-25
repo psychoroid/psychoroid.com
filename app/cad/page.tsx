@@ -12,6 +12,7 @@ import { CADViewer } from '@/components/CAD/CADViewer'
 import { ChatInstance } from '@/components/CAD/CADChat'
 import { cn } from "@/lib/actions/utils"
 import { SidebarProvider } from '@/components/ui/sidebar'
+import Loader from '@/components/design/loader'
 
 // Remove heavy components from initial bundle
 const DynamicCADViewer = dynamic(() => import('@/components/3D/ProductViewer').then(mod => ({ default: mod.ProductViewer })), {
@@ -156,11 +157,7 @@ export default function CADPage() {
 
     // Show loading state while checking auth
     if (isUserLoading) {
-        return (
-            <div className="h-svh bg-background flex items-center justify-center">
-                <div className="animate-pulse text-muted-foreground">Loading...</div>
-            </div>
-        )
+        return <Loader />
     }
 
     // Don't render anything if not authenticated

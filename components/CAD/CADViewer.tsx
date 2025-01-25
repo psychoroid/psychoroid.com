@@ -225,7 +225,7 @@ export const CADViewer = memo(function CADViewer({
             </Canvas>
 
             {/* CAD Toolbar */}
-            <div className="absolute left-4 top-1/2 -translate-y-1/2">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
                 <CADToolbar
                     onExport={onExport}
                     onShare={onShare}
@@ -237,7 +237,6 @@ export const CADViewer = memo(function CADViewer({
                     onUnion={handleUnion}
                     onDifference={handleDifference}
                     activeOperation={activeOperation}
-                    className="bg-background/80 backdrop-blur-sm"
                 />
             </div>
 
