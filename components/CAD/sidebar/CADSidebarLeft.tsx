@@ -54,6 +54,9 @@ import Image from 'next/image';
 import { UserMenu } from './UserMenu';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import Loader from '@/components/design/loader';
 
 export interface ChatHistoryItem {
     id: string;
@@ -101,7 +104,7 @@ const mainNavItems: NavItem[] = [
 
 interface CADSidebarProps {
     user: User | undefined;
-    onNewProject?: () => void;
+    onNewProject?: () => Promise<ChatHistoryItem>;
     onHistoryItemClick?: (item: ChatHistoryItem) => void;
 }
 
@@ -176,6 +179,69 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
         }
     }, [router, pathname, onHistoryItemClick]);
 
+    const handleNewChat = useCallback(async () => {
+        if (!user) return;
+        try {
+            // Create new chat and let page handle loading
+            await onNewProject?.();
+        } catch (error) {
+            console.error('Error creating new chat:', error);
+            toast.error('Failed to create new chat');
+        }
+    }, [user, onNewProject]);
+
+    // Render chat item with animation
+    const ChatItem = ({ chat }: { chat: ChatHistoryItem }) => (
+        <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            layout
+        >
+            <SidebarMenuItem>
+                <SidebarMenuButton
+                    onClick={() => handleChatSelect(chat)}
+                    className={cn(
+                        "px-4 h-10 hover:bg-accent group rounded-none",
+                        searchParams.get('chat') === chat.id && "bg-accent"
+                    )}
+                >
+                    <div className="flex items-center">
+                        <FileCode className="h-4 w-4 mr-2" />
+                        <span className="text-xs flex-1 text-muted-foreground group-hover:text-foreground truncate">
+                            {chat.title}
+                        </span>
+                    </div>
+                </SidebarMenuButton>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction showOnHover>
+                            <MoreHorizontal className="h-4 w-4 mr-4" />
+                        </SidebarMenuAction>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 rounded-none">
+                        <DropdownMenuItem>
+                            <Share2 className="mr-2 h-4 w-4" />
+                            <span>Share Model</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Star className="mr-2 h-4 w-4" />
+                            <span>Save Model</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <History className="mr-2 h-4 w-4" />
+                            <span>View Changes</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Download className="mr-2 h-4 w-4" />
+                            <span>Export CAD</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </SidebarMenuItem>
+        </motion.div>
+    )
+
     return (
         <div className="relative h-full flex">
             <Sidebar
@@ -214,9 +280,9 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => router.push('/new')}
+                                        onClick={handleNewChat}
                                         className="w-8 h-8 rounded-none flex items-center justify-center"
-                                        title="New CAD Generation"
+                                        title="a new chat"
                                     >
                                         <PlusIcon className="h-4 w-4" />
                                     </Button>
@@ -242,9 +308,9 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    onClick={() => router.push('/new')}
+                                    onClick={handleNewChat}
                                     className="h-8 w-8 rounded-sm border-[1.5px]"
-                                    title="New CAD Generation"
+                                    title="a new chat"
                                 >
                                     <PlusIcon className="h-4 w-4" />
                                 </Button>

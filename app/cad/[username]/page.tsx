@@ -108,6 +108,7 @@ export default function CADPage({ params }: PageProps) {
     const [canRedo, setCanRedo] = useState(false)
     const [activeOperation, setActiveOperation] = useState<string>('')
     const [currentPrompt, setCurrentPrompt] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
 
     // Use our CAD chat hook
     const {
@@ -170,35 +171,27 @@ export default function CADPage({ params }: PageProps) {
         });
     }, []);
 
-    const onNewProject = useCallback(async () => {
-        // Create a new chat session
-        const chat = await createChat('New CAD Project')
-        if (chat) {
-            // Reset all states
-            setParameters({
-                width: 1,
-                height: 1,
-                depth: 1,
-                radius: 0,
-                segments: 4,
-                color: '#ffffff',
-                roughness: 0.5,
-                metalness: 0,
-                opacity: 1,
-                wireframe: false,
-                rotationX: 0,
-                rotationY: 0,
-                rotationZ: 0,
-                positionX: 0,
-                positionY: 0,
-                positionZ: 0,
-                scaleX: 1,
-                scaleY: 1,
-                scaleZ: 1
-            })
-            setModelUrl(null)
+    const handleNewProject = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const { data: chat, error } = await supabase
+                .from('cad_chats')
+                .insert([{ title: 'a new chat', user_id: user?.id }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Force a full page reload to the new chat URL
+            window.location.href = `/cad/${user?.user_metadata?.username}?chat=${chat.id}`;
+            return chat;
+        } catch (error) {
+            console.error('Error creating new chat:', error);
+            toast.error('Failed to create new chat');
+            setIsLoading(false);
+            return null;
         }
-    }, [createChat])
+    }, [user]);
 
     const handleUndo = useCallback(() => {
         // TODO: Implement undo functionality
@@ -367,75 +360,78 @@ export default function CADPage({ params }: PageProps) {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="h-svh bg-background flex flex-col overflow-hidden"
-        >
-            <div className="flex-1 flex overflow-hidden">
-                {/* Left Panel - Chat History */}
-                <div className="flex-shrink-0">
-                    <SidebarProvider defaultCollapsed={false} id="left">
-                        <CADSidebar
-                            user={user}
-                            onNewProject={onNewProject}
-                            onHistoryItemClick={async (item: ChatHistoryItem) => {
-                                if (item.id) {
-                                    await loadChat(item.id)
-                                    toast.success('Chat loaded successfully')
-                                }
-                            }}
-                        />
-                    </SidebarProvider>
-                </div>
-
-                {/* Middle Panel - Visualizer and Chat */}
-                <div className="flex-1 flex flex-col min-w-0">
-                    {/* CAD Visualizer */}
-                    <div className="flex-1 relative bg-muted/50">
-                        <CADViewer
-                            modelUrl={modelUrl}
-                            parameters={parameters}
-                            onParameterChange={handleParameterChange}
-                            onExport={handleExport}
-                            onShare={handleShare}
-                            activeOperation={activeOperation}
-                            onOperationChange={handleOperationChange}
-                        />
+        <>
+            {isLoading && <Loader />}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="h-svh bg-background flex flex-col overflow-hidden"
+            >
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Left Panel - Chat History */}
+                    <div className="flex-shrink-0">
+                        <SidebarProvider defaultCollapsed={false} id="left">
+                            <CADSidebar
+                                user={user}
+                                onNewProject={handleNewProject}
+                                onHistoryItemClick={async (item: ChatHistoryItem) => {
+                                    if (item.id) {
+                                        await loadChat(item.id)
+                                        toast.success('Chat loaded successfully')
+                                    }
+                                }}
+                            />
+                        </SidebarProvider>
                     </div>
 
-                    {/* Chat Interface */}
-                    <div className="h-[30%] min-h-[250px] flex flex-col bg-background/95 backdrop-blur-sm border-t border-border/50">
-                        <div className="flex-1 relative">
-                            <ChatInstance
-                                isUploading={isGenerating}
-                                onPromptSubmit={handlePromptSubmit}
-                                showPreview={false}
-                                user={user}
-                                setShowAuthModal={setShowAuthModal}
-                                value={currentPrompt}
-                                onChange={setCurrentPrompt}
-                                sessionId={currentChat?.id}
+                    {/* Middle Panel - Visualizer and Chat */}
+                    <div className="flex-1 flex flex-col min-w-0">
+                        {/* CAD Visualizer */}
+                        <div className="flex-1 relative bg-muted/50">
+                            <CADViewer
+                                modelUrl={modelUrl}
+                                parameters={parameters}
+                                onParameterChange={handleParameterChange}
+                                onExport={handleExport}
+                                onShare={handleShare}
+                                activeOperation={activeOperation}
+                                onOperationChange={handleOperationChange}
                             />
                         </div>
+
+                        {/* Chat Interface */}
+                        <div className="h-[30%] min-h-[250px] flex flex-col bg-background/95 backdrop-blur-sm">
+                            <div className="flex-1 relative">
+                                <ChatInstance
+                                    isUploading={isGenerating}
+                                    onPromptSubmit={handlePromptSubmit}
+                                    showPreview={false}
+                                    user={user}
+                                    setShowAuthModal={setShowAuthModal}
+                                    value={currentPrompt}
+                                    onChange={setCurrentPrompt}
+                                    sessionId={currentChat?.id}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Panel - Parameters */}
+                    <div className="flex-shrink-0">
+                        <SidebarProvider defaultCollapsed={false} id="right">
+                            <CADParameters
+                                parameters={defaultParameters}
+                                onChange={handleParameterChange}
+                                onReset={handleReset}
+                                onUndo={handleUndo}
+                                className="h-full"
+                            />
+                        </SidebarProvider>
                     </div>
                 </div>
-
-                {/* Right Panel - Parameters */}
-                <div className="flex-shrink-0">
-                    <SidebarProvider defaultCollapsed={false} id="right">
-                        <CADParameters
-                            parameters={defaultParameters}
-                            onChange={handleParameterChange}
-                            onReset={handleReset}
-                            onUndo={handleUndo}
-                            className="h-full"
-                        />
-                    </SidebarProvider>
-                </div>
-            </div>
-        </motion.div>
+            </motion.div>
+        </>
     )
 } 

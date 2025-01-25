@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useTheme } from 'next-themes'
 import { toast } from 'react-hot-toast'
 import { useCADChat } from '@/hooks/use-cad-chat'
+import { supabase } from '@/lib/supabase'
 
 interface CADResponse {
     step?: string;
@@ -210,35 +211,103 @@ export function ChatInstance({
         }
     }, [value])
 
+    // Update chat title when first message is sent
+    useEffect(() => {
+        const updateChatTitle = async () => {
+            if (messages.length === 1 && messages[0].role === 'user') {
+                try {
+                    // Generate title using Claude
+                    const response = await fetch('/api/chat/title', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: messages[0].content })
+                    })
+
+                    if (!response.ok) throw new Error('Failed to generate title')
+
+                    const { title } = await response.json()
+
+                    // Update chat title in database
+                    const { error } = await supabase
+                        .from('cad_chats')
+                        .update({ title })
+                        .eq('id', sessionId)
+
+                    if (error) throw error
+                } catch (error) {
+                    console.error('Error updating chat title:', error)
+                }
+            }
+        }
+
+        updateChatTitle()
+    }, [messages, sessionId])
+
     return (
         <div className="w-full h-full flex flex-col">
             {/* Chat Messages - Scrollable */}
-            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 scrollbar-thin">
-                {messages.map((message) => (
-                    <div
-                        key={message.id}
-                        className={cn(
-                            "flex gap-2 items-start",
-                            message.role === 'assistant' ? "justify-start" : "justify-end"
-                        )}
-                    >
-                        <div className={cn(
-                            "max-w-[80%] rounded-none p-3",
-                            message.role === 'assistant'
-                                ? "bg-muted/50"
-                                : "bg-primary/5"
-                        )}>
-                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                            {message.parameters && (
-                                <div className="mt-2 text-xs opacity-80 bg-muted/50 p-2 rounded-none">
-                                    <pre className="overflow-x-auto">
-                                        {JSON.stringify(message.parameters, null, 2)}
-                                    </pre>
-                                </div>
+            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 scrollbar-thin scrollbar-thumb-black/10 dark:scrollbar-thumb-white/10 hover:scrollbar-thumb-black/20 dark:hover:scrollbar-thumb-white/20 scrollbar-track-transparent">
+                <div className="flex flex-col">
+                    {messages.map((message) => (
+                        <motion.div
+                            key={message.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                                type: "spring",
+                                stiffness: 500,
+                                damping: 30,
+                                mass: 1
+                            }}
+                            layout
+                            className={cn(
+                                "flex gap-2 items-start mb-4",
+                                message.role === 'assistant' ? "justify-start" : "justify-end"
                             )}
-                        </div>
-                    </div>
-                ))}
+                        >
+                            <motion.div
+                                layout
+                                className={cn(
+                                    "inline-flex items-center px-4 py-2",
+                                    "text-sm rounded-md max-w-[80%]",
+                                    message.role === 'assistant'
+                                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                                        : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300",
+                                    "shadow-sm hover:shadow-md transition-shadow duration-200"
+                                )}
+                            >
+                                <span className="relative flex h-2 w-2 mr-2">
+                                    <span className={cn(
+                                        "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                                        message.role === 'assistant'
+                                            ? "bg-blue-400"
+                                            : "bg-emerald-400"
+                                    )} />
+                                    <span className={cn(
+                                        "relative inline-flex rounded-full h-2 w-2",
+                                        message.role === 'assistant'
+                                            ? "bg-blue-500"
+                                            : "bg-emerald-500"
+                                    )} />
+                                </span>
+                                <div className="flex flex-col">
+                                    <p className="whitespace-pre-wrap">{message.content}</p>
+                                    {message.parameters && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            className="mt-2 text-xs opacity-80 bg-black/5 dark:bg-white/5 p-2 rounded-md overflow-hidden"
+                                        >
+                                            <pre className="overflow-x-auto">
+                                                {JSON.stringify(message.parameters, null, 2)}
+                                            </pre>
+                                        </motion.div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    ))}
+                </div>
             </div>
 
             {/* Chat Input - Fixed at bottom */}
