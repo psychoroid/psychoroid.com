@@ -12,26 +12,6 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- Create CAD chat tables if they don't exist
-create table if not exists public.cad_chats (
-    id uuid primary key default gen_random_uuid(),
-    user_id uuid references auth.users(id) on delete cascade,
-    title text not null,
-    created_at timestamptz default now(),
-    updated_at timestamptz default now(),
-    last_message_at timestamptz default now(),
-    metadata jsonb default '{}'::jsonb
-);
-
-create table if not exists public.cad_messages (
-    id uuid primary key default gen_random_uuid(),
-    chat_id uuid references public.cad_chats(id) on delete cascade,
-    role text not null check (role in ('user', 'assistant')),
-    content text not null,
-    metadata jsonb default '{}'::jsonb,
-    created_at timestamptz default now()
-);
-
 -- Create audit logs table if it doesn't exist
 create table if not exists public.audit_logs (
     id uuid primary key default gen_random_uuid(),
@@ -62,8 +42,8 @@ begin
 
     -- Add initial message if provided
     if p_initial_message is not null then
-        insert into public.cad_messages (chat_id, role, content)
-        values (v_chat_id, 'user', p_initial_message);
+        insert into public.cad_messages (chat_id, user_id, role, content)
+        values (v_chat_id, auth.uid(), 'user', p_initial_message);
     end if;
 
     -- Log successful chat creation
@@ -82,7 +62,7 @@ create or replace function public.save_cad_message(
     p_chat_id uuid,
     p_role text,
     p_content text,
-    p_metadata jsonb default '{}'::jsonb
+    p_parameters jsonb default '{}'::jsonb
 ) returns uuid as $$
 declare
     v_message_id uuid;
@@ -110,8 +90,8 @@ begin
     end if;
 
     -- Save message
-    insert into public.cad_messages (chat_id, role, content, metadata)
-    values (p_chat_id, p_role, p_content, p_metadata)
+    insert into public.cad_messages (chat_id, user_id, role, content, parameters)
+    values (p_chat_id, auth.uid(), p_role, p_content, p_parameters)
     returning id into v_message_id;
 
     -- Update chat's updated_at and last_message_at timestamps
@@ -140,7 +120,7 @@ create or replace function public.load_cad_chat(
     id uuid,
     role text,
     content text,
-    metadata jsonb,
+    parameters jsonb,
     created_at timestamptz
 ) as $$
 begin
@@ -173,56 +153,10 @@ begin
     ));
 
     return query
-    select m.id, m.role, m.content, m.metadata, m.created_at
+    select m.id, m.role, m.content, m.parameters, m.created_at
     from public.cad_messages m
     where m.chat_id = p_chat_id
     order by m.created_at asc;
-end;
-$$ language plpgsql security definer;
-
--- Create RPC function to get user's chat history
-create or replace function public.get_user_cad_chats(
-    limit_count int default 10
-) returns table (
-    id uuid,
-    title text,
-    created_at timestamptz,
-    updated_at timestamptz,
-    last_message text
-) as $$
-begin
-    -- Log chat history request
-    perform private.log_cad_action('get_user_cad_chats_start', jsonb_build_object(
-        'user_id', auth.uid(),
-        'limit', limit_count,
-        'timestamp', now()
-    ));
-
-    return query
-    with last_messages as (
-        select distinct on (chat_id)
-            chat_id,
-            content as last_message
-        from public.cad_messages
-        order by chat_id, created_at desc
-    )
-    select 
-        c.id,
-        c.title,
-        c.created_at,
-        c.updated_at,
-        lm.last_message
-    from public.cad_chats c
-    left join last_messages lm on c.id = lm.chat_id
-    where c.user_id = auth.uid()
-    order by c.updated_at desc
-    limit limit_count;
-
-    -- Log successful chat history retrieval
-    perform private.log_cad_action('get_user_cad_chats_success', jsonb_build_object(
-        'user_id', auth.uid(),
-        'timestamp', now()
-    ));
 end;
 $$ language plpgsql security definer;
 
@@ -252,34 +186,21 @@ create policy "Users can view messages in their chats"
     on public.cad_messages for select
     to authenticated
     using (
-        chat_id in (
-            select id from public.cad_chats
-            where user_id = auth.uid()
+        exists (
+            select 1 from public.cad_chats
+            where id = chat_id and user_id = auth.uid()
         )
     );
 
-create policy "Users can create messages in their chats"
+create policy "Users can insert messages in their chats"
     on public.cad_messages for insert
     to authenticated
     with check (
-        chat_id in (
-            select id from public.cad_chats
-            where user_id = auth.uid()
+        exists (
+            select 1 from public.cad_chats
+            where id = chat_id and user_id = auth.uid()
         )
     );
-
--- Audit logs policies (only viewable by system)
-create policy "No direct access to audit logs"
-    on public.audit_logs for select
-    to authenticated
-    using (false);
-
--- Create indexes for better performance
-create index if not exists idx_cad_chats_user_id on public.cad_chats(user_id);
-create index if not exists idx_cad_messages_chat_id on public.cad_messages(chat_id);
-create index if not exists idx_audit_logs_action on public.audit_logs(action);
-create index if not exists idx_cad_chats_updated_at on public.cad_chats(updated_at desc);
-create index if not exists idx_cad_chats_last_message_at on public.cad_chats(last_message_at desc);
 
 -- Grant necessary permissions
 grant usage on schema public to anon, authenticated;

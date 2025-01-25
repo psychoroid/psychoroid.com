@@ -231,8 +231,7 @@ CREATE TABLE cad_messages (
     role text not null check (role in ('user', 'assistant')),
     content text not null,
     parameters jsonb default '{}'::jsonb,
-    created_at timestamptz default now(),
-    metadata jsonb default '{}'::jsonb
+    created_at timestamptz default now()
 );
 
 CREATE INDEX idx_cad_messages_chat_id ON cad_messages(chat_id);

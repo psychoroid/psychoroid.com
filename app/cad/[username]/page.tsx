@@ -228,14 +228,9 @@ export default function CADPage({ params }: PageProps) {
     // Load user's chat history on mount
     useEffect(() => {
         if (user) {
-            loadUserChats().then(chats => {
-                // If there are previous chats, you might want to load the most recent one
-                if (chats?.length > 0) {
-                    loadChat(chats[0].id)
-                }
-            })
+            loadUserChats()  // Just load the chat list, don't auto-load any chat
         }
-    }, [user, loadUserChats, loadChat])
+    }, [user, loadUserChats])
 
     // Modified prompt submit handler to use chat persistence
     const handlePromptSubmit = useCallback(async (content: string, attachments?: File[]): Promise<CADResponse> => {
@@ -399,7 +394,7 @@ export default function CADPage({ params }: PageProps) {
                 {/* Middle Panel - Visualizer and Chat */}
                 <div className="flex-1 flex flex-col min-w-0">
                     {/* CAD Visualizer */}
-                    <div className="flex-1 relative bg-muted/50 min-h-[70%]">
+                    <div className="flex-1 relative bg-muted/50">
                         <CADViewer
                             modelUrl={modelUrl}
                             parameters={parameters}
@@ -411,39 +406,9 @@ export default function CADPage({ params }: PageProps) {
                         />
                     </div>
 
-                    {/* Chat Interface with History */}
-                    <div className="h-[30%] flex flex-col bg-background/95 backdrop-blur-sm border-t border-border/50">
-                        {/* Chat History */}
-                        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 scrollbar-thin">
-                            {messages.map((message) => (
-                                <div
-                                    key={message.id}
-                                    className={cn(
-                                        "flex gap-2 items-start",
-                                        message.role === 'assistant' ? "justify-start" : "justify-end"
-                                    )}
-                                >
-                                    <div className={cn(
-                                        "max-w-[80%] rounded-none p-3",
-                                        message.role === 'assistant'
-                                            ? "bg-muted/50"
-                                            : "bg-primary/5"
-                                    )}>
-                                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                                        {message.parameters && (
-                                            <div className="mt-2 text-xs opacity-80 bg-muted/50 p-2 rounded-none">
-                                                <pre className="overflow-x-auto">
-                                                    {JSON.stringify(message.parameters, null, 2)}
-                                                </pre>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Chat Input */}
-                        <div className="p-2">
+                    {/* Chat Interface */}
+                    <div className="h-[30%] min-h-[250px] flex flex-col bg-background/95 backdrop-blur-sm border-t border-border/50">
+                        <div className="flex-1 relative">
                             <ChatInstance
                                 isUploading={isGenerating}
                                 onPromptSubmit={handlePromptSubmit}

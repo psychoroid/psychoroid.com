@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { useUser } from '@/lib/contexts/UserContext'
@@ -24,31 +24,6 @@ export function useCADChat(chatId?: string) {
     const [isLoading, setIsLoading] = useState(false)
     const [currentChat, setCurrentChat] = useState<CADChat | null>(null)
 
-    const createChat = useCallback(async (title: string) => {
-        if (!user) return null
-
-        try {
-            const { data, error } = await supabase
-                .from('cad_chats')
-                .insert([
-                    {
-                        user_id: user.id,
-                        title
-                    }
-                ])
-                .select()
-                .single()
-
-            if (error) throw error
-            setCurrentChat(data)
-            return data
-        } catch (error) {
-            console.error('Error creating CAD chat:', error)
-            toast.error('Failed to create CAD chat')
-            return null
-        }
-    }, [user])
-
     const loadChat = useCallback(async (id: string) => {
         if (!user) return
 
@@ -72,12 +47,48 @@ export function useCADChat(chatId?: string) {
                 .order('created_at', { ascending: true })
 
             if (messagesError) throw messagesError
-            setMessages(messages)
+            setMessages(messages || [])
         } catch (error) {
             console.error('Error loading CAD chat:', error)
             toast.error('Failed to load CAD chat')
         } finally {
             setIsLoading(false)
+        }
+    }, [user])
+
+    // Load chat when chatId changes
+    useEffect(() => {
+        if (chatId) {
+            loadChat(chatId)
+        } else {
+            // Reset state when no chatId
+            setMessages([])
+            setCurrentChat(null)
+        }
+    }, [chatId, loadChat])
+
+    const createChat = useCallback(async (title: string) => {
+        if (!user) return null
+
+        try {
+            const { data, error } = await supabase
+                .from('cad_chats')
+                .insert([
+                    {
+                        user_id: user.id,
+                        title
+                    }
+                ])
+                .select()
+                .single()
+
+            if (error) throw error
+            setCurrentChat(data)
+            return data
+        } catch (error) {
+            console.error('Error creating CAD chat:', error)
+            toast.error('Failed to create CAD chat')
+            return null
         }
     }, [user])
 
@@ -114,6 +125,7 @@ export function useCADChat(chatId?: string) {
 
             if (chatError) throw chatError
 
+            // Add new message to state without reloading
             setMessages(prev => [...prev, message])
             return message
         } catch (error) {

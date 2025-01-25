@@ -63,10 +63,7 @@ export function ChatInstance({
 
     useEffect(() => {
         setMounted(true)
-        if (sessionId) {
-            loadChat(sessionId)
-        }
-    }, [sessionId, loadChat])
+    }, [])
 
     // Cleanup progress interval
     useEffect(() => {
@@ -76,21 +73,6 @@ export function ChatInstance({
             }
         }
     }, [])
-
-    const startProgressSimulation = () => {
-        setProgress(0)
-        if (progressInterval.current) {
-            clearInterval(progressInterval.current)
-        }
-        progressInterval.current = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 90) {
-                    return prev
-                }
-                return prev + Math.random() * 10
-            })
-        }, 1000)
-    }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value;
@@ -113,36 +95,68 @@ export function ChatInstance({
         if (inputValue.trim() && onPromptSubmit && !showPreview && !isGenerating) {
             try {
                 setIsGenerating(true)
-                startProgressSimulation()
+
+                // Start progress simulation
+                setProgress(0)
+                if (progressInterval.current) {
+                    clearInterval(progressInterval.current)
+                }
+                progressInterval.current = setInterval(() => {
+                    setProgress(prev => {
+                        if (prev >= 90) {
+                            return prev
+                        }
+                        return prev + Math.random() * 10
+                    })
+                }, 1000)
 
                 // Create a new chat if we don't have one
-                if (!currentChat && !sessionId) {
+                let chatId = currentChat?.id || sessionId
+                if (!chatId) {
                     const chat = await createChat(inputValue.trim())
                     if (!chat) {
                         throw new Error('Failed to create CAD chat')
                     }
+                    chatId = chat.id
                 }
 
-                // Save user message
-                await saveMessage(inputValue.trim(), 'user')
+                // Save user message first
+                const userMessage = await saveMessage(inputValue.trim(), 'user')
+                if (!userMessage) {
+                    throw new Error('Failed to save user message')
+                }
+
+                // Clear input immediately after saving user message
+                setInputValue('')
+                onChange?.('')
+                if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto'
+                }
 
                 // Call the API
                 const result = await onPromptSubmit(inputValue)
 
-                // Handle API errors
+                // Handle API errors but still save the message
                 if (result?.error) {
                     console.error('API Error:', result.error, result.details)
+                    await saveMessage(result.error, 'assistant', {
+                        error: true,
+                        details: result.details
+                    })
                     toast.error(result.error)
                     return
                 }
 
                 // Save assistant message
                 if (result?.message) {
-                    await saveMessage(result.message, 'assistant', {
+                    const assistantMessage = await saveMessage(result.message, 'assistant', {
                         modelUrl: result.modelUrl,
                         format: result.format,
                         modelId: result.modelId
                     })
+                    if (!assistantMessage) {
+                        throw new Error('Failed to save assistant message')
+                    }
                 }
 
                 // Validate model data
@@ -156,20 +170,16 @@ export function ChatInstance({
 
                     toast.success(result.message || 'CAD model generated successfully')
                     onSuccess?.(result)
-
-                    setInputValue('')
-                    onChange?.('')
-                    if (textareaRef.current) {
-                        textareaRef.current.style.height = 'auto'
-                    }
                 } else {
                     const errorMsg = 'No model data received'
                     console.error(errorMsg)
+                    await saveMessage(errorMsg, 'assistant', { error: true })
                     toast.error(errorMsg)
                 }
-            } catch (error: any) {
+            } catch (error) {
                 console.error('Failed to generate CAD:', error)
-                const errorMessage = error?.message || error?.toString() || 'Failed to generate CAD model. Please try again.'
+                const errorMessage = error instanceof Error ? error.message : 'Failed to generate CAD model. Please try again.'
+                await saveMessage(errorMessage, 'assistant', { error: true })
                 toast.error(errorMessage)
             } finally {
                 setIsGenerating(false)
@@ -180,7 +190,11 @@ export function ChatInstance({
                 setTimeout(() => setProgress(0), 1000)
             }
         }
-    }, [user, setShowAuthModal, inputValue, onPromptSubmit, showPreview, isGenerating, onChange, onSuccess, currentChat, sessionId, createChat, saveMessage])
+    }, [
+        user, setShowAuthModal, inputValue, onPromptSubmit, showPreview, isGenerating,
+        currentChat, sessionId, createChat, saveMessage, onChange, onSuccess,
+        setProgress, progressInterval
+    ]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
@@ -197,89 +211,121 @@ export function ChatInstance({
     }, [value])
 
     return (
-        <div className="w-full">
-            <motion.div
-                className={cn(
-                    "relative flex flex-col justify-between rounded-none p-2 shadow-sm cursor-text w-full",
-                    "min-h-[50px] transition-all duration-200",
-                    "before:absolute before:inset-0 before:border before:border-black/[0.08] dark:before:border-white/[0.08]",
-                    "after:absolute after:inset-[0.25px] after:border after:border-black/[0.08] dark:after:border-white/[0.08]",
-                    "before:rounded-none after:rounded-none",
-                    isFocused && "before:border-black/[0.15] after:border-black/[0.15] dark:before:border-white/[0.15] dark:after:border-white/[0.15]",
-                    "bg-slate-50/60 dark:bg-zinc-900/50",
-                    "after:bg-slate-50/60 dark:after:bg-zinc-900/50",
-                    "before:bg-slate-50/60 dark:before:bg-zinc-900/50"
-                )}
-            >
-                <div className="absolute inset-0 bg-gradient-to-b from-muted/20 to-muted/10 rounded-none pointer-events-none" />
-
-                {isGenerating && progress > 0 && (
-                    <div className="absolute top-0 left-0 h-0.5 bg-primary/50 transition-all duration-300" style={{ width: `${progress}%` }} />
-                )}
-
-                <div className="flex flex-col relative z-10">
-                    <Textarea
-                        ref={textareaRef}
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        onFocus={() => !showPreview && setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        onKeyDown={mounted ? handleKeyDown : undefined}
-                        disabled={showPreview || isGenerating}
-                        spellCheck="true"
-                        autoCapitalize="sentences"
-                        autoCorrect="on"
+        <div className="w-full h-full flex flex-col">
+            {/* Chat Messages - Scrollable */}
+            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 scrollbar-thin">
+                {messages.map((message) => (
+                    <div
+                        key={message.id}
                         className={cn(
-                            "w-full min-h-[36px] resize-none",
-                            "text-sm bg-transparent px-2",
-                            "border-0 focus-visible:ring-0 focus:outline-none shadow-none",
-                            "text-muted-foreground placeholder:text-muted-foreground/60",
-                            "selection:bg-primary/20 selection:text-muted-foreground",
-                            showPreview && "opacity-50 cursor-not-allowed"
+                            "flex gap-2 items-start",
+                            message.role === 'assistant' ? "justify-start" : "justify-end"
                         )}
-                        style={{
-                            border: 'none',
-                            outline: 'none',
-                            boxShadow: 'none',
-                            lineHeight: '1.6',
-                            caretColor: 'var(--primary)'
-                        }}
-                        placeholder={
-                            isGenerating
-                                ? `Generating CAD model... ${Math.round(progress)}%`
-                                : "Describe what you want to create (e.g., 'A flower with 5 petals' or 'A gear with 40 teeth')..."
-                        }
-                        rows={1}
-                    />
-
-                    <div className="flex justify-end mt-1">
-                        <RippleButton
-                            type="button"
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                if (!isUploading && mounted && !showPreview && !isGenerating) {
-                                    handleSubmit()
-                                }
-                            }}
-                            className={cn(
-                                "flex h-7 w-7 items-center justify-center rounded-none transition-all duration-200 p-0 border-0",
-                                (inputValue.length > 0 && !showPreview && !isUploading && !isGenerating) && mounted
-                                    ? "bg-primary/90 text-primary-foreground hover:bg-primary cursor-pointer"
-                                    : "bg-zinc-200/80 hover:bg-zinc-300/90 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/90 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
-                                (showPreview || isUploading || isGenerating) && "opacity-50 cursor-not-allowed"
+                    >
+                        <div className={cn(
+                            "max-w-[80%] rounded-none p-3",
+                            message.role === 'assistant'
+                                ? "bg-muted/50"
+                                : "bg-primary/5"
+                        )}>
+                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                            {message.parameters && (
+                                <div className="mt-2 text-xs opacity-80 bg-muted/50 p-2 rounded-none">
+                                    <pre className="overflow-x-auto">
+                                        {JSON.stringify(message.parameters, null, 2)}
+                                    </pre>
+                                </div>
                             )}
-                            rippleColor="rgba(255, 255, 255, 0.2)"
-                            disabled={showPreview || !inputValue.length || !mounted || isUploading || isGenerating}
-                        >
-                            {isGenerating ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <ArrowUp className="h-4 w-4" />
-                            )}
-                        </RippleButton>
+                        </div>
                     </div>
-                </div>
-            </motion.div>
+                ))}
+            </div>
+
+            {/* Chat Input - Fixed at bottom */}
+            <div className="flex-shrink-0 p-2">
+                <motion.div
+                    className={cn(
+                        "relative flex flex-col justify-between rounded-none p-2 shadow-sm cursor-text w-full",
+                        "min-h-[50px] transition-all duration-200",
+                        "before:absolute before:inset-0 before:border before:border-black/[0.08] dark:before:border-white/[0.08]",
+                        "after:absolute after:inset-[0.25px] after:border after:border-black/[0.08] dark:after:border-white/[0.08]",
+                        "before:rounded-none after:rounded-none",
+                        isFocused && "before:border-black/[0.15] after:border-black/[0.15] dark:before:border-white/[0.15] dark:after:border-white/[0.15]",
+                        "bg-slate-50/60 dark:bg-zinc-900/50",
+                        "after:bg-slate-50/60 dark:after:bg-zinc-900/50",
+                        "before:bg-slate-50/60 dark:before:bg-zinc-900/50"
+                    )}
+                >
+                    <div className="absolute inset-0 bg-gradient-to-b from-muted/20 to-muted/10 rounded-none pointer-events-none" />
+
+                    {isGenerating && progress > 0 && (
+                        <div className="absolute top-0 left-0 h-0.5 bg-primary/50 transition-all duration-300" style={{ width: `${progress}%` }} />
+                    )}
+
+                    <div className="flex flex-col relative z-10">
+                        <Textarea
+                            ref={textareaRef}
+                            value={inputValue}
+                            onChange={handleInputChange}
+                            onFocus={() => !showPreview && setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            onKeyDown={mounted ? handleKeyDown : undefined}
+                            disabled={showPreview || isGenerating}
+                            spellCheck="true"
+                            autoCapitalize="sentences"
+                            autoCorrect="on"
+                            className={cn(
+                                "w-full min-h-[36px] resize-none",
+                                "text-sm bg-transparent px-2",
+                                "border-0 focus-visible:ring-0 focus:outline-none shadow-none",
+                                "text-muted-foreground placeholder:text-muted-foreground/60",
+                                "selection:bg-primary/20 selection:text-muted-foreground",
+                                showPreview && "opacity-50 cursor-not-allowed"
+                            )}
+                            style={{
+                                border: 'none',
+                                outline: 'none',
+                                boxShadow: 'none',
+                                lineHeight: '1.6',
+                                caretColor: 'var(--primary)'
+                            }}
+                            placeholder={
+                                isGenerating
+                                    ? `Generating CAD model... ${Math.round(progress)}%`
+                                    : "Describe what you want to create (e.g., 'A flower with 5 petals' or 'A gear with 40 teeth')..."
+                            }
+                            rows={1}
+                        />
+
+                        <div className="flex justify-end mt-1">
+                            <RippleButton
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (!isUploading && mounted && !showPreview && !isGenerating) {
+                                        handleSubmit()
+                                    }
+                                }}
+                                className={cn(
+                                    "flex h-7 w-7 items-center justify-center rounded-none transition-all duration-200 p-0 border-0",
+                                    (inputValue.length > 0 && !showPreview && !isUploading && !isGenerating) && mounted
+                                        ? "bg-primary/90 text-primary-foreground hover:bg-primary cursor-pointer"
+                                        : "bg-zinc-200/80 hover:bg-zinc-300/90 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/90 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
+                                    (showPreview || isUploading || isGenerating) && "opacity-50 cursor-not-allowed"
+                                )}
+                                rippleColor="rgba(255, 255, 255, 0.2)"
+                                disabled={showPreview || !inputValue.length || !mounted || isUploading || isGenerating}
+                            >
+                                {isGenerating ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <ArrowUp className="h-4 w-4" />
+                                )}
+                            </RippleButton>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
         </div>
     )
 } 
