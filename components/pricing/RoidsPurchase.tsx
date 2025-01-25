@@ -8,7 +8,7 @@ import { getStripe } from '@/lib/stripe/stripe'
 import { toast } from 'sonner'
 
 const CREDIT_PRICE = 0.045
-const baseUrl = process.env.NODE_ENV === 'production'
+const baseUrl = process.env.BUN_ENV === 'production'
     ? 'https://www.psychoroid.com'
     : process.env.NEXT_PUBLIC_APP_URL
 

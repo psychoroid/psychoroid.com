@@ -10,7 +10,7 @@ declare global {
             HUGGINGFACE_API_KEY: string
             NEXT_PUBLIC_HUGGINGFACE_MODEL: string
             NEXT_PUBLIC_APP_URL: string
-            NODE_ENV: 'development' | 'production' | 'test'
+            BUN_ENV: 'development' | 'production' | 'test'
         }
     }
 }

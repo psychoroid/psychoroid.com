@@ -8,6 +8,7 @@ import { Toaster } from 'sonner';
 import { TranslationProvider } from '@/lib/contexts/TranslationContext';
 import { headers } from 'next/headers';
 import { languages } from '@/lib/i18n/config';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const inter = Inter({
     subsets: ['latin'],
@@ -114,7 +115,9 @@ export default function RootLayout({
                 <ThemeProviderWrapper defaultTheme="dark">
                     <TranslationProvider>
                         <UserProvider>
-                            {children}
+                            <TooltipProvider>
+                                {children}
+                            </TooltipProvider>
                         </UserProvider>
                     </TranslationProvider>
                 </ThemeProviderWrapper>

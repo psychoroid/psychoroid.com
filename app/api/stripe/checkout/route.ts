@@ -10,7 +10,7 @@ const SUBSCRIPTION_PRICES = {
   scale: process.env.STRIPE_SCALE_PRICE_ID,
 };
 
-const baseUrl = process.env.NODE_ENV === 'production' 
+const baseUrl = process.env.BUN_ENV === 'production' 
   ? 'https://www.psychoroid.com'
   : process.env.NEXT_PUBLIC_APP_URL;
 

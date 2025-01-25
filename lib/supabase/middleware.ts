@@ -52,7 +52,7 @@ export async function middleware(request: NextRequest) {
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
     // Set secure cookie attributes
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.BUN_ENV === 'production') {
         response.headers.set(
             'Set-Cookie',
             'SameSite=Strict; Secure; Path=/'

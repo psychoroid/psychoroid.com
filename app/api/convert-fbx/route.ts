@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ 
             success: false, 
             error: 'FBX conversion failed: ' + (error as Error).message,
-            suggestion: process.env.NODE_ENV === 'production' 
+            suggestion: process.env.BUN_ENV === 'production' 
                 ? 'Please try again later or contact support.'
                 : (error as Error).message
         }, { status: 500 });

@@ -32,6 +32,15 @@ const nextConfig = {
             }
         });
 
+        // Handle WebSocket module
+        if (isServer) {
+            config.externals.push({
+                'bufferutil': 'bufferutil',
+                'utf-8-validate': 'utf-8-validate',
+                'ws': 'ws'
+            })
+        }
+
         // Production-only optimizations
         if (!dev && !isServer) {
             // Add compression plugin
@@ -78,12 +87,8 @@ const nextConfig = {
         config.experiments = {
             ...config.experiments,
             asyncWebAssembly: true,
+            syncWebAssembly: true,
         };
-
-        config.externals.push({
-            'utf-8-validate': 'commonjs utf-8-validate',
-            'bufferutil': 'commonjs bufferutil',
-        })
 
         return config;
     },
@@ -136,7 +141,7 @@ const nextConfig = {
             }
         ];
 
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.BUN_ENV === 'production') {
             headers.push({
                 key: 'Cache-Control',
                 value: 'public, max-age=150000, stale-while-revalidate=86400',

@@ -6,7 +6,7 @@ import { XCircle } from 'lucide-react';
 import { useUser } from '@/lib/contexts/UserContext';
 import { useEffect, useRef } from 'react';
 
-const baseUrl = process.env.NODE_ENV === 'production'
+const baseUrl = process.env.BUN_ENV === 'production'
     ? 'https://www.psychoroid.com'
     : process.env.NEXT_PUBLIC_APP_URL;
 
