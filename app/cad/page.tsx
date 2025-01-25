@@ -6,11 +6,12 @@ import { useUser } from '@/lib/contexts/UserContext'
 import dynamic from 'next/dynamic'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import { CADSidebar } from '@/components/CAD/CADSidebar'
-import { CADParameters } from '@/components/CAD/CADParameters'
+import { CADSidebar } from '@/components/CAD/sidebar/CADSidebarLeft'
+import { CADParameters } from '@/components/CAD/sidebar/CADSidebarRight'
 import { CADViewer } from '@/components/CAD/CADViewer'
 import { ChatInstance } from '@/components/CAD/CADChat'
 import { cn } from "@/lib/actions/utils"
+import { SidebarProvider } from '@/components/ui/sidebar'
 
 // Remove heavy components from initial bundle
 const DynamicCADViewer = dynamic(() => import('@/components/3D/ProductViewer').then(mod => ({ default: mod.ProductViewer })), {
@@ -54,6 +55,8 @@ export default function CADPage() {
     })
     const [selectedModel, setSelectedModel] = useState('basic')
     const [showSidebar, setShowSidebar] = useState(true)
+    const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
+    const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
     const [history, setHistory] = useState<CADHistoryItem[]>([])
     const [canUndo, setCanUndo] = useState(false)
     const [canRedo, setCanRedo] = useState(false)
@@ -200,33 +203,32 @@ export default function CADPage() {
             transition={{ duration: 0.5 }}
             className="h-svh bg-background flex flex-col overflow-hidden"
         >
-
             <div className="flex-1 flex overflow-hidden">
-                {/* Left Panel - Chat History (20%) */}
-                <div className="w-[20%] border-r bg-background">
-                    <CADSidebar
-                        user={user}
-                        history={history}
-                        onNewProject={() => {
-                            setMessages([])
-                            setParameters({
-                                width: 100,
-                                height: 100,
-                                depth: 100,
-                                radius: 10,
-                                segments: 32
-                            })
-                            setModelUrl(null)
-                        }}
-                        onHistoryItemClick={(item) => {
-                            // TODO: Load project from history
-                            toast.success('Loading project...')
-                        }}
-                    />
+                {/* Left Panel - Chat History */}
+                <div className="flex-shrink-0">
+                    <SidebarProvider defaultCollapsed={false} id="left">
+                        <CADSidebar
+                            user={user}
+                            onNewProject={() => {
+                                setMessages([])
+                                setParameters({
+                                    width: 100,
+                                    height: 100,
+                                    depth: 100,
+                                    radius: 10,
+                                    segments: 32
+                                })
+                                setModelUrl(null)
+                            }}
+                            onHistoryItemClick={(item: CADHistoryItem) => {
+                                toast.success('Loading project...')
+                            }}
+                        />
+                    </SidebarProvider>
                 </div>
 
-                {/* Middle Panel - Visualizer and Chat (60%) */}
-                <div className="w-[60%] flex flex-col">
+                {/* Middle Panel - Visualizer and Chat */}
+                <div className="flex-1 flex flex-col min-w-0">
                     {/* CAD Visualizer */}
                     <div className="flex-1 relative bg-muted/50 min-h-[70%]">
                         <CADViewer
@@ -286,29 +288,31 @@ export default function CADPage() {
                     </div>
                 </div>
 
-                {/* Right Panel - Parameters (20%) */}
-                <div className="w-[20%] border-l bg-background">
-                    <CADParameters
-                        parameters={defaultParameters.map(param => ({
-                            ...param,
-                            value: parameters[param.name] || param.value
-                        }))}
-                        onChange={handleParameterChange}
-                        onReset={() => {
-                            setParameters({
-                                width: 100,
-                                height: 100,
-                                depth: 100,
-                                radius: 10,
-                                segments: 32
-                            });
-                        }}
-                        onUndo={() => {
-                            setCanUndo(false);
-                            toast.success('Undo feature coming soon');
-                        }}
-                        className="h-full"
-                    />
+                {/* Right Panel - Parameters */}
+                <div className="flex-shrink-0">
+                    <SidebarProvider defaultCollapsed={false} id="right">
+                        <CADParameters
+                            parameters={defaultParameters.map(param => ({
+                                ...param,
+                                value: parameters[param.name] || param.value
+                            }))}
+                            onChange={handleParameterChange}
+                            onReset={() => {
+                                setParameters({
+                                    width: 100,
+                                    height: 100,
+                                    depth: 100,
+                                    radius: 10,
+                                    segments: 32
+                                });
+                            }}
+                            onUndo={() => {
+                                setCanUndo(false);
+                                toast.success('Undo feature coming soon');
+                            }}
+                            className="h-full"
+                        />
+                    </SidebarProvider>
                 </div>
             </div>
         </motion.div>
