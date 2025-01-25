@@ -13,6 +13,8 @@
 /.next/
 /out/
 .cache
+/freeCAD
+/Text2CAD
 
 # AI Prompts
 /lib/huggingface/prompts/

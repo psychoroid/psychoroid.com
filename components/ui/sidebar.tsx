@@ -196,17 +196,25 @@ export function SidebarMenuButton({
     )
 }
 
-export function SidebarMenuAction({ className, children, showOnHover }: React.HTMLAttributes<HTMLDivElement> & { showOnHover?: boolean }) {
+export const SidebarMenuAction = React.forwardRef<
+    HTMLDivElement,
+    React.HTMLAttributes<HTMLDivElement> & { showOnHover?: boolean }
+>(({ className, children, showOnHover, ...props }, ref) => {
     return (
-        <div className={cn(
-            "absolute right-2 top-1/2 -translate-y-1/2",
-            showOnHover && "opacity-0 group-hover:opacity-100",
-            className
-        )}>
+        <div
+            ref={ref}
+            className={cn(
+                "absolute right-2 top-1/2 -translate-y-1/2",
+                showOnHover && "opacity-0 group-hover:opacity-100",
+                className
+            )}
+            {...props}
+        >
             {children}
         </div>
-    )
-}
+    );
+});
+SidebarMenuAction.displayName = "SidebarMenuAction";
 
 export function SidebarMenuSub({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
     return (

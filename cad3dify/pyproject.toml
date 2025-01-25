@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "cad3dify"
+version = "0.1.0"
+description = ""
+authors = ["neka-nat <nekanat.stock@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "cad3dify", from = "." },
+]
+include = ["cad3dify/py.typed"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.9.7 || >3.9.7,<4.0"
+numpy = ">=1.22.4,<2.0.0"
+langchain = "^0.3.0"
+langchain-openai = "^0.2.0"
+langchain-anthropic = "^0.3.0"
+langchain-google-genai = "^2.0.7"
+langchainhub = "^0.1.15"
+streamlit = "^1.37.1"
+langchain-google-vertexai = {version = "^2.0.1", optional = true}
+python-dotenv = "^1.0.1"
+svglib = "^1.5.1"
+langchain-experimental = "^0.3.1"
+cadquery = "^2.4.0"
+rlpycairo = "^0.3.0"
+loguru = "^0.7.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+isort = "^5.13.2"
+mypy = "^1.9.0"
+types-requests = "^2.31.0"
+types-python-dateutil = "^2.8.19"
+types-setuptools = "^69.1.0"
+types-six = "^1.16.21"
+
+[tool.poetry.extras]
+vertexai = ["langchain-google-vertexai"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+ignore_missing_imports = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

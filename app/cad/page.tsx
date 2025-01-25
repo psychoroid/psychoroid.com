@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useUser } from '@/lib/contexts/UserContext'
 import dynamic from 'next/dynamic'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { CADSidebar } from '@/components/CAD/sidebar/CADSidebarLeft'
-import { CADParameters } from '@/components/CAD/sidebar/CADSidebarRight'
+import CADParameters from '@/components/CAD/sidebar/CADSidebarRight'
 import { CADViewer } from '@/components/CAD/CADViewer'
 import { ChatInstance } from '@/components/CAD/CADChat'
 import { cn } from "@/lib/actions/utils"
@@ -29,8 +29,31 @@ interface CADMessage {
 }
 
 interface CADParameters {
-    [key: string]: number
+    [key: string]: number | string | boolean;
 }
+
+interface NumberParameter {
+    name: string;
+    value: number;
+    min: number;
+    max: number;
+    step: number;
+    unit?: string;
+    group: string;
+    type: 'number';
+}
+
+interface ColorParameter {
+    name: string;
+    value: string;
+    min: number;
+    max: number;
+    step: number;
+    group: string;
+    type: 'color';
+}
+
+type Parameter = NumberParameter | ColorParameter;
 
 interface CADHistoryItem {
     id: string
@@ -48,11 +71,25 @@ export default function CADPage() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [messages, setMessages] = useState<CADMessage[]>([])
     const [parameters, setParameters] = useState<CADParameters>({
-        width: 100,
-        height: 100,
-        depth: 100,
-        radius: 10,
-        segments: 32
+        width: 1,
+        height: 1,
+        depth: 1,
+        radius: 0,
+        segments: 4,
+        color: '#ffffff',
+        roughness: 0.5,
+        metalness: 0,
+        opacity: 1,
+        wireframe: false,
+        rotationX: 0,
+        rotationY: 0,
+        rotationZ: 0,
+        positionX: 0,
+        positionY: 0,
+        positionZ: 0,
+        scaleX: 1,
+        scaleY: 1,
+        scaleZ: 1
     })
     const [selectedModel, setSelectedModel] = useState('basic')
     const [showSidebar, setShowSidebar] = useState(true)
@@ -64,13 +101,102 @@ export default function CADPage() {
     const [activeOperation, setActiveOperation] = useState<string>('')
     const [currentPrompt, setCurrentPrompt] = useState('')
 
-    // Memoize parameter change handler
-    const handleParameterChange = useCallback((name: string, value: number) => {
-        setParameters(prev => ({
-            ...prev,
-            [name]: value
-        }))
-    }, [])
+    const defaultParameters = useMemo(() => {
+        const params: Parameter[] = [
+            // Dimensions
+            { name: 'width', value: Number(parameters.width), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
+            { name: 'height', value: Number(parameters.height), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
+            { name: 'depth', value: Number(parameters.depth), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
+            { name: 'radius', value: Number(parameters.radius), min: 0, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
+            { name: 'segments', value: Number(parameters.segments), min: 2, max: 32, step: 1, group: 'dimensions', type: 'number' },
+
+            // Transform
+            { name: 'rotationX', value: Number(parameters.rotationX), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number' },
+            { name: 'rotationY', value: Number(parameters.rotationY), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number' },
+            { name: 'rotationZ', value: Number(parameters.rotationZ), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number' },
+            { name: 'positionX', value: Number(parameters.positionX), min: -100, max: 100, step: 0.1, unit: 'mm', group: 'transform', type: 'number' },
+            { name: 'positionY', value: Number(parameters.positionY), min: -100, max: 100, step: 0.1, unit: 'mm', group: 'transform', type: 'number' },
+            { name: 'positionZ', value: Number(parameters.positionZ), min: -100, max: 100, step: 0.1, unit: 'mm', group: 'transform', type: 'number' },
+
+            // Material
+            { name: 'color', value: String(parameters.color), min: 0, max: 0, step: 0, group: 'material', type: 'color' },
+            { name: 'roughness', value: Number(parameters.roughness), min: 0, max: 1, step: 0.01, group: 'material', type: 'number' },
+            { name: 'metalness', value: Number(parameters.metalness), min: 0, max: 1, step: 0.01, group: 'material', type: 'number' },
+            { name: 'opacity', value: Number(parameters.opacity), min: 0, max: 1, step: 0.01, group: 'material', type: 'number' },
+            { name: 'wireframe', value: Number(parameters.wireframe ? 1 : 0), min: 0, max: 1, step: 1, group: 'material', type: 'number' }
+        ];
+        return params;
+    }, [parameters]);
+
+    const handleReset = useCallback(() => {
+        setParameters({
+            width: 1,
+            height: 1,
+            depth: 1,
+            radius: 0,
+            segments: 4,
+            color: '#ffffff',
+            roughness: 0.5,
+            metalness: 0,
+            opacity: 1,
+            wireframe: false,
+            rotationX: 0,
+            rotationY: 0,
+            rotationZ: 0,
+            positionX: 0,
+            positionY: 0,
+            positionZ: 0,
+            scaleX: 1,
+            scaleY: 1,
+            scaleZ: 1
+        });
+    }, []);
+
+    const onNewProject = useCallback(() => {
+        setMessages([]);
+        setParameters({
+            width: 1,
+            height: 1,
+            depth: 1,
+            radius: 0,
+            segments: 4,
+            color: '#ffffff',
+            roughness: 0.5,
+            metalness: 0,
+            opacity: 1,
+            wireframe: false,
+            rotationX: 0,
+            rotationY: 0,
+            rotationZ: 0,
+            positionX: 0,
+            positionY: 0,
+            positionZ: 0,
+            scaleX: 1,
+            scaleY: 1,
+            scaleZ: 1
+        });
+        setModelUrl(null);
+    }, []);
+
+    const handleUndo = useCallback(() => {
+        // TODO: Implement undo functionality
+        toast.success('Undo feature coming soon');
+    }, []);
+
+    // Memoize parameter change handler with throttling
+    const handleParameterChange = useCallback((name: string, value: number | string | boolean) => {
+        // Use requestAnimationFrame to sync with browser's render cycle
+        requestAnimationFrame(() => {
+            setParameters(prev => {
+                // Only update if the value has actually changed
+                if (prev[name] === value) return prev;
+                return {
+                    ...prev,
+                    [name]: value
+                };
+            });
+        });
+    }, []);
 
     // Memoize operation change handler
     const handleOperationChange = useCallback((operation: string | null) => {
@@ -91,17 +217,13 @@ export default function CADPage() {
             }
             setMessages(prev => [...prev, userMessage])
 
-            // Handle attachments if needed
-            const formData = new FormData()
-            formData.append('prompt', content)
-            if (attachments?.length) {
-                attachments.forEach(file => formData.append('files', file))
-            }
-
             // Call our CAD API endpoint
             const response = await fetch('/api/cad', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt: content })
             })
 
             const data = await response.json()
@@ -114,7 +236,7 @@ export default function CADPage() {
             const assistantMessage: CADMessage = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: 'Here are the CAD instructions based on your request:',
+                content: 'Here is your generated CAD model:',
                 timestamp: new Date(),
                 parameters: data.shapes[0]?.parameters
             }
@@ -122,10 +244,7 @@ export default function CADPage() {
 
             // Update parameters if available
             if (data.shapes[0]?.parameters) {
-                setParameters(prev => ({
-                    ...prev,
-                    ...data.shapes[0].parameters
-                }))
+                setParameters(data.shapes[0].parameters)
             }
 
             // Update history
@@ -137,7 +256,12 @@ export default function CADPage() {
             }
             setHistory(prev => [...prev, historyItem])
 
-            toast.success('CAD instructions generated successfully')
+            // Create a Blob URL for the mesh data
+            const meshBlob = new Blob([JSON.stringify(data.mesh)], { type: 'application/json' })
+            const meshUrl = URL.createObjectURL(meshBlob)
+            setModelUrl(meshUrl)
+
+            toast.success('CAD model generated successfully')
 
         } catch (error) {
             console.error('Error generating CAD model:', error)
@@ -180,14 +304,6 @@ export default function CADPage() {
         toast.success('Settings feature coming soon')
     }
 
-    const defaultParameters = [
-        { name: 'width', value: 100, min: 1, max: 1000, step: 1, unit: 'mm' },
-        { name: 'height', value: 100, min: 1, max: 1000, step: 1, unit: 'mm' },
-        { name: 'depth', value: 100, min: 1, max: 1000, step: 1, unit: 'mm' },
-        { name: 'radius', value: 10, min: 0, max: 100, step: 0.1, unit: 'mm' },
-        { name: 'segments', value: 32, min: 3, max: 64, step: 1 }
-    ];
-
     const handleSuggestionClick = async (prompt: string) => {
         await handlePromptSubmit(prompt);
     };
@@ -206,17 +322,7 @@ export default function CADPage() {
                     <SidebarProvider defaultCollapsed={false} id="left">
                         <CADSidebar
                             user={user}
-                            onNewProject={() => {
-                                setMessages([])
-                                setParameters({
-                                    width: 100,
-                                    height: 100,
-                                    depth: 100,
-                                    radius: 10,
-                                    segments: 32
-                                })
-                                setModelUrl(null)
-                            }}
+                            onNewProject={onNewProject}
                             onHistoryItemClick={(item: CADHistoryItem) => {
                                 toast.success('Loading project...')
                             }}
@@ -289,24 +395,10 @@ export default function CADPage() {
                 <div className="flex-shrink-0">
                     <SidebarProvider defaultCollapsed={false} id="right">
                         <CADParameters
-                            parameters={defaultParameters.map(param => ({
-                                ...param,
-                                value: parameters[param.name] || param.value
-                            }))}
+                            parameters={defaultParameters}
                             onChange={handleParameterChange}
-                            onReset={() => {
-                                setParameters({
-                                    width: 100,
-                                    height: 100,
-                                    depth: 100,
-                                    radius: 10,
-                                    segments: 32
-                                });
-                            }}
-                            onUndo={() => {
-                                setCanUndo(false);
-                                toast.success('Undo feature coming soon');
-                            }}
+                            onReset={handleReset}
+                            onUndo={handleUndo}
                             className="h-full"
                         />
                     </SidebarProvider>

@@ -37,6 +37,7 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --toast-border-radius: 0px;
   }
 
   .dark {
@@ -121,4 +122,42 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Toast styles */
+[role="status"][data-state="open"],
+[role="alert"][data-state="open"] {
+  border-radius: 0 !important; /* Force square corners */
+}
+
+[role="region"][id^="toast-"] {
+  border-radius: 0 !important; /* Force square corners for toast viewport */
+}
+
+.toast-root {
+  border-radius: 0 !important;
+}
+
+.toast-viewport {
+  border-radius: 0 !important;
+}
+
+.toast-action {
+  border-radius: 0 !important;
+}
+
+/* Toast Progress Bar Animation */
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.progress-animation {
+  animation: progress 2000ms linear forwards;
+  transform-origin: left;
+  will-change: transform;
 }
