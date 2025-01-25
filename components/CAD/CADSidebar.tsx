@@ -2,17 +2,21 @@
 
 import { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { PlusIcon, History, Settings, Download } from 'lucide-react';
+import { PlusIcon, History, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { cn } from "@/lib/actions/utils";
+import { format } from 'date-fns';
 
 interface CADHistoryItem {
     id: string;
     title: string;
     timestamp: Date;
     preview?: string;
+    messages?: Array<{
+        role: 'user' | 'assistant';
+        content: string;
+    }>;
 }
 
 interface CADSidebarProps {
@@ -25,90 +29,76 @@ interface CADSidebarProps {
 export function CADSidebar({ user, history = [], onNewProject, onHistoryItemClick }: CADSidebarProps) {
     const router = useRouter();
 
+    const handleNewChat = () => {
+        if (onNewProject) {
+            onNewProject();
+        }
+        // Clear the current chat and reset parameters
+        router.refresh(); // Refresh the page to start fresh
+    };
+
     return (
-        <div className="group flex h-full w-full flex-col bg-muted/50">
+        <div className="flex h-full w-full flex-col bg-muted/50">
             <div className="flex h-[60px] items-center justify-between px-4 py-2 border-b">
-                <span className="text-lg font-semibold">CAD Projects</span>
+                <span className="text-lg font-semibold">Chat History</span>
                 <Button
                     variant="ghost"
                     size="icon"
-                    onClick={onNewProject}
-                    className="h-8 w-8"
+                    onClick={handleNewChat}
+                    className="h-8 w-8 hover:bg-primary/10"
+                    title="Start new chat"
                 >
                     <PlusIcon className="h-4 w-4" />
                 </Button>
             </div>
 
-            <ScrollArea className="flex-1 px-2">
-                <div className="space-y-2 p-2">
+            <ScrollArea className="flex-1">
+                <div className="space-y-2 p-4">
                     {history.map((item) => (
                         <button
                             key={item.id}
                             onClick={() => onHistoryItemClick?.(item)}
                             className={cn(
-                                'flex w-full flex-col items-start gap-2 rounded-lg border bg-background/60 p-3 text-left text-sm transition-colors hover:bg-accent',
+                                'w-full flex flex-col gap-2 rounded-lg border bg-background/60 p-4 text-left transition-colors hover:bg-accent',
                                 'group/item'
                             )}
                         >
-                            <div className="flex w-full items-center gap-2">
-                                <History className="h-4 w-4" />
-                                <span className="line-clamp-1 flex-1">{item.title}</span>
-                                <span className="text-xs text-muted-foreground">
-                                    {new Date(item.timestamp).toLocaleDateString()}
+                            <div className="flex items-center gap-2">
+                                <History className="h-4 w-4 shrink-0" />
+                                <span className="flex-1 text-sm font-medium line-clamp-1">
+                                    {item.title}
                                 </span>
                             </div>
+
+                            {item.messages && item.messages.length > 0 && (
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <MessageSquare className="h-3 w-3" />
+                                    <span>{item.messages.length} messages</span>
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                <span>{format(new Date(item.timestamp), 'MMM d, yyyy')}</span>
+                                <span>{format(new Date(item.timestamp), 'h:mm a')}</span>
+                            </div>
+
                             {item.preview && (
-                                <p className="line-clamp-2 text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                                     {item.preview}
                                 </p>
                             )}
                         </button>
                     ))}
-                </div>
-            </ScrollArea>
 
-            <div className="mt-auto p-4 border-t">
-                <div className="flex items-center gap-2">
-                    {user ? (
-                        <>
-                            {user.image ? (
-                                <Image
-                                    src={user.image}
-                                    alt={user.name || 'User avatar'}
-                                    width={32}
-                                    height={32}
-                                    className="rounded-full"
-                                />
-                            ) : (
-                                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                                    <span className="text-sm font-medium">
-                                        {user.name?.charAt(0) || 'U'}
-                                    </span>
-                                </div>
-                            )}
-                            <div className="flex flex-col">
-                                <span className="text-sm font-medium">{user.name}</span>
-                                <span className="text-xs text-muted-foreground">{user.email}</span>
-                            </div>
-                            <div className="ml-auto flex gap-2">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <Settings className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <Download className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </>
-                    ) : (
-                        <Button
-                            className="w-full"
-                            onClick={() => router.push('/auth/sign-in')}
-                        >
-                            Sign in
-                        </Button>
+                    {history.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+                            <History className="h-8 w-8 mb-4 opacity-50" />
+                            <p className="text-sm">No chat history yet</p>
+                            <p className="text-xs mt-1">Start a new project to begin</p>
+                        </div>
                     )}
                 </div>
-            </div>
+            </ScrollArea>
         </div>
     );
 } 

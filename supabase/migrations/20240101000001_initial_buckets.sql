@@ -140,3 +140,36 @@ create policy "Authenticated Users Can Upload Temp Conversions"
 create policy "Public Access to Temp Conversions"
     on storage.objects for select
     using ( bucket_id = 'temp-conversions' );
+
+-- Create storage bucket for CAD models
+insert into storage.buckets (id, name, public)
+select 'cad-models', 'cad-models', true
+where not exists (
+    select 1 from storage.buckets where id = 'cad-models'
+);
+
+-- Set up storage policies for CAD models bucket
+create policy "Public Access to CAD Models"
+    on storage.objects for select
+    using ( bucket_id = 'cad-models' );
+
+create policy "Authenticated Users Can Upload CAD Models"
+    on storage.objects for insert
+    with check (
+        bucket_id = 'cad-models'
+        and auth.uid() is not null
+    );
+
+create policy "Users Can Update Their Own CAD Models"
+    on storage.objects for update
+    using (
+        bucket_id = 'cad-models'
+        and auth.uid() = owner
+    );
+
+create policy "Users Can Delete Their Own CAD Models"
+    on storage.objects for delete
+    using (
+        bucket_id = 'cad-models'
+        and auth.uid() = owner
+    );

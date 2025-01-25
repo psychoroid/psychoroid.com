@@ -204,3 +204,67 @@ CREATE TABLE product_views (
 CREATE INDEX idx_product_views_product_id ON product_views(product_id);
 CREATE INDEX idx_product_views_user_id ON product_views(user_id);
 CREATE INDEX idx_product_views_composite ON product_views(product_id, user_id);
+
+-- CAD Chats table
+CREATE TABLE cad_chats (
+    id uuid primary key default uuid_generate_v4(),
+    user_id uuid references auth.users(id) not null,
+    title text not null,
+    created_at timestamptz default now(),
+    updated_at timestamptz default now(),
+    last_message_at timestamptz default now(),
+    is_archived boolean default false,
+    metadata jsonb default '{}'::jsonb
+);
+
+CREATE INDEX idx_cad_chats_user_id ON cad_chats(user_id);
+CREATE INDEX idx_cad_chats_last_message ON cad_chats(last_message_at DESC);
+
+-- CAD Messages table
+CREATE TABLE cad_messages (
+    id uuid primary key default uuid_generate_v4(),
+    chat_id uuid references cad_chats(id) on delete cascade,
+    user_id uuid references auth.users(id) not null,
+    role text not null check (role in ('user', 'assistant')),
+    content text not null,
+    parameters jsonb default '{}'::jsonb,
+    created_at timestamptz default now(),
+    metadata jsonb default '{}'::jsonb
+);
+
+CREATE INDEX idx_cad_messages_chat_id ON cad_messages(chat_id);
+CREATE INDEX idx_cad_messages_user_id ON cad_messages(user_id);
+
+-- CAD Models table
+CREATE TABLE cad_models (
+    id uuid primary key default uuid_generate_v4(),
+    chat_id uuid references cad_chats(id) on delete cascade,
+    message_id uuid references cad_messages(id) on delete cascade,
+    user_id uuid references auth.users(id) not null,
+    model_path text not null,
+    preview_path text,
+    parameters jsonb not null default '{}'::jsonb,
+    format text not null,
+    status text not null default 'processing' check (status in ('processing', 'completed', 'failed')),
+    created_at timestamptz default now(),
+    updated_at timestamptz default now(),
+    metadata jsonb default '{}'::jsonb
+);
+
+CREATE INDEX idx_cad_models_chat_id ON cad_models(chat_id);
+CREATE INDEX idx_cad_models_message_id ON cad_models(message_id);
+CREATE INDEX idx_cad_models_user_id ON cad_models(user_id);
+
+-- CAD Operations table
+CREATE TABLE cad_operations (
+    id uuid primary key default uuid_generate_v4(),
+    model_id uuid references cad_models(id) on delete cascade,
+    operation_type text not null,
+    parameters jsonb not null default '{}'::jsonb,
+    created_at timestamptz default now(),
+    updated_at timestamptz default now(),
+    status text not null default 'pending' check (status in ('pending', 'processing', 'completed', 'failed')),
+    metadata jsonb default '{}'::jsonb
+);
+
+CREATE INDEX idx_cad_operations_model_id ON cad_operations(model_id);

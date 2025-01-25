@@ -1,18 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useUser } from '@/lib/contexts/UserContext'
 import dynamic from 'next/dynamic'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { CADSidebar } from '@/components/CAD/CADSidebar'
-import { CADHeader } from '@/components/CAD/CADHeader'
-import { CADMessage } from '@/components/CAD/CADMessage'
-import { CADInput } from '@/components/CAD/CADInput'
-import { CADSuggestions } from '@/components/CAD/CADSuggestions'
 import { CADParameters } from '@/components/CAD/CADParameters'
-import { CADToolbar } from '@/components/CAD/CADToolbar'
+import { CADViewer } from '@/components/CAD/CADViewer'
+import { ChatInstance } from '@/components/CAD/CADChat'
+import { cn } from "@/lib/actions/utils"
 
 // Remove heavy components from initial bundle
 const DynamicCADViewer = dynamic(() => import('@/components/3D/ProductViewer').then(mod => ({ default: mod.ProductViewer })), {
@@ -59,31 +57,24 @@ export default function CADPage() {
     const [history, setHistory] = useState<CADHistoryItem[]>([])
     const [canUndo, setCanUndo] = useState(false)
     const [canRedo, setCanRedo] = useState(false)
+    const [activeOperation, setActiveOperation] = useState<string>('')
+    const [currentPrompt, setCurrentPrompt] = useState('')
 
-    // Protect route with better handling
-    useEffect(() => {
-        if (!isUserLoading && !user) {
-            const returnPath = encodeURIComponent(pathname)
-            router.push(`/auth/sign-in?returnPath=${returnPath}`)
-            return
-        }
-    }, [user, isUserLoading, router, pathname])
+    // Memoize parameter change handler
+    const handleParameterChange = useCallback((name: string, value: number) => {
+        setParameters(prev => ({
+            ...prev,
+            [name]: value
+        }))
+    }, [])
 
-    // Show loading state while checking auth
-    if (isUserLoading) {
-        return (
-            <div className="h-svh bg-background flex items-center justify-center">
-                <div className="animate-pulse text-muted-foreground">Loading...</div>
-            </div>
-        )
-    }
+    // Memoize operation change handler
+    const handleOperationChange = useCallback((operation: string | null) => {
+        setActiveOperation(operation || '')
+    }, [])
 
-    // Don't render anything if not authenticated
-    if (!user) {
-        return null
-    }
-
-    const handlePromptSubmit = async (content: string, attachments?: File[]) => {
+    // Memoize prompt submit handler
+    const handlePromptSubmit = useCallback(async (content: string, attachments?: File[]) => {
         try {
             setIsGenerating(true)
 
@@ -146,20 +137,32 @@ export default function CADPage() {
 
         } catch (error) {
             console.error('Error generating CAD model:', error)
-
-            // Add error message
-            const errorMessage: CADMessage = {
-                id: (Date.now() + 1).toString(),
-                role: 'assistant',
-                content: error instanceof Error ? error.message : 'Failed to generate CAD model',
-                timestamp: new Date()
-            }
-            setMessages(prev => [...prev, errorMessage])
-
-            toast.error('Failed to generate CAD model')
+            toast.error(error instanceof Error ? error.message : 'Failed to generate CAD model')
         } finally {
             setIsGenerating(false)
         }
+    }, [])
+
+    // Protect route with better handling - add proper dependencies
+    useEffect(() => {
+        if (!isUserLoading && !user) {
+            const returnPath = encodeURIComponent(pathname)
+            router.push(`/auth/sign-in?returnPath=${returnPath}`)
+        }
+    }, [user, isUserLoading, router, pathname])
+
+    // Show loading state while checking auth
+    if (isUserLoading) {
+        return (
+            <div className="h-svh bg-background flex items-center justify-center">
+                <div className="animate-pulse text-muted-foreground">Loading...</div>
+            </div>
+        )
+    }
+
+    // Don't render anything if not authenticated
+    if (!user) {
+        return null
     }
 
     const handleExport = () => {
@@ -185,13 +188,6 @@ export default function CADPage() {
         { name: 'segments', value: 32, min: 3, max: 64, step: 1 }
     ];
 
-    const handleParameterChange = (name: string, value: number) => {
-        setParameters(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
     const handleSuggestionClick = async (prompt: string) => {
         await handlePromptSubmit(prompt);
     };
@@ -204,117 +200,115 @@ export default function CADPage() {
             transition={{ duration: 0.5 }}
             className="h-svh bg-background flex flex-col overflow-hidden"
         >
-            <CADHeader
-                onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                selectedModel={selectedModel}
-                onModelChange={setSelectedModel}
-                canUndo={canUndo}
-                canRedo={canRedo}
-                onUndo={() => setCanUndo(false)}
-                onRedo={() => setCanRedo(false)}
-                onExport={handleExport}
-                onShare={handleShare}
-                onSettings={handleSettings}
-            />
 
             <div className="flex-1 flex overflow-hidden">
-                {showSidebar && (
-                    <motion.div
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 320, opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        className="border-r"
-                    >
-                        <CADSidebar
-                            user={user}
-                            history={history}
-                            onNewProject={() => {
-                                setMessages([])
-                                setParameters({
-                                    width: 100,
-                                    height: 100,
-                                    depth: 100,
-                                    radius: 10,
-                                    segments: 32
-                                })
-                                setModelUrl(null)
-                            }}
-                            onHistoryItemClick={(item) => {
-                                // TODO: Load project from history
-                                toast.success('Loading project...')
-                            }}
-                        />
-                    </motion.div>
-                )}
+                {/* Left Panel - Chat History (20%) */}
+                <div className="w-[20%] border-r bg-background">
+                    <CADSidebar
+                        user={user}
+                        history={history}
+                        onNewProject={() => {
+                            setMessages([])
+                            setParameters({
+                                width: 100,
+                                height: 100,
+                                depth: 100,
+                                radius: 10,
+                                segments: 32
+                            })
+                            setModelUrl(null)
+                        }}
+                        onHistoryItemClick={(item) => {
+                            // TODO: Load project from history
+                            toast.success('Loading project...')
+                        }}
+                    />
+                </div>
 
-                <div className="flex-1 flex">
-                    {/* Left Panel - Parameters */}
-                    <div className="w-[300px] border-r">
-                        <CADParameters
-                            parameters={defaultParameters}
-                            onChange={handleParameterChange}
-                            onReset={() => {
-                                setParameters({
-                                    width: 100,
-                                    height: 100,
-                                    depth: 100,
-                                    radius: 10,
-                                    segments: 32
-                                })
-                            }}
-                            onUndo={() => setCanUndo(false)}
-                            className="h-full"
+                {/* Middle Panel - Visualizer and Chat (60%) */}
+                <div className="w-[60%] flex flex-col">
+                    {/* CAD Visualizer */}
+                    <div className="flex-1 relative bg-muted/50 min-h-[70%]">
+                        <CADViewer
+                            modelUrl={modelUrl}
+                            parameters={parameters}
+                            onParameterChange={handleParameterChange}
+                            onExport={handleExport}
+                            onShare={handleShare}
+                            activeOperation={activeOperation}
+                            onOperationChange={handleOperationChange}
                         />
                     </div>
 
-                    {/* Middle Panel - Viewer */}
-                    <div className="flex-1 relative">
-                        <div className="absolute inset-0 p-4">
-                            <div className="w-full h-full bg-muted/50 rounded-lg border">
-                                {modelUrl ? (
-                                    <DynamicCADViewer modelUrl={modelUrl} />
-                                ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
-                                        <p className="text-sm mb-8">Start creating your CAD model using the chat interface</p>
-                                        <CADSuggestions
-                                            onSuggestionClick={handleSuggestionClick}
-                                            isLoading={isGenerating}
-                                        />
+                    {/* Chat Interface with History */}
+                    <div className="h-[30%] flex flex-col bg-background/95 backdrop-blur-sm border-t border-border/50">
+                        {/* Chat History */}
+                        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 scrollbar-thin">
+                            {messages.map((message) => (
+                                <div
+                                    key={message.id}
+                                    className={cn(
+                                        "flex gap-2 items-start",
+                                        message.role === 'assistant' ? "justify-start" : "justify-end"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "max-w-[80%] rounded-none p-3",
+                                        message.role === 'assistant'
+                                            ? "bg-muted/50"
+                                            : "bg-primary/5"
+                                    )}>
+                                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                        {message.parameters && (
+                                            <div className="mt-2 text-xs opacity-80 bg-muted/50 p-2 rounded-none">
+                                                <pre className="overflow-x-auto">
+                                                    {JSON.stringify(message.parameters, null, 2)}
+                                                </pre>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            ))}
                         </div>
 
-                        {/* Floating Toolbar */}
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                            <CADToolbar
-                                onExport={handleExport}
-                                onShare={handleShare}
+                        {/* Chat Input */}
+                        <div className="p-2">
+                            <ChatInstance
+                                isUploading={isGenerating}
+                                onPromptSubmit={handlePromptSubmit}
+                                showPreview={false}
+                                user={user}
+                                setShowAuthModal={setShowAuthModal}
+                                value={currentPrompt}
+                                onChange={setCurrentPrompt}
                             />
                         </div>
                     </div>
+                </div>
 
-                    {/* Right Panel - Chat */}
-                    <div className="w-[400px] border-l flex flex-col">
-                        <div className="flex-1 overflow-y-auto">
-                            <div className="space-y-4 p-4">
-                                {messages.map((message, index) => (
-                                    <CADMessage
-                                        key={message.id}
-                                        {...message}
-                                        isLatest={index === messages.length - 1}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        <CADInput
-                            onSubmit={handlePromptSubmit}
-                            isLoading={isGenerating}
-                            disabled={isGenerating}
-                            showAttachments
-                        />
-                    </div>
+                {/* Right Panel - Parameters (20%) */}
+                <div className="w-[20%] border-l bg-background">
+                    <CADParameters
+                        parameters={defaultParameters.map(param => ({
+                            ...param,
+                            value: parameters[param.name] || param.value
+                        }))}
+                        onChange={handleParameterChange}
+                        onReset={() => {
+                            setParameters({
+                                width: 100,
+                                height: 100,
+                                depth: 100,
+                                radius: 10,
+                                segments: 32
+                            });
+                        }}
+                        onUndo={() => {
+                            setCanUndo(false);
+                            toast.success('Undo feature coming soon');
+                        }}
+                        className="h-full"
+                    />
                 </div>
             </div>
         </motion.div>

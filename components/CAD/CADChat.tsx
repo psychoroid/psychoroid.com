@@ -1,45 +1,85 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
-import { Box, History, Download, Code, Send, Loader2 } from 'lucide-react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { Paperclip, ArrowUp, X } from 'lucide-react'
 import { cn } from "@/lib/actions/utils"
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import RippleButton from "@/components/ui/magic/ripple-button"
 import { Textarea } from "@/components/ui/textarea"
+import { useTranslation } from '@/lib/contexts/TranslationContext'
+import { t } from '@/lib/i18n/translations'
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { useTheme } from 'next-themes'
+import { toast } from 'react-hot-toast'
+import { supabase } from '@/lib/supabase/supabase'
 
-interface CADMessage {
-    id: string
-    role: 'user' | 'assistant'
-    content: string
-    timestamp: Date
-    parameters?: any
-}
-
-interface CADChatProps {
-    onPromptSubmit?: (prompt: string) => Promise<void>
+interface ChatInstanceProps {
+    isUploading: boolean
+    onPromptSubmit?: (prompt: string) => void
     showPreview?: boolean
     user?: any
     setShowAuthModal?: (show: boolean) => void
     value?: string
     onChange?: (value: string) => void
-    isLoading?: boolean
-    messages?: CADMessage[]
 }
 
-export function CADChat({
+export function ChatInstance({
+    isUploading,
     onPromptSubmit,
     showPreview = false,
     user,
     setShowAuthModal,
     value,
-    onChange,
-    isLoading,
-    messages = []
-}: CADChatProps) {
+    onChange
+}: ChatInstanceProps) {
     const [inputValue, setInputValue] = useState(value || '')
+    const [mounted, setMounted] = useState(false)
+    const [isFocused, setIsFocused] = useState(false)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const { theme } = useTheme()
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const newValue = e.target.value;
+        setInputValue(newValue);
+        onChange?.(newValue);
+
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            const newHeight = Math.min(textareaRef.current.scrollHeight, 100); // Allow more height for content
+            textareaRef.current.style.height = `${newHeight}px`;
+        }
+    };
+
+    const handleSubmit = useCallback(() => {
+        if (!user && setShowAuthModal) {
+            setShowAuthModal(true)
+            return
+        }
+
+        if (inputValue.trim() && onPromptSubmit && !showPreview) {
+            onPromptSubmit(inputValue)
+            setInputValue('')
+            onChange?.('')
+            // Reset height after submission
+            if (textareaRef.current) {
+                textareaRef.current.style.height = 'auto';
+            }
+        }
+    }, [user, setShowAuthModal, inputValue, onPromptSubmit, showPreview, onChange]);
+
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
+            e.preventDefault();
+            handleSubmit();
+            return;
+        }
+    }, [showPreview, handleSubmit]);
 
     // Update internal value when external value changes
     useEffect(() => {
@@ -48,109 +88,78 @@ export function CADChat({
         }
     }, [value])
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-
-        if (!user && setShowAuthModal) {
-            setShowAuthModal(true)
-            return
-        }
-
-        if (inputValue.trim() && onPromptSubmit && !showPreview && !isLoading) {
-            await onPromptSubmit(inputValue)
-            setInputValue('')
-            onChange?.('')
-        }
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
-            e.preventDefault()
-            handleSubmit(e)
-        }
-
-        if (e.nativeEvent.isComposing) {
-            return
-        }
-    }
-
     return (
-        <div className="flex flex-col w-full">
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto space-y-6 p-4">
-                {messages.map((message) => (
-                    <div
-                        key={message.id}
-                        className={cn(
-                            "flex items-start gap-4 p-4 rounded-lg",
-                            message.role === 'assistant' ? "bg-muted/50" : "bg-primary/5"
-                        )}
-                    >
-                        <div className={cn(
-                            "w-8 h-8 rounded-full flex items-center justify-center",
-                            message.role === 'assistant' ? "bg-primary" : "bg-secondary"
-                        )}>
-                            {message.role === 'assistant' ? (
-                                <Box className="w-4 h-4 text-primary-foreground" />
-                            ) : (
-                                <div className="w-4 h-4 bg-secondary-foreground rounded-full" />
-                            )}
-                        </div>
-                        <div className="flex-1 space-y-2">
-                            <p className="text-sm font-medium">
-                                {message.role === 'assistant' ? 'CAD Assistant' : 'You'}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                                {message.content}
-                            </p>
-                            {message.parameters && (
-                                <pre className="text-xs bg-muted p-2 rounded-md overflow-x-auto">
-                                    {JSON.stringify(message.parameters, null, 2)}
-                                </pre>
-                            )}
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                            {message.timestamp.toLocaleTimeString()}
-                        </span>
-                    </div>
-                ))}
-            </div>
+        <div className="w-full">
+            <motion.div
+                className={cn(
+                    "relative flex flex-col justify-between rounded-none p-2 shadow-sm cursor-text w-full",
+                    "min-h-[50px] transition-all duration-200",
+                    "before:absolute before:inset-0 before:border before:border-black/[0.08] dark:before:border-white/[0.08]",
+                    "after:absolute after:inset-[0.25px] after:border after:border-black/[0.08] dark:after:border-white/[0.08]",
+                    "before:rounded-none after:rounded-none",
+                    isFocused && "before:border-black/[0.15] after:border-black/[0.15] dark:before:border-white/[0.15] dark:after:border-white/[0.15]",
+                    "bg-slate-50/60 dark:bg-zinc-900/50",
+                    "after:bg-slate-50/60 dark:after:bg-zinc-900/50",
+                    "before:bg-slate-50/60 dark:before:bg-zinc-900/50"
+                )}
+            >
+                <div className="absolute inset-0 bg-gradient-to-b from-muted/20 to-muted/10 rounded-none pointer-events-none" />
 
-            {/* Input Area */}
-            <form onSubmit={handleSubmit} className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="flex items-center gap-2 p-4">
+                <div className="flex flex-col relative z-10">
                     <Textarea
                         ref={textareaRef}
                         value={inputValue}
-                        onChange={(e) => {
-                            if (!showPreview) {
-                                setInputValue(e.target.value)
-                                onChange?.(e.target.value)
-                            }
+                        onChange={handleInputChange}
+                        onFocus={() => !showPreview && setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        onKeyDown={mounted ? handleKeyDown : undefined}
+                        disabled={showPreview}
+                        spellCheck="true"
+                        autoCapitalize="sentences"
+                        autoCorrect="on"
+                        className={cn(
+                            "w-full min-h-[36px] resize-none",
+                            "text-sm bg-transparent px-2",
+                            "border-0 focus-visible:ring-0 focus:outline-none shadow-none",
+                            "text-muted-foreground placeholder:text-muted-foreground/60",
+                            "selection:bg-primary/20 selection:text-muted-foreground",
+                            showPreview && "opacity-50 cursor-not-allowed"
+                        )}
+                        style={{
+                            border: 'none',
+                            outline: 'none',
+                            boxShadow: 'none',
+                            lineHeight: '1.6',
+                            caretColor: 'var(--primary)'
                         }}
-                        onKeyDown={handleKeyDown}
-                        disabled={showPreview || isLoading}
-                        placeholder="Describe what you want to create..."
-                        className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
-                        autoComplete="off"
-                        autoCorrect="off"
-                        autoCapitalize="off"
-                        spellCheck="false"
+                        placeholder="Describe your CAD model requirements (e.g., 'Create a cylindrical container with a threaded lid...')"
                         rows={1}
                     />
-                    <Button
-                        type="submit"
-                        size="icon"
-                        disabled={!inputValue.trim() || showPreview || isLoading}
-                    >
-                        {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Send className="h-4 w-4" />
-                        )}
-                    </Button>
+
+                    <div className="flex justify-end mt-1">
+                        <RippleButton
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                if (!isUploading && mounted && !showPreview) {
+                                    handleSubmit()
+                                }
+                            }}
+                            className={cn(
+                                "flex h-7 w-7 items-center justify-center rounded-none transition-all duration-200 p-0 border-0",
+                                (inputValue.length > 0 && !showPreview && !isUploading) && mounted
+                                    ? "bg-primary/90 text-primary-foreground hover:bg-primary cursor-pointer"
+                                    : "bg-zinc-200/80 hover:bg-zinc-300/90 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/90 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
+                                (showPreview || isUploading) && "opacity-50 cursor-not-allowed"
+                            )}
+                            rippleColor="rgba(255, 255, 255, 0.2)"
+                            disabled={showPreview || !inputValue.length || !mounted || isUploading}
+                        >
+                            <ArrowUp className="h-4 w-4" />
+                        </RippleButton>
+                    </div>
                 </div>
-            </form>
+            </motion.div>
         </div>
     )
 } 
