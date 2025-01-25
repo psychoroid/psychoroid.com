@@ -32,7 +32,7 @@ export default function StudioPage() {
     // Protect route - do this first before any data fetching
     useEffect(() => {
         if (!user) {
-            router.push('/auth/sign-in')
+            router.push('/sign-in')
         }
     }, [user, router])
 

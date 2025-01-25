@@ -41,7 +41,7 @@ export function ForgotForm({ className, onSuccess, ...props }: ForgotFormProps) 
     setIsLoading(true)
     try {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-      const callbackUrl = `${baseUrl}/auth/callback`
+      const callbackUrl = `${baseUrl}/callback`
 
       console.log('Reset password callback URL:', callbackUrl)
 

@@ -17,7 +17,7 @@ export default function WorkspaceLayout({
 
     useEffect(() => {
         if (!isLoading && !session) {
-            router.push('/auth/sign-in')
+            router.push('/sign-in')
         }
     }, [session, isLoading, router])
 

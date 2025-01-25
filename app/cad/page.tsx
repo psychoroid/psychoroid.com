@@ -151,7 +151,7 @@ export default function CADPage() {
     useEffect(() => {
         if (!isUserLoading && !user) {
             const returnPath = encodeURIComponent(pathname)
-            router.push(`/auth/sign-in?returnPath=${returnPath}`)
+            router.push(`/sign-in?returnPath=${returnPath}`)
         }
     }, [user, isUserLoading, router, pathname])
 

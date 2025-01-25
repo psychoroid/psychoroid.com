@@ -272,7 +272,7 @@ export function Navbar({ className }: { className?: string }) {
                                 </button>
                             ) : (
                                 <Link
-                                    href="/auth/sign-in"
+                                    href="/sign-in"
                                     className="text-muted-foreground hover:text-foreground transition-colors text-xs font-medium translate-y-[2px]"
                                 >
                                     {t(currentLanguage, 'navbar.sign_in')}
@@ -380,7 +380,7 @@ export function Navbar({ className }: { className?: string }) {
                                 <>
                                     <div className="h-px w-full bg-border"></div>
                                     <Link
-                                        href="/auth/sign-in"
+                                        href="/sign-in"
                                         className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
                                     >
                                         {t(currentLanguage, 'navbar.sign_in')}

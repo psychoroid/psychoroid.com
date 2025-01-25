@@ -88,7 +88,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/callback`,
           queryParams: {
             ...(provider === 'google' ? {
               access_type: 'offline',
@@ -132,7 +132,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           />
           <div className='flex justify-end mb-1'>
             <Link
-              href='/auth/forgot-password'
+              href='/forgot-password'
               className='text-sm font-medium text-blue-600 hover:text-blue-600 whitespace-nowrap'
             >
               {t(currentLanguage, 'auth.sign_in.forgot_password')}
@@ -239,7 +239,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         <p className='px-8 text-center text-sm text-muted-foreground'>
           {t(currentLanguage, 'auth.sign_in.no_account')}{' '}
           <Link
-            href='/auth/sign-up'
+            href='/sign-up'
             className='underline underline-offset-4 text-blue-600 hover:text-blue-600'
           >
             {t(currentLanguage, 'auth.sign_in.sign_up_link')}

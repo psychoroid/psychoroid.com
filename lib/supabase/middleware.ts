@@ -63,7 +63,7 @@ export async function middleware(request: NextRequest) {
     if (request.nextUrl.pathname.startsWith('/dashboard')) {
         const { data: { session } } = await supabase.auth.getSession()
         if (!session) {
-            const redirectUrl = new URL('/auth/sign-in', request.url)
+            const redirectUrl = new URL('/sign-in', request.url)
             redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
             return NextResponse.redirect(redirectUrl)
         }
@@ -85,7 +85,7 @@ export const config = {
          * 6. Include auth callback and dashboard paths
          */
         '/((?!api/stripe/webhook|_next/static|_next/image|favicon.ico).*)',
-        '/auth/callback',
+        '/callback',
         '/dashboard/:path*'
     ],
 } 

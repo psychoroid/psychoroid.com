@@ -21,7 +21,7 @@ export default function DashboardLayout({
     if (!isLoading) {
       setIsInitialLoad(false)
       if (!session) {
-        router.push('/auth/sign-in')
+        router.push('/sign-in')
       }
     }
   }, [session, isLoading, router])

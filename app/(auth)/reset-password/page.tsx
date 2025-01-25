@@ -31,7 +31,7 @@ export default function ResetPassword() {
                     description: t(currentLanguage, 'auth.pages.reset_password.error.invalid_link'),
                     variant: "destructive",
                 })
-                router.push('/auth/forgot-password')
+                router.push('/forgot-password')
             }
         }
         checkSession()
@@ -68,7 +68,7 @@ export default function ResetPassword() {
                 description: t(currentLanguage, 'auth.pages.reset_password.success.description'),
             })
 
-            router.push('/auth/sign-in')
+            router.push('/sign-in')
         } catch (error) {
             console.error('Error resetting password:', error)
             toast({

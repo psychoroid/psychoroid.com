@@ -19,7 +19,7 @@ export default function AuthCallbackPage() {
 
             if (!token) {
                 console.error('No token found in URL');
-                router.push('/auth/sign-in');
+                router.push('/sign-in');
                 return;
             }
 
@@ -38,7 +38,7 @@ export default function AuthCallbackPage() {
 
                     if (session) {
                         // Redirect to reset password page
-                        router.push('/auth/reset-password');
+                        router.push('/reset-password');
                         return;
                     }
                     throw new Error('No session after recovery verification');
@@ -76,7 +76,7 @@ export default function AuthCallbackPage() {
 
                     router.push('/');
                 } else {
-                    router.push('/auth/sign-in');
+                    router.push('/sign-in');
                 }
             } catch (error) {
                 console.error('Error in auth callback:', error);
@@ -85,7 +85,7 @@ export default function AuthCallbackPage() {
                     description: t(currentLanguage, 'auth.pages.reset_password.error.description'),
                     variant: "destructive",
                 });
-                router.push('/auth/sign-in');
+                router.push('/sign-in');
             }
         };
 

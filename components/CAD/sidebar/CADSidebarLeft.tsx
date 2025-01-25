@@ -210,7 +210,7 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => router.push('/new')}
-                                        className="h-8 w-8 rounded-sm border-[1.5px] flex items-center justify-center focus:bg-transparent hover:bg-transparent"
+                                        className="w-8 h-8 rounded-none flex items-center justify-center"
                                         title="New CAD Generation"
                                     >
                                         <PlusIcon className="h-4 w-4" />
@@ -224,7 +224,7 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => setCollapsed(!collapsed)}
-                                        className="h-8 w-8 rounded-none focus:bg-transparent hover:bg-transparent"
+                                        className="h-8 w-8 rounded-none"
                                         title="Collapse sidebar"
                                     >
                                         <ChevronFirst className="h-4 w-4" />
@@ -238,7 +238,7 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                                     variant="outline"
                                     size="icon"
                                     onClick={() => router.push('/new')}
-                                    className="h-8 w-8 rounded-sm border-[1.5px] flex items-center justify-center focus:bg-transparent hover:bg-transparent"
+                                    className="h-8 w-8 rounded-sm border-[1.5px]"
                                     title="New CAD Generation"
                                 >
                                     <PlusIcon className="h-4 w-4" />
@@ -291,7 +291,7 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                                                 e.preventDefault();
                                                 // Handle navigation here
                                             }}
-                                            className="w-full h-10 px-4 group rounded-none focus:bg-transparent hover:bg-transparent"
+                                            className="w-full h-10 px-4 hover:bg-accent group rounded-none"
                                         >
                                             <div className="flex items-center">
                                                 <item.icon className="h-4 w-4 mr-2" />

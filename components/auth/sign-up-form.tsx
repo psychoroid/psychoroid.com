@@ -61,7 +61,7 @@ export function SignUpForm({ className, onSubmit, isLoading, isConfirmationSent,
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/callback`,
           scopes: 'email',
         },
       });

@@ -169,7 +169,6 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{displayName}</p>
-                        <div className="h-[2px]" />
                         <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
                     </div>
                 </div>
@@ -177,21 +176,21 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
                 {/* Main Actions */}
                 <div className="py-2">
                     <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none focus:bg-transparent"
+                        className="h-10 px-4 gap-2 cursor-pointer rounded-none focus:bg-accent"
                         onClick={() => router.push('/dashboard/settings/billing')}
                     >
                         <CreditCard className="h-4 w-4" />
                         <span className="text-sm">Billing</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none focus:bg-transparent"
+                        className="h-10 px-4 gap-2 cursor-pointer rounded-none focus:bg-accent"
                         onClick={() => router.push('/dashboard/settings/account')}
                     >
                         <Settings className="h-4 w-4" />
                         <span className="text-sm">Settings</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none focus:bg-transparent text-red-600 dark:text-red-400"
+                        className="h-10 px-4 gap-2 cursor-pointer rounded-none focus:bg-accent text-red-600 dark:text-red-400"
                         onClick={handleSignOut}
                     >
                         <LogOut className="h-4 w-4" />
@@ -206,7 +205,7 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
                     <div className="px-4 py-1.5 text-xs font-semibold text-muted-foreground">
                         Preferences
                     </div>
-                    <div className="px-4 h-10 flex items-center justify-between rounded-none">
+                    <div className="px-4 h-10 flex items-center justify-between rounded-none hover:bg-accent">
                         <div className="flex items-center gap-2">
                             <Monitor className="h-4 w-4" />
                             <span className="text-sm">Theme</span>
@@ -214,7 +213,7 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
                         <div className="flex items-center gap-0.5 rounded-none border">
                             <button
                                 className={cn(
-                                    "rounded-none p-1.5",
+                                    "rounded-none p-1.5 hover:bg-accent",
                                     theme === 'light' && "bg-accent"
                                 )}
                                 onClick={() => setTheme('light')}
@@ -223,7 +222,7 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
                             </button>
                             <button
                                 className={cn(
-                                    "rounded-none p-1.5",
+                                    "rounded-none p-1.5 hover:bg-accent",
                                     theme === 'dark' && "bg-accent"
                                 )}
                                 onClick={() => setTheme('dark')}
@@ -232,7 +231,7 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
                             </button>
                             <button
                                 className={cn(
-                                    "rounded-none p-1.5",
+                                    "rounded-none p-1.5 hover:bg-accent",
                                     theme === 'system' && "bg-accent"
                                 )}
                                 onClick={() => setTheme('system')}
@@ -243,7 +242,7 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
                     </div>
                     <div
                         onClick={handleLanguageClick}
-                        className="px-4 h-10 flex items-center justify-between rounded-none cursor-pointer"
+                        className="px-4 h-10 flex items-center justify-between rounded-none hover:bg-accent cursor-pointer"
                     >
                         <div className="flex items-center gap-2">
                             <Languages className="h-4 w-4" />
