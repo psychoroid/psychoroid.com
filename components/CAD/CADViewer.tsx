@@ -4,10 +4,14 @@ import React, { Suspense, useRef, useState, useCallback, memo, useEffect } from 
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, Environment, PerspectiveCamera } from '@react-three/drei';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
-import { Vector3, MOUSE, TOUCH, Box3, BoxGeometry, Mesh, MeshStandardMaterial, Raycaster, Vector2, Face3 } from 'three';
+import { Vector3, MOUSE, TOUCH, Box3, BoxGeometry, Mesh, MeshStandardMaterial, Raycaster, Vector2, Face3, SRGBColorSpace, ACESFilmicToneMapping, Fog } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
 import { CADToolbar } from './CADToolbar';
 import { XModal } from './XModal';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { LoadingManager } from 'three';
+import { toast } from 'react-hot-toast';
 
 // Constants
 const INITIAL_CAMERA_POSITION = [10, 10, 10] as const;
@@ -88,6 +92,7 @@ export const CADViewer = memo(function CADViewer({
     const controlsRef = useRef<any>(null);
     const meshRef = useRef<Mesh<BoxGeometry | RoundedBoxGeometry, MeshStandardMaterial>>(null);
     const [meshData, setMeshData] = useState<MeshData | null>(null);
+    const [scene, setScene] = useState<THREE.Scene | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
     const [isRotating, setIsRotating] = useState(false);
     const [isZoomToCursor, setIsZoomToCursor] = useState(false);
@@ -115,10 +120,139 @@ export const CADViewer = memo(function CADViewer({
     // Load mesh data when modelUrl changes
     useEffect(() => {
         if (modelUrl) {
-            fetch(modelUrl)
-                .then(response => response.json())
-                .then(data => setMeshData(data))
-                .catch(error => console.error('Error loading mesh data:', error));
+            console.log('CADViewer: Loading model from URL:', modelUrl.substring(0, 100) + '...')
+
+            try {
+                // Set up loaders with LoadingManager for better error handling
+                const manager = new LoadingManager()
+                manager.onError = (url) => {
+                    console.error('CADViewer: Failed to load resource:', url)
+                    toast.error('Failed to load model resource')
+                }
+
+                const loader = new GLTFLoader(manager)
+                loader.setCrossOrigin('anonymous')
+
+                // If it's a data URL, convert it to a Blob URL
+                if (modelUrl.startsWith('data:')) {
+                    const base64Data = modelUrl.split(',')[1]
+                    const binaryString = atob(base64Data)
+                    const bytes = new Uint8Array(binaryString.length)
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i)
+                    }
+                    const blob = new Blob([bytes.buffer], { type: 'model/gltf-binary' })
+                    const blobUrl = URL.createObjectURL(blob)
+
+                    // Load the model from the Blob URL
+                    loader.load(
+                        blobUrl,
+                        (gltf) => {
+                            console.log('CADViewer: Model loaded successfully', {
+                                scenes: gltf.scenes.length,
+                                animations: gltf.animations.length,
+                                materials: Object.keys(gltf.materials || {}).length,
+                                hasScene: !!gltf.scene
+                            })
+
+                            if (!gltf.scene) {
+                                throw new Error('No scene in loaded model')
+                            }
+
+                            // Calculate bounding box
+                            const box = new Box3().setFromObject(gltf.scene)
+                            const center = box.getCenter(new Vector3())
+                            const size = box.getSize(new Vector3())
+
+                            // Calculate scale to normalize model size
+                            const maxDimension = Math.max(size.x, size.y, size.z)
+                            const targetScale = 3 / maxDimension
+
+                            // Center the model
+                            gltf.scene.position.set(-center.x, -center.y, -center.z)
+                            gltf.scene.scale.setScalar(targetScale)
+
+                            // Update materials for better rendering
+                            gltf.scene.traverse((child) => {
+                                if (child instanceof Mesh) {
+                                    if (child.material) {
+                                        child.material.needsUpdate = true
+                                        child.castShadow = true
+                                        child.receiveShadow = true
+                                    }
+                                }
+                            })
+
+                            // Set the scene
+                            setScene(gltf.scene)
+
+                            // Clean up
+                            URL.revokeObjectURL(blobUrl)
+                        },
+                        (progress) => {
+                            const percent = progress.total ? Math.round((progress.loaded / progress.total) * 100) : 0
+                            console.log('CADViewer: Loading progress:', percent + '%')
+                        },
+                        (error) => {
+                            console.error('CADViewer: Error loading model:', error)
+                            toast.error('Failed to load 3D model')
+                            setScene(null)
+                            URL.revokeObjectURL(blobUrl)
+                        }
+                    )
+                } else {
+                    // Handle regular URLs
+                    loader.load(
+                        modelUrl,
+                        (gltf) => {
+                            console.log('CADViewer: Model loaded successfully', {
+                                scenes: gltf.scenes.length,
+                                animations: gltf.animations.length,
+                                materials: Object.keys(gltf.materials || {}).length,
+                                hasScene: !!gltf.scene
+                            })
+
+                            if (!gltf.scene) {
+                                throw new Error('No scene in loaded model')
+                            }
+
+                            const box = new Box3().setFromObject(gltf.scene)
+                            const center = box.getCenter(new Vector3())
+                            const size = box.getSize(new Vector3())
+                            const maxDimension = Math.max(size.x, size.y, size.z)
+                            const targetScale = 3 / maxDimension
+
+                            gltf.scene.position.set(-center.x, -center.y, -center.z)
+                            gltf.scene.scale.setScalar(targetScale)
+
+                            gltf.scene.traverse((child) => {
+                                if (child instanceof Mesh) {
+                                    if (child.material) {
+                                        child.material.needsUpdate = true
+                                        child.castShadow = true
+                                        child.receiveShadow = true
+                                    }
+                                }
+                            })
+
+                            setScene(gltf.scene)
+                        },
+                        (progress) => {
+                            const percent = progress.total ? Math.round((progress.loaded / progress.total) * 100) : 0
+                            console.log('CADViewer: Loading progress:', percent + '%')
+                        },
+                        (error) => {
+                            console.error('CADViewer: Error loading model:', error)
+                            toast.error('Failed to load 3D model')
+                            setScene(null)
+                        }
+                    )
+                }
+            } catch (error) {
+                console.error('CADViewer: Failed to load model:', error)
+                toast.error('Failed to initialize model loader')
+                setScene(null)
+            }
         }
     }, [modelUrl]);
 
@@ -126,6 +260,8 @@ export const CADViewer = memo(function CADViewer({
     useEffect(() => {
         const mesh = meshRef.current;
         if (!mesh || !parameters) return;
+
+        console.log('CADViewer: Updating mesh parameters', parameters)
 
         // Clamp parameters between 0.1 and 100
         const clampedParams: ClampedParameters = {
@@ -660,23 +796,24 @@ export const CADViewer = memo(function CADViewer({
                 gl={{
                     preserveDrawingBuffer: true,
                     alpha: true,
-                    antialias: true,
-                    logarithmicDepthBuffer: true,
-                    powerPreference: "high-performance",
-                    precision: "highp" // High precision for better quality
+                    antialias: false,
+                    toneMapping: ACESFilmicToneMapping,
+                    toneMappingExposure: 0.8,
+                    outputColorSpace: "srgb"
                 }}
                 shadows
                 dpr={[1, 2]}
                 className="bg-background"
                 camera={{
                     fov: 45,
-                    near: 0.001,
+                    near: 0.1,
                     far: 2000,
                     position: [10, 10, 10]
                 }}
-                onCreated={({ gl, camera }) => {
+                onCreated={({ gl, camera, scene }) => {
                     gl.setClearColor(0x000000, 0);
                     camera.lookAt(0, 0, 0);
+                    scene.fog = new Fog(0x000000, 20, 100);
                 }}
             >
                 <PerspectiveCamera
@@ -695,95 +832,58 @@ export const CADViewer = memo(function CADViewer({
                     preset="rembrandt"
                 >
                     <Suspense fallback={null}>
-                        {modelUrl && meshData ? (
+                        {scene ? (
+                            <primitive object={scene} />
+                        ) : meshData ? (
                             <mesh ref={meshRef}>
-                                <bufferGeometry attach="geometry">
-                                    {/* Load mesh data from the modelUrl */}
+                                <bufferGeometry>
                                     <bufferAttribute
                                         attach="attributes-position"
                                         count={meshData.vertices.length / 3}
-                                        array={new Float32Array(meshData.vertices)}
+                                        array={meshData.vertices}
                                         itemSize={3}
                                     />
-                                    <bufferAttribute
-                                        attach="attributes-normal"
-                                        count={meshData.normals.length / 3}
-                                        array={new Float32Array(meshData.normals)}
-                                        itemSize={3}
-                                    />
-                                    <bufferAttribute
-                                        attach="attributes-uv"
-                                        count={meshData.uvs.length / 2}
-                                        array={new Float32Array(meshData.uvs)}
-                                        itemSize={2}
-                                    />
-                                    {meshData.indices.length > 0 && (
+                                    {meshData.indices && (
                                         <bufferAttribute
                                             attach="index"
                                             count={meshData.indices.length}
-                                            array={new Uint16Array(meshData.indices)}
+                                            array={meshData.indices}
                                             itemSize={1}
+                                        />
+                                    )}
+                                    {meshData.normals && (
+                                        <bufferAttribute
+                                            attach="attributes-normal"
+                                            count={meshData.normals.length / 3}
+                                            array={meshData.normals}
+                                            itemSize={3}
+                                        />
+                                    )}
+                                    {meshData.uvs && (
+                                        <bufferAttribute
+                                            attach="attributes-uv"
+                                            count={meshData.uvs.length / 2}
+                                            array={meshData.uvs}
+                                            itemSize={2}
                                         />
                                     )}
                                 </bufferGeometry>
                                 <meshStandardMaterial
-                                    color="#666"
+                                    color={parameters.color ?? '#ffffff'}
+                                    roughness={parameters.roughness ?? 0.5}
+                                    metalness={parameters.metalness ?? 0}
                                     transparent
-                                    opacity={activeOperation === 'measure' ? 0.7 : 1}
-                                    onBeforeCompile={(shader) => {
-                                        if (activeOperation === 'measure') {
-                                            shader.fragmentShader = shader.fragmentShader.replace(
-                                                'void main() {',
-                                                `
-                                                uniform float hoveredFace;
-                                                void main() {
-                                                    if (gl_FrontFacing && hoveredFace > 0.0) {
-                                                        gl_FragColor = vec4(1.0, 1.0, 0.0, 0.8); // Highlight color
-                                                        return;
-                                                    }
-                                                `
-                                            );
-                                        }
-                                    }}
-                                    uniforms={{
-                                        hoveredFace: { value: measurementState.hoveredFace }
-                                    }}
+                                    opacity={parameters.opacity ?? 1}
+                                    wireframe={parameters.wireframe ?? false}
                                 />
                             </mesh>
-                        ) : (
-                            <mesh ref={meshRef}>
-                                <boxGeometry args={[1, 1, 1]} />
-                                <meshStandardMaterial
-                                    color="#666"
-                                    transparent
-                                    opacity={activeOperation === 'measure' ? 0.7 : 1}
-                                    onBeforeCompile={(shader) => {
-                                        if (activeOperation === 'measure') {
-                                            shader.fragmentShader = shader.fragmentShader.replace(
-                                                'void main() {',
-                                                `
-                                                uniform float hoveredFace;
-                                                void main() {
-                                                    if (gl_FrontFacing && hoveredFace > 0.0) {
-                                                        gl_FragColor = vec4(1.0, 1.0, 0.0, 0.8); // Highlight color
-                                                        return;
-                                                    }
-                                                `
-                                            );
-                                        }
-                                    }}
-                                    uniforms={{
-                                        hoveredFace: { value: measurementState.hoveredFace }
-                                    }}
-                                />
-                            </mesh>
-                        )}
+                        ) : null}
                     </Suspense>
                 </Stage>
 
-                <directionalLight position={[5, 5, 5]} intensity={0.8} castShadow />
-                <directionalLight position={[-5, 5, -5]} intensity={0.5} castShadow />
-                <spotLight position={[10, 10, 5]} angle={0.15} penumbra={1} intensity={0.6} castShadow />
+                <directionalLight position={[5, 5, 5]} intensity={0.8} castShadow shadow-mapSize={[2048, 2048]} />
+                <directionalLight position={[-5, 5, -5]} intensity={0.5} castShadow shadow-mapSize={[2048, 2048]} />
+                <spotLight position={[10, 10, 5]} angle={0.15} penumbra={1} intensity={0.6} castShadow shadow-mapSize={[2048, 2048]} />
                 <ambientLight intensity={0.3} />
                 <Environment preset="city" background={false} blur={0.8} />
 

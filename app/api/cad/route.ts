@@ -1,76 +1,165 @@
 import { NextResponse } from 'next/server'
-import { spawn } from 'child_process'
-import path from 'path'
-import fs from 'fs'
-import { v4 as uuidv4 } from 'uuid'
 
-// Initialize output directory
-const OUTPUT_DIR = path.join(process.cwd(), 'public', 'cad_output')
-if (!fs.existsSync(OUTPUT_DIR)) {
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true })
+const POLLING_INTERVAL = 3000 // 3 seconds
+const MAX_RETRIES = 20 // Maximum number of polling attempts
+const ZOO_API_URL = process.env.ZOO_API_URL
+const ZOO_API_TOKEN = process.env.ZOO_API_TOKEN
+
+// Organic shape enhancement patterns
+const ORGANIC_PATTERNS = {
+    flower: {
+        petals: {
+            base: 'Create a flower with curved petals using bezier curves. Each petal should have a natural, flowing shape.',
+            modifiers: [
+                'Add gentle curves to create organic petal shapes',
+                'Include natural variations in petal size and orientation',
+                'Create smooth transitions between petals'
+            ]
+        },
+        leaf: {
+            base: 'Add naturally curved leaves with organic vein patterns',
+            modifiers: [
+                'Include stem with natural taper',
+                'Add subtle texture to leaf surface',
+                'Create asymmetric, life-like leaf shapes'
+            ]
+        }
+    },
+    organic: {
+        modifiers: [
+            'Add subtle surface variations for natural appearance',
+            'Include gradual transitions between features',
+            'Create asymmetric elements for natural look',
+            'Use flowing curves instead of straight lines'
+        ]
+    }
+}
+
+interface OrganicParams {
+    type?: 'flower' | 'leaf' | 'custom'
+    petals?: number
+    height?: number
+    complexity?: 'simple' | 'medium' | 'complex'
+    style?: 'natural' | 'stylized'
 }
 
 export async function POST(req: Request) {
+    console.log('CAD API: Starting request processing')
+    
+    // Validate environment variables
+    if (!process.env.ZOO_API_URL || !process.env.ZOO_API_TOKEN) {
+        console.error('CAD API: Missing required environment variables')
+        return Response.json({ error: 'Server configuration error' }, { status: 500 })
+    }
+
+    // Validate token format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(process.env.ZOO_API_TOKEN)) {
+        console.error('CAD API: Invalid API token format')
+        return Response.json({ error: 'Invalid API token format' }, { status: 500 })
+    }
+
     try {
         const { prompt } = await req.json()
+        console.log('CAD API: Received request parameters', { prompt })
 
-        if (!prompt) {
-            return NextResponse.json(
-                { error: 'Missing prompt parameter' },
-                { status: 400 }
-            )
-        }
-
-        // Generate unique IDs for output files
-        const stepId = uuidv4()
-        const previewId = uuidv4()
-        const stepFilePath = path.join(OUTPUT_DIR, `${stepId}.step`)
-        const previewFilePath = path.join(OUTPUT_DIR, `${previewId}.png`)
-
-        // Run cad3dify text-to-CAD generation
-        const pythonProcess = spawn('poetry', [
-            'run',
-            'python',
-            'cad3dify/scripts/text_cli.py',
-            prompt,
-            '--output', stepFilePath,
-            '--model', 'claude',
-            '--refinements', '3'
-        ], {
-            cwd: process.cwd(),
-            env: {
-                ...process.env,
-                ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY
-            }
-        })
-
-        // Handle process output
-        let errorOutput = ''
-        pythonProcess.stderr.on('data', (data) => {
-            errorOutput += data.toString()
-        })
-
-        await new Promise((resolve, reject) => {
-            pythonProcess.on('close', (code) => {
-                if (code === 0) {
-                    resolve(null)
-                } else {
-                    reject(new Error(`CAD generation failed: ${errorOutput}`))
-                }
+        // First, create the text-to-cad request
+        const response = await fetch(`${process.env.ZOO_API_URL}/ai/text-to-cad/glb`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${process.env.ZOO_API_TOKEN}`
+            },
+            body: JSON.stringify({
+                prompt,
+                formats: ['glb', 'step']  // Request GLB instead of GLTF
             })
         })
 
-        // Return the file paths for the generated files
-        return NextResponse.json({
-            stepFile: `/cad_output/${stepId}.step`,
-            previewImage: `/cad_output/${previewId}.png`,
-            message: 'CAD model generated successfully'
+        if (!response.ok) {
+            const errorData = await response.json()
+            console.error('CAD API: Zoo API error response', errorData)
+            return Response.json({ 
+                error: `Zoo API Error: ${errorData.message || errorData.error || response.statusText}`,
+                details: errorData
+            }, { status: response.status })
+        }
+
+        const result = await response.json()
+        console.log('CAD API: Initial Zoo API response:', result)
+
+        // Poll for completion
+        let finalResult = result
+        let retries = 0
+        while (!finalResult.completed_at && retries < MAX_RETRIES) {
+            await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL))
+            retries++
+            
+            console.log(`CAD API: Polling attempt ${retries}...`)
+            
+            const statusResponse = await fetch(`${process.env.ZOO_API_URL}/user/text-to-cad/${result.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${process.env.ZOO_API_TOKEN}`,
+                    'Accept': 'application/json'
+                }
+            })
+
+            if (!statusResponse.ok) {
+                const errorData = await statusResponse.json()
+                console.error('CAD API: Status check failed:', errorData)
+                throw new Error(`Failed to check CAD generation status: ${errorData.error || statusResponse.statusText}`)
+            }
+            
+            finalResult = await statusResponse.json()
+            console.log('CAD API: Current status:', finalResult.status)
+
+            // If the model failed, throw error immediately
+            if (finalResult.status === 'failed') {
+                throw new Error(finalResult.error || 'CAD generation failed')
+            }
+
+            // If completed, break the loop
+            if (finalResult.status === 'completed' && finalResult.outputs) {
+                console.log('CAD API: Model completed')
+                break
+            }
+        }
+
+        if (retries >= MAX_RETRIES) {
+            throw new Error('CAD generation timed out')
+        }
+
+        if (!finalResult.outputs) {
+            throw new Error('No output files generated')
+        }
+
+        // Get the GLB file
+        const glbData = finalResult.outputs['source.glb']
+        if (!glbData) {
+            throw new Error('No GLB file generated')
+        }
+
+        console.log('CAD API: Successfully generated model', {
+            modelId: finalResult.id,
+            hasGlb: true,
+            dataLength: glbData.length
         })
+
+        // Create a proper data URL for the GLB file
+        const modelUrl = `data:model/gltf-binary;base64,${glbData}`
+
+        return Response.json({
+            modelUrl,
+            format: 'glb',
+            modelId: finalResult.id,
+            message: 'Model generated successfully'
+        })
+
     } catch (error) {
-        console.error('CAD generation error:', error)
-        return NextResponse.json(
-            { error: 'Failed to generate CAD model' },
-            { status: 500 }
-        )
+        console.error('CAD API: Error:', error)
+        return Response.json({ 
+            error: error instanceof Error ? error.message : 'Unknown error occurred'
+        }, { status: 500 })
     }
 } 

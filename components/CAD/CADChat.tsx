@@ -1,28 +1,35 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Paperclip, ArrowUp, X } from 'lucide-react'
+import { Paperclip, ArrowUp, X, Loader2 } from 'lucide-react'
 import { cn } from "@/lib/actions/utils"
-import { motion, AnimatePresence } from 'framer-motion'
-import Image from 'next/image'
+import { motion } from 'framer-motion'
 import RippleButton from "@/components/ui/magic/ripple-button"
 import { Textarea } from "@/components/ui/textarea"
-import { useTranslation } from '@/lib/contexts/TranslationContext'
-import { t } from '@/lib/i18n/translations'
-import { useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
 import { useTheme } from 'next-themes'
 import { toast } from 'react-hot-toast'
-import { supabase } from '@/lib/supabase/supabase'
+
+interface CADResponse {
+    step?: string;
+    gltf?: string;
+    obj?: string;
+    message: string;
+    modelId: string;
+    error?: string;
+    details?: string;
+    modelUrl?: string;
+    format?: string;
+}
 
 interface ChatInstanceProps {
     isUploading: boolean
-    onPromptSubmit?: (prompt: string) => void
+    onPromptSubmit?: (prompt: string) => Promise<CADResponse>
     showPreview?: boolean
     user?: any
     setShowAuthModal?: (show: boolean) => void
     value?: string
     onChange?: (value: string) => void
+    onSuccess?: (response: CADResponse) => void
 }
 
 export function ChatInstance({
@@ -32,17 +39,45 @@ export function ChatInstance({
     user,
     setShowAuthModal,
     value,
-    onChange
+    onChange,
+    onSuccess
 }: ChatInstanceProps) {
     const [inputValue, setInputValue] = useState(value || '')
     const [mounted, setMounted] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
+    const [isGenerating, setIsGenerating] = useState(false)
+    const [progress, setProgress] = useState(0)
+    const progressInterval = useRef<NodeJS.Timeout>()
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const { theme } = useTheme()
 
     useEffect(() => {
         setMounted(true)
     }, [])
+
+    // Cleanup progress interval
+    useEffect(() => {
+        return () => {
+            if (progressInterval.current) {
+                clearInterval(progressInterval.current)
+            }
+        }
+    }, [])
+
+    const startProgressSimulation = () => {
+        setProgress(0)
+        if (progressInterval.current) {
+            clearInterval(progressInterval.current)
+        }
+        progressInterval.current = setInterval(() => {
+            setProgress(prev => {
+                if (prev >= 90) {
+                    return prev
+                }
+                return prev + Math.random() * 10
+            })
+        }, 1000)
+    }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value;
@@ -51,27 +86,66 @@ export function ChatInstance({
 
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
-            const newHeight = Math.min(textareaRef.current.scrollHeight, 100); // Allow more height for content
+            const newHeight = Math.min(textareaRef.current.scrollHeight, 100);
             textareaRef.current.style.height = `${newHeight}px`;
         }
     };
 
-    const handleSubmit = useCallback(() => {
+    const handleSubmit = useCallback(async () => {
         if (!user && setShowAuthModal) {
             setShowAuthModal(true)
             return
         }
 
-        if (inputValue.trim() && onPromptSubmit && !showPreview) {
-            onPromptSubmit(inputValue)
-            setInputValue('')
-            onChange?.('')
-            // Reset height after submission
-            if (textareaRef.current) {
-                textareaRef.current.style.height = 'auto';
+        if (inputValue.trim() && onPromptSubmit && !showPreview && !isGenerating) {
+            try {
+                setIsGenerating(true)
+                startProgressSimulation()
+                const result = await onPromptSubmit(inputValue)
+
+                // Handle API errors
+                if (result?.error) {
+                    console.error('API Error:', result.error, result.details)
+                    toast.error(result.error)
+                    return
+                }
+
+                // Validate model data
+                if (result?.modelUrl) {
+                    console.log('CADChat: Received model data', {
+                        hasModelUrl: !!result.modelUrl,
+                        modelUrl: result.modelUrl,
+                        format: result.format,
+                        modelId: result.modelId
+                    })
+
+                    toast.success(result.message || 'CAD model generated successfully')
+                    onSuccess?.(result)
+
+                    setInputValue('')
+                    onChange?.('')
+                    if (textareaRef.current) {
+                        textareaRef.current.style.height = 'auto'
+                    }
+                } else {
+                    const errorMsg = 'No model data received'
+                    console.error(errorMsg)
+                    toast.error(errorMsg)
+                }
+            } catch (error: any) {
+                console.error('Failed to generate CAD:', error)
+                const errorMessage = error?.message || error?.toString() || 'Failed to generate CAD model. Please try again.'
+                toast.error(errorMessage)
+            } finally {
+                setIsGenerating(false)
+                setProgress(100)
+                if (progressInterval.current) {
+                    clearInterval(progressInterval.current)
+                }
+                setTimeout(() => setProgress(0), 1000)
             }
         }
-    }, [user, setShowAuthModal, inputValue, onPromptSubmit, showPreview, onChange]);
+    }, [user, setShowAuthModal, inputValue, onPromptSubmit, showPreview, isGenerating, onChange, onSuccess])
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey && !showPreview) {
@@ -81,7 +155,6 @@ export function ChatInstance({
         }
     }, [showPreview, handleSubmit]);
 
-    // Update internal value when external value changes
     useEffect(() => {
         if (value !== undefined) {
             setInputValue(value)
@@ -105,6 +178,10 @@ export function ChatInstance({
             >
                 <div className="absolute inset-0 bg-gradient-to-b from-muted/20 to-muted/10 rounded-none pointer-events-none" />
 
+                {isGenerating && progress > 0 && (
+                    <div className="absolute top-0 left-0 h-0.5 bg-primary/50 transition-all duration-300" style={{ width: `${progress}%` }} />
+                )}
+
                 <div className="flex flex-col relative z-10">
                     <Textarea
                         ref={textareaRef}
@@ -113,7 +190,7 @@ export function ChatInstance({
                         onFocus={() => !showPreview && setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
                         onKeyDown={mounted ? handleKeyDown : undefined}
-                        disabled={showPreview}
+                        disabled={showPreview || isGenerating}
                         spellCheck="true"
                         autoCapitalize="sentences"
                         autoCorrect="on"
@@ -132,7 +209,11 @@ export function ChatInstance({
                             lineHeight: '1.6',
                             caretColor: 'var(--primary)'
                         }}
-                        placeholder="Describe your CAD model requirements (e.g., 'Create a cylindrical container with a threaded lid...')"
+                        placeholder={
+                            isGenerating
+                                ? `Generating CAD model... ${Math.round(progress)}%`
+                                : "Describe what you want to create (e.g., 'A flower with 5 petals' or 'A gear with 40 teeth')..."
+                        }
                         rows={1}
                     />
 
@@ -141,21 +222,25 @@ export function ChatInstance({
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation()
-                                if (!isUploading && mounted && !showPreview) {
+                                if (!isUploading && mounted && !showPreview && !isGenerating) {
                                     handleSubmit()
                                 }
                             }}
                             className={cn(
                                 "flex h-7 w-7 items-center justify-center rounded-none transition-all duration-200 p-0 border-0",
-                                (inputValue.length > 0 && !showPreview && !isUploading) && mounted
+                                (inputValue.length > 0 && !showPreview && !isUploading && !isGenerating) && mounted
                                     ? "bg-primary/90 text-primary-foreground hover:bg-primary cursor-pointer"
                                     : "bg-zinc-200/80 hover:bg-zinc-300/90 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/90 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white",
-                                (showPreview || isUploading) && "opacity-50 cursor-not-allowed"
+                                (showPreview || isUploading || isGenerating) && "opacity-50 cursor-not-allowed"
                             )}
                             rippleColor="rgba(255, 255, 255, 0.2)"
-                            disabled={showPreview || !inputValue.length || !mounted || isUploading}
+                            disabled={showPreview || !inputValue.length || !mounted || isUploading || isGenerating}
                         >
-                            <ArrowUp className="h-4 w-4" />
+                            {isGenerating ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <ArrowUp className="h-4 w-4" />
+                            )}
                         </RippleButton>
                     </div>
                 </div>
