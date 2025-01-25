@@ -13,6 +13,7 @@
 /.next/
 /out/
 .cache
+ai-chatbot
 
 # AI Prompts
 /lib/huggingface/prompts/
