@@ -93,35 +93,59 @@
   }
 }
 
+@layer utilities {
+    /* Hide scrollbar for all elements with scrollbar-hide class */
+    .scrollbar-hide,
+    .scrollbar-hide *,
+    [class*="Sidebar"],
+    [class*="SidebarContent"],
+    [class*="SidebarMenu"] {
+        -ms-overflow-style: none !important;  /* IE and Edge */
+        scrollbar-width: none !important;     /* Firefox */
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar,
+    .scrollbar-hide *::-webkit-scrollbar,
+    [class*="Sidebar"]::-webkit-scrollbar,
+    [class*="SidebarContent"]::-webkit-scrollbar,
+    [class*="SidebarMenu"]::-webkit-scrollbar {
+        display: none !important;  /* Chrome, Safari and Opera */
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    /* Additional specific selectors for sidebar components */
+    .SidebarContent,
+    .SidebarMenu,
+    div[class*="SidebarContent"],
+    div[class*="SidebarMenu"] {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+
+    .SidebarContent::-webkit-scrollbar,
+    .SidebarMenu::-webkit-scrollbar,
+    div[class*="SidebarContent"]::-webkit-scrollbar,
+    div[class*="SidebarMenu"]::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+}
+
 /* Hide the vertical scrollbar */
-body::-webkit-scrollbar {
-  display: none;
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 /* For IE, Edge and Firefox */
-body {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-@layer utilities {
-    .scrollbar-hide {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;     /* Firefox */
-    }
-    
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;  /* Chrome, Safari and Opera */
-    }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+body,
+* {
+    -ms-overflow-style: none !important;  /* IE and Edge */
+    scrollbar-width: none !important;     /* Firefox */
 }
 
 /* Toast styles */

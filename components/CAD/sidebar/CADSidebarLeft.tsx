@@ -23,7 +23,13 @@ import {
     Archive,
     MessageSquareHeart,
     HeartHandshake,
-    Zap
+    Zap,
+    Box as Box3D,
+    Square,
+    Circle,
+    Cylinder as CylinderIcon,
+    Triangle,
+    Shapes
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -246,6 +252,23 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
         }
     };
 
+    // Add this function to get the appropriate icon based on metadata
+    const getChatIcon = (chat: ChatHistoryItem) => {
+        // You can customize this logic based on your metadata structure
+        const type = chat.metadata?.type || 'default';
+        const icons = {
+            'cube': Square,
+            'sphere': Circle,
+            'cylinder': CylinderIcon,
+            'cone': Triangle,
+            'box': Box3D,
+            'shapes': Shapes,
+            'default': FileCode,
+        };
+
+        return icons[type as keyof typeof icons] || FileCode;
+    };
+
     // Render chat item with animation
     const ChatItem = ({ chat }: { chat: ChatHistoryItem }) => (
         <div className="relative group">
@@ -258,7 +281,11 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                     )}
                 >
                     <div className="flex items-center">
-                        <FileCode className="h-4 w-4 mr-2" />
+                        <div className={cn(
+                            "h-1.5 w-1.5 rounded-full mr-2 transition-colors",
+                            "bg-muted-foreground/30 group-hover:bg-foreground/50",
+                            searchParams.get('chat') === chat.id && "bg-foreground"
+                        )} />
                         <span className={cn(
                             "text-xs flex-1 text-muted-foreground group-hover:text-foreground transition-colors truncate",
                             searchParams.get('chat') === chat.id && "text-foreground font-medium"
@@ -390,7 +417,12 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                         "py-0",
                         collapsed && "!border-t-0 !border-none"
                     )}>
-                        {!collapsed && <SidebarGroupLabel className="px-4 py-2 text-xs font-medium text-muted-foreground">Platform</SidebarGroupLabel>}
+                        {!collapsed && (
+                            <div className="flex items-center gap-2 px-4 py-2">
+                                <h3 className="text-xs font-medium text-muted-foreground capitalize">Platform</h3>
+                                <Separator className="flex-1" />
+                            </div>
+                        )}
                         <SidebarMenu className={cn(
                             !collapsed && "space-y-1",
                             collapsed && "space-y-0 divide-y-0"
@@ -458,7 +490,10 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                     {/* Previous Chats Section - Only show when not collapsed */}
                     {!collapsed && (
                         <SidebarGroup className="mt-4">
-                            <SidebarGroupLabel className="px-4 py-2 text-xs font-medium text-muted-foreground">Recent chats</SidebarGroupLabel>
+                            <div className="flex items-center gap-2 px-4 py-2">
+                                <h3 className="text-xs font-medium text-muted-foreground capitalize">Recent chats</h3>
+                                <Separator className="flex-1" />
+                            </div>
                             <SidebarMenu className="space-y-1 overflow-y-auto scrollbar-hide" style={{ maxHeight: 'calc(100vh - 400px)' }}>
                                 {chatHistory.slice(0, limit).map((chat) => (
                                     <ChatItem key={chat.id} chat={chat} />

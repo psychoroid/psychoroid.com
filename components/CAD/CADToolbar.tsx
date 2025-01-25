@@ -99,9 +99,9 @@ export const CADToolbar = memo(function CADToolbar({
             <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-black/[0.02] dark:from-white/[0.02] dark:to-black/5 rounded-none pointer-events-none z-[3]" />
 
             {/* Two-column layout */}
-            <div className="relative z-[4] flex gap-2">
+            <div className="relative z-[4] flex gap-1">
                 {/* Left Column */}
-                <div className="flex flex-col gap-1 border-r-0 pr-2">
+                <div className="flex flex-col gap-1 pr-1">
                     {leftColumnTools.map(({ icon: Icon, label, action, operation }) => (
                         <Tooltip key={label}>
                             <TooltipTrigger asChild>

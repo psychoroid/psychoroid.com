@@ -114,16 +114,16 @@ const ParameterInput = memo(({ param, onChange }: { param: Parameter; onChange: 
     return (
         <div className="space-y-2">
             <div className="flex items-center justify-between">
-                <Label className="text-xs capitalize">
+                <Label className="text-xs text-muted-foreground capitalize">
                     {param.name.replace(/([A-Z])/g, ' $1').trim()}
-                    {param.unit && <span className="ml-1 text-muted-foreground">({param.unit})</span>}
+                    {param.unit && <span className="ml-1 text-muted-foreground/70">({param.unit})</span>}
                 </Label>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                     <Input
                         type="number"
                         value={param.value}
                         onChange={handleInputChange}
-                        className="h-6 w-16 rounded-none text-xs"
+                        className="h-6 w-16 rounded-none text-xs bg-transparent hover:bg-accent/50 transition-colors"
                         min={param.min}
                         max={param.max}
                         step={param.step}
@@ -134,13 +134,15 @@ const ParameterInput = memo(({ param, onChange }: { param: Parameter; onChange: 
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-6 w-6 rounded-none"
+                                className="h-6 w-6 rounded-none hover:bg-transparent transition-all duration-200 hover:scale-110"
                                 onClick={handleLockToggle}
                             >
                                 {param.locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>{param.locked ? 'Unlock Parameter' : 'Lock Parameter'}</TooltipContent>
+                        <TooltipContent side="left" align="center" className="text-xs">
+                            {param.locked ? 'Unlock Parameter' : 'Lock Parameter'}
+                        </TooltipContent>
                     </Tooltip>
                 </div>
             </div>
@@ -148,7 +150,7 @@ const ParameterInput = memo(({ param, onChange }: { param: Parameter; onChange: 
                 value={[param.value]}
                 min={param.min}
                 max={param.max}
-                step={param.step / 10} // More precise increments
+                step={param.step / 10}
                 onValueChange={handleSliderChange}
                 disabled={param.locked}
                 formatTooltip={formatTooltip}
@@ -188,8 +190,8 @@ const MaterialSection = memo(({ parameters, onChange }: { parameters: Parameter[
         <ParameterGroup title="Material">
             {colorParam && (
                 <div className="space-y-2 mb-4">
-                    <Label className="text-xs">Color</Label>
-                    <div className="w-full aspect-square rounded-none overflow-hidden border">
+                    <Label className="text-xs text-muted-foreground">Color</Label>
+                    <div className="w-full aspect-square rounded-none overflow-hidden border border-border/50">
                         <HexColorPicker
                             color={colorParam.value}
                             onChange={handleColorChange}
@@ -215,7 +217,7 @@ MaterialSection.displayName = "MaterialSection";
 const ParameterGroup = memo(({ title, children }: { title: string; children: React.ReactNode }) => (
     <div className="space-y-4">
         <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-muted-foreground capitalize">{title}</h3>
+            <h3 className="text-xs font-medium text-muted-foreground capitalize">{title}</h3>
             <Separator className="flex-1" />
         </div>
         <div className="space-y-4">
@@ -348,43 +350,38 @@ const CADParameters = memo(({ parameters, onChange, onReset, onUndo, className }
 
     return (
         <div className={cn("relative h-full flex", className)}>
-            <Sidebar className="border-l w-[290px]">
-                <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+            <Sidebar className="border-l w-[290px] transition-[width] duration-300 ease-in-out">
+                <header className="flex h-[3.5rem] shrink-0 items-center gap-2 border-b border-border/50">
                     <div className="flex items-center gap-2 px-4 w-full">
-                        <h2 className="text-sm font-semibold text-muted-foreground">Parameters</h2>
-                        <div className="ml-auto flex gap-2">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-none"
-                                        onClick={onUndo}
-                                    >
-                                        <Undo className="h-4 w-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Undo Last Change</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-none"
-                                        onClick={onReset}
-                                    >
-                                        <RotateCcw className="h-4 w-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Reset All Parameters</TooltipContent>
-                            </Tooltip>
+                        <div className="ml-auto flex items-center">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={onUndo}
+                                className="w-8 h-8 rounded-none flex items-center justify-center"
+                                title="Undo last change"
+                            >
+                                <Undo className="h-4 w-4" />
+                            </Button>
+                            <Separator
+                                orientation="vertical"
+                                className="h-8 cursor-pointer hover:bg-accent/50 transition-colors"
+                            />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={onReset}
+                                className="h-8 w-8 rounded-none"
+                                title="Reset parameters"
+                            >
+                                <RotateCcw className="h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
                 </header>
-                <SidebarContent>
-                    <ScrollArea className="h-[calc(100vh-4rem)]">
-                        <div className="space-y-6 p-4">
+                <SidebarContent className="p-0 scrollbar-hide">
+                    <ScrollArea className="h-[calc(100vh-3.5rem)] scrollbar-hide">
+                        <div className="space-y-6 p-4 scrollbar-hide">
                             {/* Dimensions Section */}
                             {groupedParameters.dimensions && (
                                 <DimensionsSection
