@@ -122,7 +122,7 @@ const ParameterInput = memo(({ param, onChange }: { param: Parameter; onChange: 
                     type="number"
                     value={param.value}
                     onChange={handleInputChange}
-                    className="h-6 w-20 rounded-none text-xs bg-transparent hover:bg-accent/50 transition-colors border-0 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="h-6 w-14 rounded-none text-xs bg-transparent hover:bg-transparent focus:bg-transparent active:bg-transparent border-0 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     min={param.min}
                     max={param.max}
                     step={param.step}
@@ -162,8 +162,25 @@ DimensionsSection.displayName = "DimensionsSection";
 
 // Material Section Component
 const MaterialSection = memo(({ parameters, onChange }: { parameters: Parameter[], onChange: (name: string, value: number | string) => void }) => {
-    const colorParam = parameters.find(p => p.type === 'color' && p.name === 'color') as ColorParameter;
+    // Initialize with our default red if no color parameter exists
+    const defaultColorParam: ColorParameter = {
+        type: 'color',
+        name: 'color',
+        value: '#D73D57',
+        min: 0,
+        max: 0,
+        step: 0
+    };
+
+    const colorParam = parameters.find(p => p.type === 'color' && p.name === 'color') as ColorParameter || defaultColorParam;
     const otherParams = parameters.filter(p => p.type === 'number');
+
+    // Set default color on mount if not already set
+    useEffect(() => {
+        if (!parameters.find(p => p.type === 'color' && p.name === 'color')) {
+            onChange('color', '#D73D57');
+        }
+    }, [parameters, onChange]);
 
     const handleColorChange = useCallback((newColor: string) => {
         onChange('color', newColor);
@@ -171,18 +188,16 @@ const MaterialSection = memo(({ parameters, onChange }: { parameters: Parameter[
 
     return (
         <ParameterGroup title="Material">
-            {colorParam && (
-                <div className="space-y-2 mb-4 mx-2">
-                    <Label className="text-xs text-muted-foreground">Color</Label>
-                    <div className="w-full aspect-square rounded-none overflow-hidden border border-border/50">
-                        <HexColorPicker
-                            color={colorParam.value}
-                            onChange={handleColorChange}
-                            style={{ width: '100%', height: '100%' }}
-                        />
-                    </div>
+            <div className="space-y-2 mb-4 mx-2">
+                <Label className="text-xs text-muted-foreground">Color</Label>
+                <div className="w-full aspect-square rounded-none overflow-hidden border border-border/50 [&_.react-colorful__pointer]:!h-1 [&_.react-colorful__pointer]:!w-1">
+                    <HexColorPicker
+                        color={'#D73D57'}
+                        onChange={handleColorChange}
+                        style={{ width: '100%', height: '100%' }}
+                    />
                 </div>
-            )}
+            </div>
             {otherParams.map((param) => (
                 <ParameterInput
                     key={param.name}

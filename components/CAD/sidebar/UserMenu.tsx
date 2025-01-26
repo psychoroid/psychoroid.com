@@ -255,23 +255,19 @@ export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProp
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent focus:bg-transparent active:bg-transparent"
+                            onClick={() => setShowArchive(true)}
+                        >
+                            <Archive className="h-4 w-4 text-orange-500" />
+                            <span className="text-xs flex-1 text-muted-foreground hover:text-orange-500 transition-colors">Archived</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent focus:bg-transparent active:bg-transparent"
                             onClick={handleSignOut}
                         >
                             <LogOut className="h-4 w-4 text-[#D73D57]" />
                             <span className="text-xs flex-1 text-muted-foreground hover:text-[#D73D57] transition-colors">Sign Out</span>
                         </DropdownMenuItem>
                     </div>
-
-                    <DropdownMenuSeparator className="my-0" />
-
-                    {/* Add Archive option before the Preferences section */}
-                    <DropdownMenuItem
-                        className="h-10 px-4 gap-2 cursor-pointer rounded-none hover:bg-transparent focus:bg-transparent active:bg-transparent"
-                        onClick={() => setShowArchive(true)}
-                    >
-                        <Archive className="h-4 w-4 text-orange-500" />
-                        <span className="text-xs flex-1 text-muted-foreground hover:text-orange-500 transition-colors">Archived Chats</span>
-                    </DropdownMenuItem>
 
                     <DropdownMenuSeparator className="my-0" />
 
@@ -338,7 +334,7 @@ export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProp
             <Dialog open={showArchive} onOpenChange={setShowArchive}>
                 <DialogContent className="sm:max-w-[425px] rounded-none p-0 gap-0 bg-background/95 backdrop-blur-sm">
                     <DialogHeader className="p-6 pb-4">
-                        <DialogTitle className="text-xl font-semibold">Archived Chats</DialogTitle>
+                        <DialogTitle className="text-xl font-semibold">Archived</DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="max-h-[60vh] border-y">
                         <div className="p-4">
