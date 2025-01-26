@@ -35,7 +35,6 @@ interface CADParameters {
     height: number;
     depth: number;
     radius: number;
-    segments: number;
     color: string;
     roughness: number;
     metalness: number;
@@ -58,7 +57,6 @@ const initialParameters: CADParameters = {
     height: 1,
     depth: 1,
     radius: 0,
-    segments: 4,
     color: '#ffffff',
     roughness: 0.5,
     metalness: 0,
@@ -176,8 +174,7 @@ export default function CADPage({ params }: PageProps) {
             { name: 'width', value: Number(parameters.width), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
             { name: 'height', value: Number(parameters.height), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
             { name: 'depth', value: Number(parameters.depth), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
-            { name: 'radius', value: Number(parameters.radius), min: 0, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
-            { name: 'segments', value: Number(parameters.segments), min: 2, max: 32, step: 1, group: 'dimensions', type: 'number' },
+            { name: 'radius', value: Number(parameters.radius), min: 0, max: 100, step: 1, unit: '%', group: 'dimensions', type: 'number' },
 
             // Transform
             { name: 'rotationX', value: Number(parameters.rotationX), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number' },

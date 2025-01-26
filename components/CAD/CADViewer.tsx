@@ -13,13 +13,13 @@ import { LoadingManager } from 'three';
 import { toast } from 'react-hot-toast';
 
 // Constants
-const INITIAL_CAMERA_POSITION = [10, 10, 10] as const;
+const INITIAL_CAMERA_POSITION = [50, 50, 50] as const;
 const INITIAL_TARGET = [0, 0, 0] as const;
 const INITIAL_ZOOM = 1;
-const MIN_ZOOM = 0.01;
-const MAX_ZOOM = 500;
-const MIN_DISTANCE = 0.5;
-const MAX_DISTANCE = 1000;
+const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 100;
+const MIN_DISTANCE = 20;
+const MAX_DISTANCE = 500;
 
 // Type definitions
 interface CADViewerProps {
@@ -50,7 +50,6 @@ interface ClampedParameters {
     height: number;
     depth: number;
     radius: number;
-    segments: number;
     rotation: { x: number; y: number; z: number };
     position: { x: number; y: number; z: number };
     scale: { x: number; y: number; z: number };
@@ -121,9 +120,9 @@ export const CADViewer = memo(function CADViewer({
             setIsInitialized(true);
             requestAnimationFrame(() => {
                 updateParameters({
-                    width: 1,
-                    height: 1,
-                    depth: 1,
+                    width: 10,
+                    height: 10,
+                    depth: 10,
                     color: '#D73D57',
                     roughness: 0.5,
                     metalness: 0,
@@ -138,12 +137,42 @@ export const CADViewer = memo(function CADViewer({
         const mesh = meshRef.current;
         if (!mesh || !parameters) return;
 
-        // Update scale based on dimensions
-        mesh.scale.set(
-            Number(parameters.width) ?? 1,
-            Number(parameters.height) ?? 1,
-            Number(parameters.depth) ?? 1
-        );
+        // Convert mm to scene units (1 scene unit = 1mm)
+        const width = Number(parameters.width) ?? 10;
+        const height = Number(parameters.height) ?? 10;
+        const depth = Number(parameters.depth) ?? 10;
+        const radiusPercent = Number(parameters.radius) ?? 0; // Now treated as percentage (0-100)
+        const SEGMENTS = 32; // Fixed high segment count for best quality
+
+        // Dispose of old geometry
+        if (mesh.geometry) {
+            mesh.geometry.dispose();
+        }
+
+        // Create new geometry based on radius
+        if (radiusPercent > 0) {
+            // Calculate max possible radius (half of smallest dimension)
+            const maxRadius = Math.min(width, Math.min(height, depth)) / 2;
+            // Convert percentage to actual radius
+            const effectiveRadius = (radiusPercent / 100) * maxRadius;
+
+            mesh.geometry = new RoundedBoxGeometry(
+                width,
+                height,
+                depth,
+                SEGMENTS, // Fixed high segment count
+                effectiveRadius
+            );
+        } else {
+            mesh.geometry = new BoxGeometry(
+                width,
+                height,
+                depth,
+                SEGMENTS, // Fixed high segment count
+                SEGMENTS,
+                SEGMENTS
+            );
+        }
 
         // Update material
         if (mesh.material) {
@@ -154,6 +183,9 @@ export const CADViewer = memo(function CADViewer({
             mesh.material.transparent = (parameters.opacity ? Number(parameters.opacity) : 1) < 1;
             mesh.material.wireframe = parameters.wireframe ? Boolean(parameters.wireframe) : false;
         }
+
+        // Reset scale since we're using actual dimensions in geometry
+        mesh.scale.set(1, 1, 1);
     }, [parameters]);
 
     // Load mesh data when modelUrl changes
@@ -602,9 +634,9 @@ export const CADViewer = memo(function CADViewer({
 
     // Update label positions when cube dimensions change
     useEffect(() => {
-        const width = Number(parameters.width) ?? 1;
-        const height = Number(parameters.height) ?? 1;
-        const depth = Number(parameters.depth) ?? 1;
+        const width = Number(parameters.width) ?? 10;
+        const height = Number(parameters.height) ?? 10;
+        const depth = Number(parameters.depth) ?? 10;
         const offset = 0.1; // Distance of labels from cube faces
 
         setMeasurementState({
@@ -626,9 +658,9 @@ export const CADViewer = memo(function CADViewer({
                 <div className="space-y-2 text-sm">
                     <div>
                         <p className="font-medium">Dimensions:</p>
-                        <p>Length: {width.toFixed(3)} units</p>
-                        <p>Width: {height.toFixed(3)} units</p>
-                        <p>Area: {area.toFixed(3)} sq units</p>
+                        <p>Length: {width.toFixed(2)} mm</p>
+                        <p>Width: {height.toFixed(2)} mm</p>
+                        <p>Area: {area.toFixed(2)} mm²</p>
                     </div>
                     <div>
                         <p className="font-medium">Normal Vector:</p>
@@ -638,9 +670,9 @@ export const CADViewer = memo(function CADViewer({
                     </div>
                     <div>
                         <p className="font-medium">Position:</p>
-                        <p>X: {point.x.toFixed(3)}</p>
-                        <p>Y: {point.y.toFixed(3)}</p>
-                        <p>Z: {point.z.toFixed(3)}</p>
+                        <p>X: {point.x.toFixed(2)} mm</p>
+                        <p>Y: {point.y.toFixed(2)} mm</p>
+                        <p>Z: {point.z.toFixed(2)} mm</p>
                     </div>
                 </div>
             </div>
@@ -668,22 +700,22 @@ export const CADViewer = memo(function CADViewer({
                 className="bg-background"
                 camera={{
                     fov: 45,
-                    near: 0.1,
+                    near: 1,
                     far: 2000,
-                    position: [10, 10, 10]
+                    position: [50, 50, 50]
                 }}
                 onCreated={({ gl, camera, scene }) => {
                     gl.setClearColor(0x000000, 0);
                     camera.lookAt(0, 0, 0);
-                    scene.fog = new Fog(0x000000, 20, 100);
+                    scene.fog = new Fog(0x000000, 200, 1000);
                 }}
             >
                 <PerspectiveCamera
                     makeDefault
                     position={cameraPositionVector}
                     fov={45}
-                    near={0.1}
-                    far={1000}
+                    near={1}
+                    far={2000}
                 />
 
                 <Stage
@@ -702,11 +734,50 @@ export const CADViewer = memo(function CADViewer({
                                 onPointerMove={(e) => {
                                     e.stopPropagation();
                                     if (e.face && e.object instanceof Mesh && typeof e.faceIndex === 'number') {
+                                        const radiusPercent = Number(parameters.radius) ?? 0;
+
+                                        // If radius is near 100%, treat as a sphere (single surface)
+                                        if (radiusPercent >= 95) {
+                                            // Create a single material for the entire mesh
+                                            const material = new MeshStandardMaterial({
+                                                color: '#00ff00', // Green highlight
+                                                roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
+                                                metalness: parameters.metalness ? Number(parameters.metalness) : 0,
+                                                transparent: true,
+                                                opacity: parameters.opacity ? Number(parameters.opacity) : 1,
+                                                wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false,
+                                                emissive: '#00ff00',
+                                                emissiveIntensity: 0.5
+                                            });
+
+                                            e.object.material = material;
+
+                                            // Calculate dimensions for the entire sphere
+                                            const geometry = e.object.geometry;
+                                            const box = new Box3().setFromObject(e.object);
+                                            const size = box.getSize(new Vector3());
+
+                                            // Surface area of a sphere = 4πr²
+                                            const radius = Math.max(size.x, size.y, size.z) / 2;
+                                            const area = 4 * Math.PI * radius * radius;
+
+                                            setMeasurementState({
+                                                hoveredFace: 0,
+                                                dimensions: {
+                                                    width: 2 * Math.PI * radius,  // Circumference
+                                                    height: 2 * Math.PI * radius, // Circumference
+                                                    area: area,
+                                                    normal: e.face.normal,
+                                                    point: e.point
+                                                }
+                                            });
+                                            return;
+                                        }
+
                                         // Get the intersection point in local coordinates
                                         const localPoint = e.point.clone().applyMatrix4(e.object.matrixWorld.invert());
 
                                         // Determine which face we're on based on the intersection point
-                                        // We use a small epsilon to handle floating point precision
                                         const epsilon = 0.0001;
                                         let faceIndex;
 
@@ -780,7 +851,9 @@ export const CADViewer = memo(function CADViewer({
                                 }}
                                 onPointerOut={(e) => {
                                     if (e.object instanceof Mesh) {
-                                        // Reset to a single material
+                                        const radiusPercent = Number(parameters.radius) ?? 0;
+
+                                        // Reset to a single material with original color
                                         e.object.material = new MeshStandardMaterial({
                                             color: parameters.color ? String(parameters.color) : '#D73D57',
                                             roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
@@ -789,6 +862,7 @@ export const CADViewer = memo(function CADViewer({
                                             opacity: parameters.opacity ? Number(parameters.opacity) : 1,
                                             wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false
                                         });
+
                                         setMeasurementState({
                                             hoveredFace: null,
                                             dimensions: null
@@ -800,7 +874,7 @@ export const CADViewer = memo(function CADViewer({
                                     e.stopPropagation();
                                 }}
                             >
-                                <boxGeometry args={[1, 1, 1]} />
+                                <boxGeometry args={[10, 10, 10, 32, 32, 32]} />
                                 <meshStandardMaterial
                                     color={parameters.color ? String(parameters.color) : '#D73D57'}
                                     roughness={parameters.roughness ? Number(parameters.roughness) : 0.5}
