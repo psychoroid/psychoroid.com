@@ -300,10 +300,10 @@ const CADParameters = memo(({ parameters, onChange, onReset, onUndo, className }
                 Math.min(clampedParams.height, clampedParams.depth)
             );
             // Calculate radius as a percentage of the smallest dimension
-            const effectiveRadius = clampedParams.radius;
+            const effectiveRadius = (clampedParams.radius / 100) * (minDimension / 2);
 
-            // Use more segments for smoother rounding
-            const segments = Math.max(1, Math.floor(clampedParams.segments * (effectiveRadius / minDimension)));
+            // Always use maximum segments (128) for perfect spherical quality
+            const segments = 256;
 
             mesh.geometry = new RoundedBoxGeometry(
                 clampedParams.width,
@@ -317,9 +317,9 @@ const CADParameters = memo(({ parameters, onChange, onReset, onUndo, className }
                 clampedParams.width,
                 clampedParams.height,
                 clampedParams.depth,
-                clampedParams.segments,
-                clampedParams.segments,
-                clampedParams.segments
+                32, // Default high quality for cube
+                32,
+                32
             );
         }
 

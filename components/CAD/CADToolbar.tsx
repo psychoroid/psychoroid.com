@@ -8,26 +8,16 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-    RotateCw,
-    Move,
-    Ruler,
-    Copy,
-    Minus,
     Download,
-    Plus,
     PlayCircle,
     PauseCircle,
-    ZoomIn,
-    ZoomOut,
     Focus,
-    Crosshair,
-    Expand
+    Crosshair
 } from 'lucide-react';
 import { cn } from '@/lib/actions/utils';
 
 interface CADToolbarProps {
     onExport?: () => void;
-    onMeasure?: (active: boolean) => void;
     onZoomModeToggle?: () => void;
     onAutoRotate?: () => void;
     isRotating?: boolean;
@@ -46,23 +36,14 @@ interface ToolItem {
 
 export const CADToolbar = memo(function CADToolbar({
     onExport,
-    onMeasure,
     onZoomModeToggle,
     onAutoRotate,
     isRotating,
     isZoomToCursor,
-    className,
-    activeOperation
+    className
 }: CADToolbarProps) {
     const tools: ToolItem[] = [
         { icon: isRotating ? PauseCircle : PlayCircle, label: isRotating ? 'Stop Auto-Rotate' : 'Auto-Rotate', action: onAutoRotate },
-        {
-            icon: Ruler,
-            label: 'Measure',
-            action: () => onMeasure?.(activeOperation !== 'measure'),
-            operation: 'measure',
-            isActive: activeOperation === 'measure'
-        },
         { icon: isZoomToCursor ? Crosshair : Focus, label: isZoomToCursor ? 'Cursor Zoom' : 'Center Zoom', action: onZoomModeToggle },
         { icon: Download, label: 'Export', action: onExport }
     ];
