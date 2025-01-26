@@ -2,7 +2,7 @@
 
 import React, { Suspense, useRef, useState, useCallback, memo, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stage, Environment, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, Stage, Environment, PerspectiveCamera, Html } from '@react-three/drei';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
 import { Vector3, MOUSE, TOUCH, Box3, BoxGeometry, Mesh, MeshStandardMaterial, Raycaster, Vector2, ACESFilmicToneMapping, Fog, Scene } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
@@ -90,7 +90,6 @@ export const CADViewer = memo(function CADViewer({
 }: CADViewerProps) {
     const controlsRef = useRef<any>(null);
     const meshRef = useRef<Mesh<BoxGeometry | RoundedBoxGeometry, MeshStandardMaterial>>(null);
-    const [meshData, setMeshData] = useState<MeshData | null>(null);
     const [scene, setScene] = useState<Scene | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
     const [isRotating, setIsRotating] = useState(false);
@@ -115,6 +114,47 @@ export const CADViewer = memo(function CADViewer({
             });
         }
     }, [onParameterChange]);
+
+    // Initialize default parameters
+    useEffect(() => {
+        if (!isInitialized && !modelUrl) {
+            setIsInitialized(true);
+            requestAnimationFrame(() => {
+                updateParameters({
+                    width: 1,
+                    height: 1,
+                    depth: 1,
+                    color: '#D73D57',
+                    roughness: 0.5,
+                    metalness: 0,
+                    opacity: 1
+                });
+            });
+        }
+    }, [isInitialized, modelUrl, updateParameters]);
+
+    // Update mesh when parameters change
+    useEffect(() => {
+        const mesh = meshRef.current;
+        if (!mesh || !parameters) return;
+
+        // Update scale based on dimensions
+        mesh.scale.set(
+            Number(parameters.width) ?? 1,
+            Number(parameters.height) ?? 1,
+            Number(parameters.depth) ?? 1
+        );
+
+        // Update material
+        if (mesh.material) {
+            mesh.material.color.set(parameters.color ? String(parameters.color) : '#D73D57');
+            mesh.material.roughness = parameters.roughness ? Number(parameters.roughness) : 0.5;
+            mesh.material.metalness = parameters.metalness ? Number(parameters.metalness) : 0;
+            mesh.material.opacity = parameters.opacity ? Number(parameters.opacity) : 1;
+            mesh.material.transparent = (parameters.opacity ? Number(parameters.opacity) : 1) < 1;
+            mesh.material.wireframe = parameters.wireframe ? Boolean(parameters.wireframe) : false;
+        }
+    }, [parameters]);
 
     // Load mesh data when modelUrl changes
     useEffect(() => {
@@ -194,135 +234,6 @@ export const CADViewer = memo(function CADViewer({
             }
         }
     }, [modelUrl]);
-
-    // Update mesh when parameters change
-    useEffect(() => {
-        const mesh = meshRef.current;
-        if (!mesh || !parameters) return;
-
-        console.log('CADViewer: Updating mesh parameters', parameters)
-
-        // Clamp parameters between 0.1 and 100
-        const clampedParams: ClampedParameters = {
-            width: Math.min(100, Math.max(0.1, Number(parameters.width) ?? 1)),
-            height: Math.min(100, Math.max(0.1, Number(parameters.height) ?? 1)),
-            depth: Math.min(100, Math.max(0.1, Number(parameters.depth) ?? 1)),
-            radius: Math.min(
-                Math.min(
-                    Number(parameters.width) ?? 1,
-                    Math.min(Number(parameters.height) ?? 1, Number(parameters.depth) ?? 1)
-                ) / 2,
-                Math.max(0, Number(parameters.radius) ?? 0)
-            ),
-            segments: Math.min(32, Math.max(2, Math.floor(Number(parameters.segments) ?? 4))),
-            rotation: {
-                x: Number(parameters.rotationX) ?? 0,
-                y: Number(parameters.rotationY) ?? 0,
-                z: Number(parameters.rotationZ) ?? 0
-            },
-            position: {
-                x: Number(parameters.positionX) ?? 0,
-                y: Number(parameters.positionY) ?? 0,
-                z: Number(parameters.positionZ) ?? 0
-            },
-            scale: {
-                x: Number(parameters.scaleX) ?? 1,
-                y: Number(parameters.scaleY) ?? 1,
-                z: Number(parameters.scaleZ) ?? 1
-            },
-            material: {
-                color: String(parameters.color ?? '#ffffff'),
-                roughness: Math.min(1, Math.max(0, Number(parameters.roughness) ?? 0.5)),
-                metalness: Math.min(1, Math.max(0, Number(parameters.metalness) ?? 0)),
-                opacity: Math.min(1, Math.max(0, Number(parameters.opacity) ?? 1)),
-                wireframe: Boolean(parameters.wireframe ?? false)
-            }
-        };
-
-        if (!modelUrl) {
-            // For the default cube
-            if (mesh.geometry) {
-                mesh.geometry.dispose();
-            }
-
-            // Use RoundedBoxGeometry when radius > 0, otherwise use regular BoxGeometry
-            if (clampedParams.radius > 0) {
-                // Calculate radius as a percentage of the smallest dimension
-                const minDimension = Math.min(
-                    clampedParams.width,
-                    Math.min(clampedParams.height, clampedParams.depth)
-                );
-                const effectiveRadius = (clampedParams.radius / 100) * minDimension;
-
-                mesh.geometry = new RoundedBoxGeometry(
-                    clampedParams.width,
-                    clampedParams.height,
-                    clampedParams.depth,
-                    Math.max(1, Math.floor(clampedParams.segments / 2)),
-                    effectiveRadius
-                );
-            } else {
-                mesh.geometry = new BoxGeometry(
-                    clampedParams.width,
-                    clampedParams.height,
-                    clampedParams.depth,
-                    Math.max(1, Math.floor(clampedParams.segments / 2)),
-                    Math.max(1, Math.floor(clampedParams.segments / 2)),
-                    Math.max(1, Math.floor(clampedParams.segments / 2))
-                );
-            }
-
-            // Update material
-            if (mesh.material) {
-                mesh.material.color.set(clampedParams.material.color);
-                mesh.material.roughness = clampedParams.material.roughness;
-                mesh.material.metalness = clampedParams.material.metalness;
-                mesh.material.opacity = clampedParams.material.opacity;
-                mesh.material.transparent = clampedParams.material.opacity < 1;
-                mesh.material.wireframe = clampedParams.material.wireframe;
-            }
-
-            // Update transform
-            mesh.rotation.set(
-                clampedParams.rotation.x * Math.PI / 180,
-                clampedParams.rotation.y * Math.PI / 180,
-                clampedParams.rotation.z * Math.PI / 180
-            );
-            mesh.position.set(
-                clampedParams.position.x,
-                clampedParams.position.y,
-                clampedParams.position.z
-            );
-        } else {
-            // For loaded models
-            const box = new Box3().setFromObject(mesh);
-            const size = box.getSize(new Vector3());
-
-            // Calculate incremental scale changes
-            const scaleX = clampedParams.width / size.x;
-            const scaleY = clampedParams.height / size.y;
-            const scaleZ = clampedParams.depth / size.z;
-
-            if (isMeshWithScale(mesh)) {
-                mesh.scale.set(scaleX, scaleY, scaleZ);
-            }
-        }
-    }, [parameters, modelUrl]);
-
-    // Initialize default parameters with reasonable values
-    useEffect(() => {
-        if (!isInitialized && !modelUrl) {
-            setIsInitialized(true);
-            requestAnimationFrame(() => {
-                updateParameters({
-                    width: 1,
-                    height: 1,
-                    depth: 1,
-                    radius: 0
-                });
-            });
-        }
-    }, [isInitialized, modelUrl, updateParameters]);
 
     const handleControlsChange = useCallback(() => {
         if (controlsRef.current) {
@@ -689,6 +600,19 @@ export const CADViewer = memo(function CADViewer({
         }
     }, []);
 
+    // Update label positions when cube dimensions change
+    useEffect(() => {
+        const width = Number(parameters.width) ?? 1;
+        const height = Number(parameters.height) ?? 1;
+        const depth = Number(parameters.depth) ?? 1;
+        const offset = 0.1; // Distance of labels from cube faces
+
+        setMeasurementState({
+            hoveredFace: null,
+            dimensions: null
+        });
+    }, [parameters.width, parameters.height, parameters.depth]);
+
     // Add measurement overlay with FreeCAD-style info
     const MeasurementOverlay = useCallback(() => {
         if (!measurementState.dimensions) return null;
@@ -763,51 +687,122 @@ export const CADViewer = memo(function CADViewer({
                 />
 
                 <Stage
-                    intensity={0.5}
-                    environment="city"
+                    intensity={0.8}
+                    environment="warehouse"
                     adjustCamera={false}
-                    shadows={true}
+                    shadows={false}
                     preset="rembrandt"
                 >
                     <Suspense fallback={null}>
                         {scene ? (
                             <primitive object={scene} />
-                        ) : meshData ? (
-                            <mesh ref={meshRef}>
-                                <bufferGeometry>
-                                    <bufferAttribute
-                                        attach="attributes-position"
-                                        count={meshData.vertices.length / 3}
-                                        array={new globalThis.Float32Array(meshData.vertices)}
-                                        itemSize={3}
-                                    />
-                                    {meshData.indices && (
-                                        <bufferAttribute
-                                            attach="index"
-                                            count={meshData.indices.length}
-                                            array={new globalThis.Float32Array(meshData.indices)}
-                                            itemSize={1}
-                                        />
-                                    )}
-                                    {meshData.normals && (
-                                        <bufferAttribute
-                                            attach="attributes-normal"
-                                            count={meshData.normals.length / 3}
-                                            array={new globalThis.Float32Array(meshData.normals)}
-                                            itemSize={3}
-                                        />
-                                    )}
-                                    {meshData.uvs && (
-                                        <bufferAttribute
-                                            attach="attributes-uv"
-                                            count={meshData.uvs.length / 2}
-                                            array={new globalThis.Float32Array(meshData.uvs)}
-                                            itemSize={2}
-                                        />
-                                    )}
-                                </bufferGeometry>
+                        ) : (
+                            <mesh
+                                ref={meshRef}
+                                onPointerMove={(e) => {
+                                    e.stopPropagation();
+                                    if (e.face && e.object instanceof Mesh && typeof e.faceIndex === 'number') {
+                                        // Get the intersection point in local coordinates
+                                        const localPoint = e.point.clone().applyMatrix4(e.object.matrixWorld.invert());
+
+                                        // Determine which face we're on based on the intersection point
+                                        // We use a small epsilon to handle floating point precision
+                                        const epsilon = 0.0001;
+                                        let faceIndex;
+
+                                        // Check which face we're closest to
+                                        const absX = Math.abs(localPoint.x);
+                                        const absY = Math.abs(localPoint.y);
+                                        const absZ = Math.abs(localPoint.z);
+
+                                        if (absX > absY && absX > absZ) {
+                                            faceIndex = localPoint.x > 0 ? 0 : 1; // Right/Left
+                                        } else if (absY > absX && absY > absZ) {
+                                            faceIndex = localPoint.y > 0 ? 2 : 3; // Top/Bottom
+                                        } else {
+                                            faceIndex = localPoint.z > 0 ? 4 : 5; // Front/Back
+                                        }
+
+                                        // Create materials array with the hovered face highlighted
+                                        const materials = Array(6).fill(null).map((_, i) => {
+                                            const mat = new MeshStandardMaterial({
+                                                color: parameters.color ? String(parameters.color) : '#D73D57',
+                                                roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
+                                                metalness: parameters.metalness ? Number(parameters.metalness) : 0,
+                                                transparent: true,
+                                                opacity: parameters.opacity ? Number(parameters.opacity) : 1,
+                                                wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false
+                                            });
+                                            if (i === faceIndex) {
+                                                mat.color.set('#00ff00'); // Green highlight
+                                                mat.emissive.set('#00ff00');
+                                                mat.emissiveIntensity = 0.5;
+                                            }
+                                            return mat;
+                                        });
+
+                                        // Update the mesh materials
+                                        e.object.material = materials;
+
+                                        // Calculate face dimensions
+                                        const geometry = e.object.geometry;
+                                        const positionAttribute = geometry.getAttribute('position');
+                                        const face = e.face;
+
+                                        const vA = new Vector3();
+                                        const vB = new Vector3();
+                                        const vC = new Vector3();
+
+                                        vA.fromBufferAttribute(positionAttribute, face.a);
+                                        vB.fromBufferAttribute(positionAttribute, face.b);
+                                        vC.fromBufferAttribute(positionAttribute, face.c);
+
+                                        // Apply object's world matrix
+                                        vA.applyMatrix4(e.object.matrixWorld);
+                                        vB.applyMatrix4(e.object.matrixWorld);
+                                        vC.applyMatrix4(e.object.matrixWorld);
+
+                                        const width = vA.distanceTo(vB);
+                                        const height = vB.distanceTo(vC);
+                                        const area = width * height;
+
+                                        setMeasurementState({
+                                            hoveredFace: face.a,
+                                            dimensions: {
+                                                width,
+                                                height,
+                                                area,
+                                                normal: face.normal,
+                                                point: e.point
+                                            }
+                                        });
+                                    }
+                                }}
+                                onPointerOut={(e) => {
+                                    if (e.object instanceof Mesh) {
+                                        // Reset to a single material
+                                        e.object.material = new MeshStandardMaterial({
+                                            color: parameters.color ? String(parameters.color) : '#D73D57',
+                                            roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
+                                            metalness: parameters.metalness ? Number(parameters.metalness) : 0,
+                                            transparent: true,
+                                            opacity: parameters.opacity ? Number(parameters.opacity) : 1,
+                                            wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false
+                                        });
+                                        setMeasurementState({
+                                            hoveredFace: null,
+                                            dimensions: null
+                                        });
+                                    }
+                                }}
+                                onDoubleClick={(e) => {
+                                    // Keep the currently hovered face selected
+                                    e.stopPropagation();
+                                }}
+                            >
+                                <boxGeometry args={[1, 1, 1]} />
                                 <meshStandardMaterial
-                                    color={parameters.color ? String(parameters.color) : '#ffffff'}
+                                    color={parameters.color ? String(parameters.color) : '#D73D57'}
                                     roughness={parameters.roughness ? Number(parameters.roughness) : 0.5}
                                     metalness={parameters.metalness ? Number(parameters.metalness) : 0}
                                     transparent
@@ -815,17 +810,17 @@ export const CADViewer = memo(function CADViewer({
                                     wireframe={parameters.wireframe ? Boolean(parameters.wireframe) : false}
                                 />
                             </mesh>
-                        ) : null}
+                        )}
                     </Suspense>
                 </Stage>
 
-                <directionalLight position={[5, 5, 5]} intensity={0.8} castShadow shadow-mapSize={[2048, 2048]} />
-                <directionalLight position={[-5, 5, -5]} intensity={0.5} castShadow shadow-mapSize={[2048, 2048]} />
-                <spotLight position={[10, 10, 5]} angle={0.15} penumbra={1} intensity={0.6} castShadow shadow-mapSize={[2048, 2048]} />
-                <ambientLight intensity={0.3} />
-                <Environment preset="city" background={false} blur={0.8} />
+                <directionalLight position={[5, 5, 5]} intensity={0.8} castShadow />
+                <directionalLight position={[-5, 5, -5]} intensity={0.5} castShadow />
+                <spotLight position={[10, 10, 5]} angle={0.15} penumbra={1} intensity={0.6} castShadow />
+                <ambientLight intensity={0.2} />
+                <Environment preset="warehouse" background={false} blur={0.8} />
 
-                <EffectComposer multisampling={4}>
+                <EffectComposer multisampling={0}>
                     <Bloom intensity={0.2} luminanceThreshold={1.0} luminanceSmoothing={0.6} />
                     <SMAA />
                 </EffectComposer>
