@@ -162,7 +162,14 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                     return;
                 }
 
-                setChatHistory(data || []);
+                // Filter out chats with title "a new chat" or no messages
+                const validChats = (data || []).filter((chat: any) =>
+                    chat.title !== 'a new chat' &&
+                    chat.title !== 'New Chat' &&
+                    chat.last_message_at // Only show chats that have messages
+                );
+
+                setChatHistory(validChats);
             } catch (error) {
                 console.error('Error in chat history fetch:', error);
             }
@@ -172,24 +179,58 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
             fetchChatHistory();
         }
 
-        // Subscribe to realtime changes on cad_messages table
+        // Subscribe to realtime changes
         const channel = supabase
             .channel('chat_updates')
             .on(
                 'postgres_changes',
                 {
-                    event: 'INSERT',
+                    event: '*',
                     schema: 'public',
                     table: 'cad_messages'
                 },
-                () => {
+                (payload) => {
+                    console.log('Message change detected:', payload);
+                    // Immediately fetch new history when messages change
                     fetchChatHistory();
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'cad_chats'
+                },
+                (payload) => {
+                    console.log('Chat updated:', payload);
+                    // Immediately fetch new history when chat is updated
+                    fetchChatHistory();
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'cad_chats'
+                },
+                (payload) => {
+                    console.log('New chat created:', payload);
+                    // Only fetch if the new chat doesn't have a default title
+                    if (payload.new.title !== 'a new chat' && payload.new.title !== 'New Chat') {
+                        fetchChatHistory();
+                    }
                 }
             )
             .subscribe();
 
+        // Set up interval to periodically refresh chat history
+        const intervalId = setInterval(fetchChatHistory, 5000);
+
         return () => {
             channel.unsubscribe();
+            clearInterval(intervalId);
         };
     }, [user]);
 
@@ -207,13 +248,17 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
     const handleNewChat = useCallback(async () => {
         if (!user) return;
         try {
-            // Create new chat and let page handle loading
-            await onNewProject?.();
+            // Create new chat and navigate to it
+            const chat = await onNewProject?.();
+            if (chat) {
+                const username = pathname.split('/')[2];
+                router.push(`/cad/${username}?chat=${chat.id}`);
+            }
         } catch (error) {
             console.error('Error creating new chat:', error);
             toast.error('Failed to create new chat');
         }
-    }, [user, onNewProject]);
+    }, [user, onNewProject, pathname, router]);
 
     const handleRenameChat = async (chatId: string, newTitle: string) => {
         try {

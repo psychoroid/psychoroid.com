@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { useUser } from '@/lib/contexts/UserContext'
@@ -23,49 +23,128 @@ export function useCADChat(chatId?: string) {
     const [messages, setMessages] = useState<CADMessage[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [currentChat, setCurrentChat] = useState<CADChat | null>(null)
+    const loadAttempts = useRef(0)
 
-    const loadChat = useCallback(async (id: string) => {
-        if (!user) return
-
-        setIsLoading(true)
-        try {
-            // Load chat
-            const { data: chat, error: chatError } = await supabase
-                .from('cad_chats')
-                .select('*')
-                .eq('id', id)
-                .single()
-
-            if (chatError) throw chatError
-            setCurrentChat(chat)
-
-            // Load messages
-            const { data: messages, error: messagesError } = await supabase
-                .from('cad_messages')
-                .select('*')
-                .eq('chat_id', id)
-                .order('created_at', { ascending: true })
-
-            if (messagesError) throw messagesError
-            setMessages(messages || [])
-        } catch (error) {
-            console.error('Error loading CAD chat:', error)
-            toast.error('Failed to load CAD chat')
-        } finally {
-            setIsLoading(false)
+    // Function to load chat data
+    const loadChatData = useCallback(async (id: string) => {
+        console.log('Attempting to load chat data:', { id, user: !!user, attempt: loadAttempts.current });
+        
+        if (!user) {
+            console.log('No user available, retrying...');
+            if (loadAttempts.current < 5) {
+                loadAttempts.current++;
+                setTimeout(() => loadChatData(id), 500);
+            }
+            return;
         }
-    }, [user])
 
-    // Load chat when chatId changes
+        setIsLoading(true);
+        try {
+            console.log('Loading chat and messages...');
+            const [chatResponse, messagesResponse] = await Promise.all([
+                supabase
+                    .from('cad_chats')
+                    .select('*')
+                    .eq('id', id)
+                    .single(),
+                supabase
+                    .from('cad_messages')
+                    .select('*')
+                    .eq('chat_id', id)
+                    .order('created_at', { ascending: true })
+            ]);
+
+            if (chatResponse.error) throw chatResponse.error;
+            if (messagesResponse.error) throw messagesResponse.error;
+
+            console.log('Data loaded successfully:', {
+                chat: chatResponse.data,
+                messageCount: messagesResponse.data?.length
+            });
+
+            setCurrentChat(chatResponse.data);
+            setMessages(messagesResponse.data || []);
+        } catch (error) {
+            console.error('Error loading chat data:', error);
+            toast.error('Failed to load chat');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [user]);
+
+    // Initial load effect
     useEffect(() => {
         if (chatId) {
-            loadChat(chatId)
+            console.log('Initial load triggered for chat:', chatId);
+            loadChatData(chatId);
         } else {
-            // Reset state when no chatId
-            setMessages([])
-            setCurrentChat(null)
+            setMessages([]);
+            setCurrentChat(null);
         }
-    }, [chatId, loadChat])
+
+        return () => {
+            loadAttempts.current = 0;
+        };
+    }, [chatId, loadChatData]);
+
+    // Reload when user becomes available
+    useEffect(() => {
+        if (user && chatId && messages.length === 0) {
+            console.log('User became available, reloading chat:', chatId);
+            loadChatData(chatId);
+        }
+    }, [user, chatId, loadChatData, messages.length]);
+
+    // Subscribe to real-time updates
+    useEffect(() => {
+        if (!chatId || !user) return;
+
+        console.log('Setting up real-time subscriptions for chat:', chatId);
+        const channel = supabase
+            .channel(`chat_${chatId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'cad_chats',
+                    filter: `id=eq.${chatId}`
+                },
+                (payload) => {
+                    console.log('Chat updated:', payload);
+                    setCurrentChat(prev => {
+                        if (prev && payload.new.id) {
+                            return {
+                                id: payload.new.id,
+                                title: payload.new.title || prev.title,
+                                last_message_at: payload.new.last_message_at || prev.last_message_at,
+                                created_at: payload.new.created_at || prev.created_at
+                            };
+                        }
+                        return prev;
+                    });
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'cad_messages',
+                    filter: `chat_id=eq.${chatId}`
+                },
+                () => {
+                    console.log('Messages changed, reloading chat:', chatId);
+                    loadChatData(chatId);
+                }
+            )
+            .subscribe();
+
+        return () => {
+            console.log('Cleaning up subscriptions for chat:', chatId);
+            channel.unsubscribe();
+        };
+    }, [chatId, user, loadChatData]);
 
     const createChat = useCallback(async (title: string) => {
         if (!user) return null
@@ -83,7 +162,11 @@ export function useCADChat(chatId?: string) {
                 .single()
 
             if (error) throw error
+            
+            // Set current chat and initialize empty messages
             setCurrentChat(data)
+            setMessages([])
+            
             return data
         } catch (error) {
             console.error('Error creating CAD chat:', error)
@@ -159,7 +242,7 @@ export function useCADChat(chatId?: string) {
         isLoading,
         currentChat,
         createChat,
-        loadChat,
+        loadChatData,
         saveMessage,
         loadUserChats,
         setMessages

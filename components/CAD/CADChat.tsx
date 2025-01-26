@@ -58,7 +58,7 @@ export function ChatInstance({
         messages,
         currentChat,
         createChat,
-        loadChat,
+        loadChatData,
         saveMessage,
         setMessages
     } = useCADChat(sessionId)
@@ -93,13 +93,17 @@ export function ChatInstance({
 
     // Load chat messages when sessionId changes
     useEffect(() => {
-        const loadMessages = async () => {
-            if (sessionId) {
-                await loadChat(sessionId);
-            }
-        };
-        loadMessages();
-    }, [sessionId, loadChat]);
+        if (sessionId) {
+            console.log('Loading chat messages for session:', sessionId);
+            // Don't clear messages immediately to avoid flash
+            loadChatData(sessionId).then(() => {
+                // Focus the input after loading chat
+                if (textareaRef.current) {
+                    textareaRef.current.focus();
+                }
+            });
+        }
+    }, [sessionId, loadChatData]);
 
     // Auto-focus input after message sent
     useEffect(() => {
@@ -107,6 +111,14 @@ export function ChatInstance({
             textareaRef.current.focus();
         }
     }, [isGenerating]);
+
+    // Scroll to bottom when messages change
+    useEffect(() => {
+        if (messages.length > 0) {
+            console.log('Messages updated, scrolling to bottom:', messages.length);
+            setTimeout(scrollToBottom, 100);
+        }
+    }, [messages, scrollToBottom]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value;
@@ -130,23 +142,28 @@ export function ChatInstance({
             try {
                 setIsGenerating(true)
 
-                // Create a new chat if we don't have one
-                let chatId = currentChat?.id || sessionId
+                // Get the current chat ID - either from URL or current chat state
+                const chatId = sessionId || currentChat?.id
                 console.log('Current chat state:', { currentChat, sessionId, chatId })
 
-                if (!chatId) {
+                // If we don't have a chat ID, create a new chat
+                let activeId: string | undefined = chatId
+                if (!activeId) {
                     console.log('Creating new chat...')
-                    const chat = await createChat(inputValue.trim())
+                    const chat = await createChat('New Chat')
                     if (!chat) {
-                        throw new Error('Failed to create CAD chat')
+                        throw new Error('Failed to create chat')
                     }
-                    chatId = chat.id
-                    console.log('Created new chat:', chatId)
+                    activeId = chat.id
+                }
+
+                if (!activeId) {
+                    throw new Error('Failed to get or create chat')
                 }
 
                 // Save user message first
                 console.log('Saving user message...', {
-                    chatId,
+                    activeId,
                     content: inputValue.trim(),
                     role: 'user'
                 })
@@ -154,7 +171,7 @@ export function ChatInstance({
                 // Use the RPC function to save message
                 const { data: userMessage, error: userMessageError } = await supabase
                     .rpc('save_cad_message', {
-                        p_chat_id: chatId,
+                        p_chat_id: activeId,
                         p_role: 'user',
                         p_content: inputValue.trim(),
                         p_parameters: {}
@@ -174,7 +191,7 @@ export function ChatInstance({
                     created_at: new Date().toISOString()
                 }
 
-                // Generate and update title only for the first message
+                // Generate and update title for the first message
                 if (messages.length === 0) {
                     console.log('Generating AI title...')
                     const titleResponse = await fetch('/api/chat/title', {
@@ -193,7 +210,7 @@ export function ChatInstance({
                     // Update chat title using RPC
                     const { error: titleError } = await supabase
                         .rpc('rename_cad_chat', {
-                            p_chat_id: chatId,
+                            p_chat_id: activeId,
                             p_title: title
                         })
 
@@ -201,13 +218,16 @@ export function ChatInstance({
                         console.error('Error updating chat title:', titleError)
                         throw titleError
                     }
+
+                    // Reload chat to get updated title
+                    await loadChatData(activeId)
                 }
 
                 // Save assistant response
                 console.log('Saving assistant response...')
                 const { data: assistantMessage, error: assistantMessageError } = await supabase
                     .rpc('save_cad_message', {
-                        p_chat_id: chatId,
+                        p_chat_id: activeId,
                         p_role: 'assistant',
                         p_content: 'Message received! (CAD generation temporarily disabled for testing)',
                         p_parameters: {}
@@ -264,11 +284,12 @@ export function ChatInstance({
         inputValue,
         currentChat,
         sessionId,
-        createChat,
         messages,
         setMessages,
         onChange,
-        scrollToBottom
+        scrollToBottom,
+        loadChatData,
+        createChat
     ]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {

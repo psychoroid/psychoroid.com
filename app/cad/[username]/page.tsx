@@ -115,6 +115,8 @@ interface PageProps {
 export default function CADPage({ params }: PageProps) {
     const router = useRouter()
     const pathname = usePathname()
+    const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+    const chatId = searchParams.get('chat')
     const { user, isLoading: isUserLoading } = useUser()
     const [modelUrl, setModelUrl] = useState<string | null>(null)
     const [showAuthModal, setShowAuthModal] = useState(false)
@@ -133,16 +135,40 @@ export default function CADPage({ params }: PageProps) {
     const [activeOperation, setActiveOperation] = useState<string>('')
     const [currentPrompt, setCurrentPrompt] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const initialLoadDone = useRef(false)
 
     // Use our CAD chat hook
     const {
         messages,
         currentChat,
         createChat,
-        loadChat,
+        loadChatData,
         saveMessage,
         loadUserChats
     } = useCADChat()
+
+    // Load initial chat from URL
+    useEffect(() => {
+        const loadInitialChat = async () => {
+            if (!user || !chatId || initialLoadDone.current) return;
+
+            console.log('Loading initial chat:', chatId);
+            try {
+                await loadChatData(chatId);
+                initialLoadDone.current = true;
+            } catch (error) {
+                console.error('Error loading initial chat:', error);
+                toast.error('Failed to load chat');
+            }
+        };
+
+        loadInitialChat();
+    }, [user, chatId, loadChatData]);
+
+    // Reset initialLoadDone when chatId changes
+    useEffect(() => {
+        initialLoadDone.current = false;
+    }, [chatId]);
 
     const defaultParameters = useMemo(() => {
         const params: Parameter[] = [
@@ -216,15 +242,19 @@ export default function CADPage({ params }: PageProps) {
     const handleNewProject = useCallback(async () => {
         setIsLoading(true);
         try {
+            // Create a chat with 'a new chat' title
             const { data: chat, error } = await supabase
                 .from('cad_chats')
-                .insert([{ title: 'a new chat', user_id: user?.id }])
+                .insert([{
+                    title: 'a new chat',  // This won't show in sidebar but will be updated with first message
+                    user_id: user?.id
+                }])
                 .select()
                 .single();
 
             if (error) throw error;
 
-            // Force a full page reload to the new chat URL
+            // Force a full page reload to ensure clean state
             window.location.href = `/cad/${user?.user_metadata?.username}?chat=${chat.id}`;
             return chat;
         } catch (error) {
@@ -400,7 +430,7 @@ export default function CADPage({ params }: PageProps) {
                                 onNewProject={handleNewProject}
                                 onHistoryItemClick={async (item: ChatHistoryItem) => {
                                     if (item.id) {
-                                        await loadChat(item.id)
+                                        await loadChatData(item.id)
                                         toast.success('Chat loaded successfully')
                                     }
                                 }}
