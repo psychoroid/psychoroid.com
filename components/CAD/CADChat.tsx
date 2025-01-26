@@ -292,7 +292,7 @@ export function ChatInstance({
                                 </span>
                                 <div className="flex flex-col">
                                     <p className="whitespace-pre-wrap">{message.content}</p>
-                                    {message.parameters && (
+                                    {message.parameters && Object.keys(message.parameters).length > 0 && (
                                         <motion.div
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: "auto" }}

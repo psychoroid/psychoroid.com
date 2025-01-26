@@ -8,7 +8,8 @@ create or replace function public.get_cad_chat_history_v2(
     updated_at timestamptz,
     last_message_at timestamptz,
     last_message text,
-    parameters jsonb
+    metadata jsonb,
+    is_archived boolean
 ) as $$
 begin
     -- Log history request
@@ -23,10 +24,9 @@ begin
         select distinct on (chat_id)
             chat_id,
             content as last_message,
-            parameters,
             m.created_at as message_created_at
         from public.cad_messages m
-        where role = 'assistant' -- Only get assistant messages as preview
+        where role = 'assistant'
         order by chat_id, m.created_at desc
     )
     select 
@@ -36,10 +36,12 @@ begin
         c.updated_at,
         c.last_message_at,
         coalesce(lm.last_message, 'No messages yet') as last_message,
-        lm.parameters
+        c.metadata,
+        c.is_archived
     from public.cad_chats c
     left join last_messages lm on c.id = lm.chat_id
     where c.user_id = auth.uid()
+    and (c.is_archived = false or c.is_archived is null)
     order by c.last_message_at desc
     limit p_limit;
 

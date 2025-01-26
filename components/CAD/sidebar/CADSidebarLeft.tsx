@@ -171,6 +171,26 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
         if (user) {
             fetchChatHistory();
         }
+
+        // Subscribe to realtime changes on cad_messages table
+        const channel = supabase
+            .channel('chat_updates')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'cad_messages'
+                },
+                () => {
+                    fetchChatHistory();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
     }, [user]);
 
     // Handle chat selection
@@ -198,7 +218,10 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
     const handleRenameChat = async (chatId: string, newTitle: string) => {
         try {
             const { error } = await supabase
-                .rpc('rename_cad_chat', { p_chat_id: chatId, p_title: newTitle });
+                .rpc('rename_cad_chat', {
+                    p_chat_id: chatId,
+                    p_title: newTitle
+                });
 
             if (error) throw error;
 
@@ -292,37 +315,37 @@ export function CADSidebar({ user, onNewProject, onHistoryItemClick }: CADSideba
                         )}>
                             {chat.title}
                         </span>
-                        {chat.is_favorite && (
-                            <Star className="h-3 w-3 text-yellow-500 mr-2" />
-                        )}
                     </div>
                 </SidebarMenuButton>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuAction className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            <MoreHorizontal className="h-4 w-4 mr-4" />
+                            <MoreHorizontal className="h-3.5 w-3.5 mr-1" />
                         </SidebarMenuAction>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 rounded-none">
-                        <DropdownMenuItem onClick={() => handleToggleFavorite(chat.id, chat.is_favorite)}>
-                            <Star className="mr-2 h-4 w-4" />
-                            <span>{chat.is_favorite ? 'Remove from Favorites' : 'Add to Favorites'}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {
-                            const newTitle = prompt('Enter new title:', chat.title);
-                            if (newTitle && newTitle !== chat.title) {
-                                handleRenameChat(chat.id, newTitle);
-                            }
-                        }}>
-                            <Pencil className="mr-2 h-4 w-4" />
+                    <DropdownMenuContent
+                        align="end"
+                        alignOffset={-5}
+                        className="w-28 rounded-none py-0.5"
+                        sideOffset={0}
+                    >
+                        <DropdownMenuItem
+                            onClick={() => {
+                                const newTitle = window.prompt('Rename chat:', chat.title);
+                                if (newTitle && newTitle.trim() && newTitle !== chat.title) {
+                                    handleRenameChat(chat.id, newTitle.trim());
+                                }
+                            }}
+                            className="text-[11px] py-1 px-2 hover:bg-blue-500/10 hover:text-blue-500 focus:bg-blue-500/10 focus:text-blue-500"
+                        >
+                            <Pencil className="mr-1.5 h-3 w-3 text-blue-500" />
                             <span>Rename</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Share2 className="mr-2 h-4 w-4" />
-                            <span>Share</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleArchiveChat(chat.id, chat.is_archived)}>
-                            <Archive className="mr-2 h-4 w-4" />
+                        <DropdownMenuItem
+                            onClick={() => handleArchiveChat(chat.id, chat.is_archived)}
+                            className="text-[11px] py-1 px-2 hover:bg-red-500/10 hover:text-red-500 focus:bg-red-500/10 focus:text-red-500"
+                        >
+                            <Archive className="mr-1.5 h-3 w-3 text-red-500" />
                             <span>{chat.is_archived ? 'Restore' : 'Archive'}</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
