@@ -19,7 +19,7 @@ export default function Error({
             <div className="text-center space-y-6">
                 <h1 className="text-4xl font-bold text-foreground">Something went wrong</h1>
                 <p className="text-sm text-muted-foreground max-w-md">
-                    An unexpected error occurred. Our team has been notified.
+                    An unexpected error.
                 </p>
                 <div className="flex justify-center space-x-4 pt-4">
                     <button

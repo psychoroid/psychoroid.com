@@ -27,58 +27,43 @@ import { cn } from '@/lib/actions/utils';
 
 interface CADToolbarProps {
     onExport?: () => void;
-    onShare?: () => void;
-    onMove?: () => void;
-    onRotate?: () => void;
-    onScale?: () => void;
-    onMeasure?: () => void;
-    onArray?: () => void;
-    onUnion?: () => void;
-    onDifference?: () => void;
-    onZoomIn?: () => void;
-    onZoomOut?: () => void;
-    onExpand?: () => void;
+    onMeasure?: (active: boolean) => void;
     onZoomModeToggle?: () => void;
+    onAutoRotate?: () => void;
     isRotating?: boolean;
     isZoomToCursor?: boolean;
     className?: string;
-    activeOperation?: string;
+    activeOperation?: string | undefined;
+}
+
+interface ToolItem {
+    icon: any;
+    label: string;
+    action: (() => void) | undefined;
+    operation?: string;
+    isActive?: boolean;
 }
 
 export const CADToolbar = memo(function CADToolbar({
     onExport,
-    onShare,
-    onMove,
-    onRotate,
-    onScale,
     onMeasure,
-    onArray,
-    onUnion,
-    onDifference,
-    onZoomIn,
-    onZoomOut,
-    onExpand,
     onZoomModeToggle,
+    onAutoRotate,
     isRotating,
     isZoomToCursor,
     className,
     activeOperation
 }: CADToolbarProps) {
-    const leftColumnTools = [
-        { icon: Move, label: 'Move', action: onMove, operation: 'move' },
-        { icon: RotateCw, label: 'Rotate', action: onRotate, operation: 'rotate' },
-        { icon: isRotating ? PauseCircle : PlayCircle, label: isRotating ? 'Stop Auto-Rotate' : 'Auto-Rotate', action: onRotate },
-        { icon: Ruler, label: 'Measure', action: onMeasure, operation: 'measure' },
-        { icon: Copy, label: 'Array', action: onArray, operation: 'array' },
-        { icon: Expand, label: 'Fit to View', action: onExpand },
-    ];
-
-    const rightColumnTools = [
-        { icon: ZoomIn, label: 'Zoom In', action: onZoomIn },
-        { icon: ZoomOut, label: 'Zoom Out', action: onZoomOut },
+    const tools: ToolItem[] = [
+        { icon: isRotating ? PauseCircle : PlayCircle, label: isRotating ? 'Stop Auto-Rotate' : 'Auto-Rotate', action: onAutoRotate },
+        {
+            icon: Ruler,
+            label: 'Measure',
+            action: () => onMeasure?.(activeOperation !== 'measure'),
+            operation: 'measure',
+            isActive: activeOperation === 'measure'
+        },
         { icon: isZoomToCursor ? Crosshair : Focus, label: isZoomToCursor ? 'Cursor Zoom' : 'Center Zoom', action: onZoomModeToggle },
-        { icon: Plus, label: 'Union', action: onUnion, operation: 'union' },
-        { icon: Minus, label: 'Difference', action: onDifference, operation: 'difference' },
         { icon: Download, label: 'Export', action: onExport }
     ];
 
@@ -95,63 +80,32 @@ export const CADToolbar = memo(function CADToolbar({
         )}>
             <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-black/[0.02] dark:from-white/[0.02] dark:to-black/5 rounded-none pointer-events-none z-[3]" />
 
-            {/* Two-column layout */}
-            <div className="relative z-[4] flex gap-1">
-                {/* Left Column */}
-                <div className="flex flex-col gap-1 pr-1">
-                    {leftColumnTools.map(({ icon: Icon, label, action, operation }) => (
-                        <Tooltip key={label}>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className={cn(
-                                        "h-7 w-7 rounded-none",
-                                        "transition-all duration-200",
-                                        operation && operation === activeOperation && "bg-primary/20 text-primary shadow-sm",
-                                        "hover:bg-transparent hover:scale-150",
-                                        "focus:ring-0",
-                                        "active:scale-95"
-                                    )}
-                                    onClick={action}
-                                >
-                                    <Icon className="h-3.5 w-3.5" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="left" align="center" className="text-xs">
-                                {label}
-                            </TooltipContent>
-                        </Tooltip>
-                    ))}
-                </div>
-
-                {/* Right Column */}
-                <div className="flex flex-col gap-1">
-                    {rightColumnTools.map(({ icon: Icon, label, action, operation }) => (
-                        <Tooltip key={label}>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className={cn(
-                                        "h-7 w-7 rounded-none",
-                                        "transition-all duration-200",
-                                        operation && operation === activeOperation && "bg-primary/20 text-primary shadow-sm",
-                                        "hover:bg-transparent hover:scale-150",
-                                        "focus:ring-0",
-                                        "active:scale-95"
-                                    )}
-                                    onClick={action}
-                                >
-                                    <Icon className="h-3.5 w-3.5" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="left" align="center" className="text-xs">
-                                {label}
-                            </TooltipContent>
-                        </Tooltip>
-                    ))}
-                </div>
+            {/* Single column layout */}
+            <div className="relative z-[4] flex flex-col gap-1">
+                {tools.map(({ icon: Icon, label, action, operation, isActive }) => (
+                    <Tooltip key={label}>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className={cn(
+                                    "h-7 w-7 rounded-none",
+                                    "transition-all duration-200",
+                                    isActive && "bg-primary/20 text-primary shadow-sm",
+                                    "hover:bg-transparent hover:scale-150",
+                                    "focus:ring-0",
+                                    "active:scale-95"
+                                )}
+                                onClick={action}
+                            >
+                                <Icon className="h-3.5 w-3.5" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" align="center" className="text-xs">
+                            {label}
+                        </TooltipContent>
+                    </Tooltip>
+                ))}
             </div>
         </div>
     );

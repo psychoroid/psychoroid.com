@@ -4,7 +4,7 @@ import React, { Suspense, useRef, useState, useCallback, memo, useEffect } from 
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, Environment, PerspectiveCamera, Html } from '@react-three/drei';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
-import { Vector3, MOUSE, TOUCH, Box3, BoxGeometry, Mesh, MeshStandardMaterial, Raycaster, Vector2, ACESFilmicToneMapping, Fog, Scene, DoubleSide } from 'three';
+import { Vector3, MOUSE, TOUCH, Box3, BoxGeometry, Mesh, MeshStandardMaterial, Raycaster, Vector2, ACESFilmicToneMapping, Fog, Scene, DoubleSide, Color } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
 import { CADToolbar } from './CADToolbar';
 import { XModal } from './XModal';
@@ -358,15 +358,6 @@ export const CADViewer = memo(function CADViewer({
         }
     }, [onParameterChange]);
 
-    const handleMeasure = useCallback(() => {
-        onOperationChange?.('measure');
-        if (controlsRef.current) {
-            controlsRef.current.enableRotate = false;
-            controlsRef.current.enablePan = false;
-            controlsRef.current.enableZoom = false;
-        }
-    }, [onOperationChange]);
-
     const handleMouseMove = useCallback((event: React.MouseEvent) => {
         if (activeOperation !== 'measure' || !meshRef.current) return;
 
@@ -380,9 +371,11 @@ export const CADViewer = memo(function CADViewer({
         raycasterRef.current.setFromCamera(mouseRef.current, controlsRef.current.object);
         const intersects = raycasterRef.current.intersectObject(meshRef.current);
 
-        const firstIntersect = intersects[0];
-        if (firstIntersect?.face) {
+        if (intersects.length > 0) {
+            const firstIntersect = intersects[0];
             const face = firstIntersect.face;
+            if (!face) return;
+
             const geometry = meshRef.current.geometry;
             const positionAttribute = geometry.getAttribute('position');
 
@@ -401,35 +394,59 @@ export const CADViewer = memo(function CADViewer({
             vB.applyMatrix4(worldMatrix);
             vC.applyMatrix4(worldMatrix);
 
-            // Calculate dimensions
-            const width = vA.distanceTo(vB);
-            const height = vB.distanceTo(vC);
-            const diagonal = vA.distanceTo(vC);
+            // Calculate dimensions based on the actual cube dimensions
+            const width = Number(parameters.width) || 10;
+            const height = Number(parameters.height) || 10;
+            const depth = Number(parameters.depth) || 10;
 
-            // Calculate area using Heron's formula
-            const s = (width + height + diagonal) / 2;
-            const area = Math.sqrt(s * (s - width) * (s - height) * (s - diagonal));
-
-            // Calculate normal vector for orientation
+            // Determine which face we're on based on the normal
             const normal = face.normal.clone();
-            normal.transformDirection(meshRef.current.matrixWorld);
+            normal.transformDirection(worldMatrix);
 
-            // Update measurement state
+            // Get absolute values of normal components
+            const absX = Math.abs(normal.x);
+            const absY = Math.abs(normal.y);
+            const absZ = Math.abs(normal.z);
+
+            let faceWidth = 0;
+            let faceHeight = 0;
+
+            if (absX > 0.9) { // Side faces
+                faceWidth = depth;
+                faceHeight = height;
+            } else if (absY > 0.9) { // Top/bottom faces
+                faceWidth = width;
+                faceHeight = depth;
+            } else if (absZ > 0.9) { // Front/back faces
+                faceWidth = width;
+                faceHeight = height;
+            }
+
+            // Calculate area
+            const area = faceWidth * faceHeight;
+
+            // Update measurement state with actual dimensions
             setMeasurementState({
                 hoveredFace: face.a,
                 dimensions: {
-                    width: width,
-                    height: height,
+                    width: faceWidth,
+                    height: faceHeight,
                     area: area,
                     normal: normal,
                     point: firstIntersect.point.clone()
                 }
             });
 
-            // Highlight the face
+            // Highlight the face with a green overlay
             if (meshRef.current.material) {
-                meshRef.current.material.emissive.setHex(0xffff00);
-                meshRef.current.material.emissiveIntensity = 0.5;
+                meshRef.current.material = new MeshStandardMaterial({
+                    color: parameters.color ? String(parameters.color) : '#D73D57',
+                    wireframe: parameters.wireframe ? Number(parameters.wireframe) > 0 : false,
+                    emissive: new Color(0x00ff00),
+                    emissiveIntensity: 0.5,
+                    transparent: true,
+                    opacity: 0.9
+                });
             }
         } else {
             setMeasurementState({
@@ -437,12 +454,40 @@ export const CADViewer = memo(function CADViewer({
                 dimensions: null
             });
 
+            // Reset material when not hovering
             if (meshRef.current.material) {
-                meshRef.current.material.emissive.setHex(0x000000);
-                meshRef.current.material.emissiveIntensity = 0;
+                meshRef.current.material = new MeshStandardMaterial({
+                    color: parameters.color ? String(parameters.color) : '#D73D57',
+                    wireframe: parameters.wireframe ? Number(parameters.wireframe) > 0 : false,
+                    emissive: new Color(0x000000),
+                    emissiveIntensity: 0,
+                    transparent: false,
+                    opacity: 1
+                });
             }
         }
-    }, [activeOperation]);
+    }, [activeOperation, parameters.color, parameters.wireframe, parameters.width, parameters.height, parameters.depth]);
+
+    const handleMeasure = useCallback(() => {
+        onOperationChange?.('measure');
+        if (controlsRef.current) {
+            controlsRef.current.enableRotate = false;
+            controlsRef.current.enablePan = false;
+            controlsRef.current.enableZoom = false;
+        }
+
+        // Add mouse move event listener to the canvas
+        const canvas = document.querySelector('canvas');
+        if (canvas) {
+            canvas.addEventListener('mousemove', handleMouseMove as any);
+        }
+
+        return () => {
+            if (canvas) {
+                canvas.removeEventListener('mousemove', handleMouseMove as any);
+            }
+        };
+    }, [onOperationChange, handleMouseMove]);
 
     const handleArray = useCallback(() => {
         onOperationChange?.('array');
@@ -692,30 +737,26 @@ export const CADViewer = memo(function CADViewer({
         if (!measurementState.dimensions) return null;
 
         const { width, height, area, normal, point } = measurementState.dimensions;
-        const normalizedNormal = normal.clone().normalize();
 
         return (
-            <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-sm p-4 rounded-lg border shadow-lg">
-                <h3 className="text-sm font-medium mb-2">Face Measurements</h3>
-                <div className="space-y-2 text-sm">
-                    <div>
-                        <p className="font-medium">Dimensions:</p>
-                        <p>Length: {width.toFixed(2)} mm</p>
-                        <p>Width: {height.toFixed(2)} mm</p>
-                        <p>Area: {area.toFixed(2)} mm²</p>
-                    </div>
-                    <div>
-                        <p className="font-medium">Normal Vector:</p>
-                        <p>X: {normalizedNormal.x.toFixed(3)}</p>
-                        <p>Y: {normalizedNormal.y.toFixed(3)}</p>
-                        <p>Z: {normalizedNormal.z.toFixed(3)}</p>
-                    </div>
-                    <div>
-                        <p className="font-medium">Position:</p>
-                        <p>X: {point.x.toFixed(2)} mm</p>
-                        <p>Y: {point.y.toFixed(2)} mm</p>
-                        <p>Z: {point.z.toFixed(2)} mm</p>
-                    </div>
+            <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-sm p-4 rounded-lg border shadow-lg space-y-2">
+                <div className="text-sm font-medium">Dimensions</div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                    <div className="text-muted-foreground">Width:</div>
+                    <div>{width.toFixed(2)} mm</div>
+                    <div className="text-muted-foreground">Height:</div>
+                    <div>{height.toFixed(2)} mm</div>
+                    <div className="text-muted-foreground">Area:</div>
+                    <div>{area.toFixed(2)} mm²</div>
+                </div>
+                <div className="text-sm font-medium mt-2">Position</div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                    <div className="text-muted-foreground">X:</div>
+                    <div>{point.x.toFixed(2)} mm</div>
+                    <div className="text-muted-foreground">Y:</div>
+                    <div>{point.y.toFixed(2)} mm</div>
+                    <div className="text-muted-foreground">Z:</div>
+                    <div>{point.z.toFixed(2)} mm</div>
                 </div>
             </div>
         );
@@ -884,17 +925,25 @@ export const CADViewer = memo(function CADViewer({
             <div className="absolute right-4 top-[60%] -translate-y-1/2">
                 <CADToolbar
                     onExport={handleExport}
-                    onMove={handleMove}
-                    onRotate={handleAutoRotate}
-                    onScale={handleScale}
-                    onMeasure={handleMeasure}
-                    onArray={handleArray}
-                    onUnion={handleUnion}
-                    onDifference={handleDifference}
-                    onZoomIn={handleZoomIn}
-                    onZoomOut={handleZoomOut}
-                    onExpand={handleExpand}
+                    onMeasure={(active) => {
+                        if (active) {
+                            handleMeasure();
+                        } else {
+                            onOperationChange?.(null);
+                            if (controlsRef.current) {
+                                controlsRef.current.enableRotate = true;
+                                controlsRef.current.enablePan = true;
+                                controlsRef.current.enableZoom = true;
+                            }
+                            // Reset measurement state when deactivating
+                            setMeasurementState({
+                                hoveredFace: null,
+                                dimensions: null
+                            });
+                        }
+                    }}
                     onZoomModeToggle={handleZoomModeToggle}
+                    onAutoRotate={handleAutoRotate}
                     isRotating={isRotating}
                     isZoomToCursor={isZoomToCursor}
                     activeOperation={activeOperation}

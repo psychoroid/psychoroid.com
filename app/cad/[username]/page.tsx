@@ -126,7 +126,7 @@ export default function CADPage({ params }: PageProps) {
     const [history, setHistory] = useState<ChatHistoryItem[]>([])
     const [canUndo, setCanUndo] = useState(false)
     const [canRedo, setCanRedo] = useState(false)
-    const [activeOperation, setActiveOperation] = useState<string>('')
+    const [activeOperation, setActiveOperation] = useState<string | undefined>(undefined)
     const [currentPrompt, setCurrentPrompt] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const initialLoadDone = useRef(false)
@@ -277,8 +277,8 @@ export default function CADPage({ params }: PageProps) {
 
     // Memoize operation change handler
     const handleOperationChange = useCallback((operation: string | null) => {
-        setActiveOperation(operation || '')
-    }, [])
+        setActiveOperation(operation || undefined);
+    }, []);
 
     // Load user's chat history on mount
     useEffect(() => {
