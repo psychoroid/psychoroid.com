@@ -1,7 +1,6 @@
 'use client';
 
 import { memo } from 'react';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
     Tooltip,
@@ -14,9 +13,7 @@ import {
     Ruler,
     Copy,
     Minus,
-    Share2,
     Download,
-    Maximize2,
     Plus,
     PlayCircle,
     PauseCircle,
@@ -68,21 +65,21 @@ export const CADToolbar = memo(function CADToolbar({
     activeOperation
 }: CADToolbarProps) {
     const leftColumnTools = [
-        { icon: Move, label: 'Move (Hold Right Click)', action: onMove, operation: 'move' },
-        { icon: RotateCw, label: 'Rotate (Hold Left Click)', action: onRotate, operation: 'rotate' },
-        { icon: isRotating ? PauseCircle : PlayCircle, label: isRotating ? 'Stop Auto-Rotate' : 'Start Auto-Rotate', action: onRotate },
+        { icon: Move, label: 'Move', action: onMove, operation: 'move' },
+        { icon: RotateCw, label: 'Rotate', action: onRotate, operation: 'rotate' },
+        { icon: isRotating ? PauseCircle : PlayCircle, label: isRotating ? 'Stop Auto-Rotate' : 'Auto-Rotate', action: onRotate },
         { icon: Ruler, label: 'Measure', action: onMeasure, operation: 'measure' },
         { icon: Copy, label: 'Array', action: onArray, operation: 'array' },
         { icon: Expand, label: 'Fit to View', action: onExpand },
     ];
 
     const rightColumnTools = [
-        { icon: ZoomIn, label: 'Zoom In (Scroll Up)', action: onZoomIn },
-        { icon: ZoomOut, label: 'Zoom Out (Scroll Down)', action: onZoomOut },
+        { icon: ZoomIn, label: 'Zoom In', action: onZoomIn },
+        { icon: ZoomOut, label: 'Zoom Out', action: onZoomOut },
         { icon: isZoomToCursor ? Crosshair : Focus, label: isZoomToCursor ? 'Cursor Zoom' : 'Center Zoom', action: onZoomModeToggle },
         { icon: Plus, label: 'Union', action: onUnion, operation: 'union' },
         { icon: Minus, label: 'Difference', action: onDifference, operation: 'difference' },
-        { icon: Download, label: 'Export & Share', action: onExport }
+        { icon: Download, label: 'Export', action: onExport }
     ];
 
     return (

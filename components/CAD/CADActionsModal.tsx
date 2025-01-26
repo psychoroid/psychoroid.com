@@ -34,7 +34,7 @@ const EXPORT_FORMATS = {
 };
 
 const SHARE_OPTIONS = {
-    'Quick Share': [
+    'Socials': [
         {
             name: 'Copy link',
             icon: Link2,
@@ -51,16 +51,7 @@ const SHARE_OPTIONS = {
             }
         }
     ],
-    'Developer Tools': [
-        {
-            name: 'API endpoint',
-            icon: FileJson,
-            action: (url: string, title: string) => {
-                const apiUrl = `${window.location.origin}/api/v1/products/${title.toLowerCase().replace(/\s+/g, '-')}`;
-                navigator.clipboard.writeText(apiUrl);
-                toast.success('API endpoint copied to clipboard');
-            }
-        },
+    'Developers': [
         {
             name: 'Embed code',
             icon: Code,
@@ -109,7 +100,7 @@ export function CADActionsModal({ isOpen, onClose, product, onDownload }: CADAct
                 {/* Download Section */}
                 <div className="border-b border-border">
                     <div className="p-4 border-b border-border">
-                        <h3 className="font-medium text-sm">Download Format</h3>
+                        <h3 className="font-medium text-sm">Download</h3>
                     </div>
                     <div className="p-2">
                         {Object.entries(EXPORT_FORMATS).map(([category, formats]) => (
@@ -145,7 +136,7 @@ export function CADActionsModal({ isOpen, onClose, product, onDownload }: CADAct
                 {/* Share Section */}
                 <div>
                     <div className="p-4 border-b border-border">
-                        <h3 className="font-medium text-sm">Share Options</h3>
+                        <h3 className="font-medium text-sm">Share</h3>
                     </div>
                     <div className="p-2">
                         {Object.entries(SHARE_OPTIONS).map(([category, options]) => (

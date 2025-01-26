@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback, useRef, useState, useMemo, useEffect } from 'react';
+import { memo, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -118,33 +118,16 @@ const ParameterInput = memo(({ param, onChange }: { param: Parameter; onChange: 
                     {param.name.replace(/([A-Z])/g, ' $1').trim()}
                     {param.unit && <span className="ml-1 text-muted-foreground/70">({param.unit})</span>}
                 </Label>
-                <div className="flex items-center gap-1">
-                    <Input
-                        type="number"
-                        value={param.value}
-                        onChange={handleInputChange}
-                        className="h-6 w-16 rounded-none text-xs bg-transparent hover:bg-accent/50 transition-colors"
-                        min={param.min}
-                        max={param.max}
-                        step={param.step}
-                        disabled={param.locked}
-                    />
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 rounded-none hover:bg-transparent transition-all duration-200 hover:scale-110"
-                                onClick={handleLockToggle}
-                            >
-                                {param.locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="left" align="center" className="text-xs">
-                            {param.locked ? 'Unlock Parameter' : 'Lock Parameter'}
-                        </TooltipContent>
-                    </Tooltip>
-                </div>
+                <Input
+                    type="number"
+                    value={param.value}
+                    onChange={handleInputChange}
+                    className="h-6 w-20 rounded-none text-xs bg-transparent hover:bg-accent/50 transition-colors border-0 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    min={param.min}
+                    max={param.max}
+                    step={param.step}
+                    disabled={param.locked}
+                />
             </div>
             <Slider
                 value={[param.value]}
@@ -189,7 +172,7 @@ const MaterialSection = memo(({ parameters, onChange }: { parameters: Parameter[
     return (
         <ParameterGroup title="Material">
             {colorParam && (
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-4 mx-2">
                     <Label className="text-xs text-muted-foreground">Color</Label>
                     <div className="w-full aspect-square rounded-none overflow-hidden border border-border/50">
                         <HexColorPicker
@@ -379,9 +362,9 @@ const CADParameters = memo(({ parameters, onChange, onReset, onUndo, className }
                         </div>
                     </div>
                 </header>
-                <SidebarContent className="p-0 scrollbar-hide">
-                    <ScrollArea className="h-[calc(100vh-3.5rem)] scrollbar-hide">
-                        <div className="space-y-6 p-4 scrollbar-hide">
+                <SidebarContent className="p-0">
+                    <div className="h-[calc(100vh-3.5rem)] overflow-y-auto scrollbar-hide">
+                        <div className="space-y-6 p-4">
                             {/* Dimensions Section */}
                             {groupedParameters.dimensions && (
                                 <DimensionsSection
@@ -398,7 +381,7 @@ const CADParameters = memo(({ parameters, onChange, onReset, onUndo, className }
                                 />
                             )}
                         </div>
-                    </ScrollArea>
+                    </div>
                 </SidebarContent>
             </Sidebar>
         </div>

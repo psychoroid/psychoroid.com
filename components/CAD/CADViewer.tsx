@@ -4,12 +4,11 @@ import React, { Suspense, useRef, useState, useCallback, memo, useEffect } from 
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, Environment, PerspectiveCamera } from '@react-three/drei';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
-import { Vector3, MOUSE, TOUCH, Box3, BoxGeometry, Mesh, MeshStandardMaterial, Raycaster, Vector2, Face3, SRGBColorSpace, ACESFilmicToneMapping, Fog } from 'three';
+import { Vector3, MOUSE, TOUCH, Box3, BoxGeometry, Mesh, MeshStandardMaterial, Raycaster, Vector2, ACESFilmicToneMapping, Fog, Scene } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
 import { CADToolbar } from './CADToolbar';
 import { XModal } from './XModal';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { LoadingManager } from 'three';
 import { toast } from 'react-hot-toast';
 
@@ -92,7 +91,7 @@ export const CADViewer = memo(function CADViewer({
     const controlsRef = useRef<any>(null);
     const meshRef = useRef<Mesh<BoxGeometry | RoundedBoxGeometry, MeshStandardMaterial>>(null);
     const [meshData, setMeshData] = useState<MeshData | null>(null);
-    const [scene, setScene] = useState<THREE.Scene | null>(null);
+    const [scene, setScene] = useState<Scene | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
     const [isRotating, setIsRotating] = useState(false);
     const [isZoomToCursor, setIsZoomToCursor] = useState(false);
@@ -123,7 +122,6 @@ export const CADViewer = memo(function CADViewer({
             console.log('CADViewer: Loading model from URL:', modelUrl.substring(0, 100) + '...')
 
             try {
-                // Set up loaders with LoadingManager for better error handling
                 const manager = new LoadingManager()
                 manager.onError = (url) => {
                     console.error('CADViewer: Failed to load resource:', url)
@@ -132,6 +130,45 @@ export const CADViewer = memo(function CADViewer({
 
                 const loader = new GLTFLoader(manager)
                 loader.setCrossOrigin('anonymous')
+
+                const loadModel = async (url: string) => {
+                    try {
+                        const gltf = await loader.loadAsync(url);
+
+                        if (!gltf.scene) {
+                            throw new Error('No scene in loaded model')
+                        }
+
+                        const newScene = new Scene();
+                        const gltfScene = gltf.scene.clone();
+                        newScene.add(gltfScene);
+
+                        const box = new Box3().setFromObject(gltfScene);
+                        const center = box.getCenter(new Vector3());
+                        const size = box.getSize(new Vector3());
+                        const maxDimension = Math.max(size.x, size.y, size.z);
+                        const targetScale = 3 / maxDimension;
+
+                        gltfScene.position.set(-center.x, -center.y, -center.z);
+                        gltfScene.scale.setScalar(targetScale);
+
+                        gltfScene.traverse((child) => {
+                            if (child instanceof Mesh) {
+                                if (child.material) {
+                                    child.material.needsUpdate = true;
+                                    child.castShadow = true;
+                                    child.receiveShadow = true;
+                                }
+                            }
+                        });
+
+                        setScene(newScene);
+                    } catch (error) {
+                        console.error('CADViewer: Error loading model:', error)
+                        toast.error('Failed to load 3D model')
+                        setScene(null)
+                    }
+                };
 
                 // If it's a data URL, convert it to a Blob URL
                 if (modelUrl.startsWith('data:')) {
@@ -144,109 +181,11 @@ export const CADViewer = memo(function CADViewer({
                     const blob = new Blob([bytes.buffer], { type: 'model/gltf-binary' })
                     const blobUrl = URL.createObjectURL(blob)
 
-                    // Load the model from the Blob URL
-                    loader.load(
-                        blobUrl,
-                        (gltf) => {
-                            console.log('CADViewer: Model loaded successfully', {
-                                scenes: gltf.scenes.length,
-                                animations: gltf.animations.length,
-                                materials: Object.keys(gltf.materials || {}).length,
-                                hasScene: !!gltf.scene
-                            })
-
-                            if (!gltf.scene) {
-                                throw new Error('No scene in loaded model')
-                            }
-
-                            // Calculate bounding box
-                            const box = new Box3().setFromObject(gltf.scene)
-                            const center = box.getCenter(new Vector3())
-                            const size = box.getSize(new Vector3())
-
-                            // Calculate scale to normalize model size
-                            const maxDimension = Math.max(size.x, size.y, size.z)
-                            const targetScale = 3 / maxDimension
-
-                            // Center the model
-                            gltf.scene.position.set(-center.x, -center.y, -center.z)
-                            gltf.scene.scale.setScalar(targetScale)
-
-                            // Update materials for better rendering
-                            gltf.scene.traverse((child) => {
-                                if (child instanceof Mesh) {
-                                    if (child.material) {
-                                        child.material.needsUpdate = true
-                                        child.castShadow = true
-                                        child.receiveShadow = true
-                                    }
-                                }
-                            })
-
-                            // Set the scene
-                            setScene(gltf.scene)
-
-                            // Clean up
-                            URL.revokeObjectURL(blobUrl)
-                        },
-                        (progress) => {
-                            const percent = progress.total ? Math.round((progress.loaded / progress.total) * 100) : 0
-                            console.log('CADViewer: Loading progress:', percent + '%')
-                        },
-                        (error) => {
-                            console.error('CADViewer: Error loading model:', error)
-                            toast.error('Failed to load 3D model')
-                            setScene(null)
-                            URL.revokeObjectURL(blobUrl)
-                        }
-                    )
+                    loadModel(blobUrl).finally(() => {
+                        URL.revokeObjectURL(blobUrl)
+                    });
                 } else {
-                    // Handle regular URLs
-                    loader.load(
-                        modelUrl,
-                        (gltf) => {
-                            console.log('CADViewer: Model loaded successfully', {
-                                scenes: gltf.scenes.length,
-                                animations: gltf.animations.length,
-                                materials: Object.keys(gltf.materials || {}).length,
-                                hasScene: !!gltf.scene
-                            })
-
-                            if (!gltf.scene) {
-                                throw new Error('No scene in loaded model')
-                            }
-
-                            const box = new Box3().setFromObject(gltf.scene)
-                            const center = box.getCenter(new Vector3())
-                            const size = box.getSize(new Vector3())
-                            const maxDimension = Math.max(size.x, size.y, size.z)
-                            const targetScale = 3 / maxDimension
-
-                            gltf.scene.position.set(-center.x, -center.y, -center.z)
-                            gltf.scene.scale.setScalar(targetScale)
-
-                            gltf.scene.traverse((child) => {
-                                if (child instanceof Mesh) {
-                                    if (child.material) {
-                                        child.material.needsUpdate = true
-                                        child.castShadow = true
-                                        child.receiveShadow = true
-                                    }
-                                }
-                            })
-
-                            setScene(gltf.scene)
-                        },
-                        (progress) => {
-                            const percent = progress.total ? Math.round((progress.loaded / progress.total) * 100) : 0
-                            console.log('CADViewer: Loading progress:', percent + '%')
-                        },
-                        (error) => {
-                            console.error('CADViewer: Error loading model:', error)
-                            toast.error('Failed to load 3D model')
-                            setScene(null)
-                        }
-                    )
+                    loadModel(modelUrl);
                 }
             } catch (error) {
                 console.error('CADViewer: Failed to load model:', error)
@@ -447,19 +386,18 @@ export const CADViewer = memo(function CADViewer({
         if (activeOperation !== 'measure' || !meshRef.current) return;
 
         const canvas = event.currentTarget;
-        const rect = canvas.getBoundingClientRect();
+        if (!(canvas instanceof HTMLElement)) return;
 
+        const rect = canvas.getBoundingClientRect();
         mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
         raycasterRef.current.setFromCamera(mouseRef.current, controlsRef.current.object);
         const intersects = raycasterRef.current.intersectObject(meshRef.current);
 
-        if (intersects.length > 0) {
-            const intersection = intersects[0];
-            const face = intersection.face;
-            if (!face) return;
-
+        const firstIntersect = intersects[0];
+        if (firstIntersect?.face) {
+            const face = firstIntersect.face;
             const geometry = meshRef.current.geometry;
             const positionAttribute = geometry.getAttribute('position');
 
@@ -488,7 +426,7 @@ export const CADViewer = memo(function CADViewer({
             const area = Math.sqrt(s * (s - width) * (s - height) * (s - diagonal));
 
             // Calculate normal vector for orientation
-            const normal = intersection.face.normal.clone();
+            const normal = face.normal.clone();
             normal.transformDirection(meshRef.current.matrixWorld);
 
             // Update measurement state
@@ -499,7 +437,7 @@ export const CADViewer = memo(function CADViewer({
                     height: height,
                     area: area,
                     normal: normal,
-                    point: intersection.point.clone()
+                    point: firstIntersect.point.clone()
                 }
             });
 
@@ -514,7 +452,6 @@ export const CADViewer = memo(function CADViewer({
                 dimensions: null
             });
 
-            // Reset face highlight
             if (meshRef.current.material) {
                 meshRef.current.material.emissive.setHex(0x000000);
                 meshRef.current.material.emissiveIntensity = 0;
@@ -623,13 +560,14 @@ export const CADViewer = memo(function CADViewer({
     // Handle wheel events for cursor-based zoom
     useEffect(() => {
         const handleWheel = (event: WheelEvent) => {
+            if (!(event.currentTarget instanceof HTMLCanvasElement)) return;
             event.preventDefault();
+
             if (controlsRef.current && meshRef.current) {
                 const delta = -event.deltaY;
                 const zoomSpeed = 0.0005;
 
                 if (isZoomToCursor) {
-                    // Get mouse position in normalized device coordinates
                     const rect = event.currentTarget.getBoundingClientRect();
                     const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
                     const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -665,7 +603,7 @@ export const CADViewer = memo(function CADViewer({
 
         const canvas = document.querySelector('canvas');
         if (canvas) {
-            canvas.addEventListener('wheel', handleWheel, { passive: false });
+            canvas.addEventListener('wheel', handleWheel);
             return () => canvas.removeEventListener('wheel', handleWheel);
         }
     }, [isZoomToCursor]);
@@ -840,14 +778,14 @@ export const CADViewer = memo(function CADViewer({
                                     <bufferAttribute
                                         attach="attributes-position"
                                         count={meshData.vertices.length / 3}
-                                        array={meshData.vertices}
+                                        array={new globalThis.Float32Array(meshData.vertices)}
                                         itemSize={3}
                                     />
                                     {meshData.indices && (
                                         <bufferAttribute
                                             attach="index"
                                             count={meshData.indices.length}
-                                            array={meshData.indices}
+                                            array={new globalThis.Float32Array(meshData.indices)}
                                             itemSize={1}
                                         />
                                     )}
@@ -855,7 +793,7 @@ export const CADViewer = memo(function CADViewer({
                                         <bufferAttribute
                                             attach="attributes-normal"
                                             count={meshData.normals.length / 3}
-                                            array={meshData.normals}
+                                            array={new globalThis.Float32Array(meshData.normals)}
                                             itemSize={3}
                                         />
                                     )}
@@ -863,18 +801,18 @@ export const CADViewer = memo(function CADViewer({
                                         <bufferAttribute
                                             attach="attributes-uv"
                                             count={meshData.uvs.length / 2}
-                                            array={meshData.uvs}
+                                            array={new globalThis.Float32Array(meshData.uvs)}
                                             itemSize={2}
                                         />
                                     )}
                                 </bufferGeometry>
                                 <meshStandardMaterial
-                                    color={parameters.color ?? '#ffffff'}
-                                    roughness={parameters.roughness ?? 0.5}
-                                    metalness={parameters.metalness ?? 0}
+                                    color={parameters.color ? String(parameters.color) : '#ffffff'}
+                                    roughness={parameters.roughness ? Number(parameters.roughness) : 0.5}
+                                    metalness={parameters.metalness ? Number(parameters.metalness) : 0}
                                     transparent
-                                    opacity={parameters.opacity ?? 1}
-                                    wireframe={parameters.wireframe ?? false}
+                                    opacity={parameters.opacity ? Number(parameters.opacity) : 1}
+                                    wireframe={parameters.wireframe ? Boolean(parameters.wireframe) : false}
                                 />
                             </mesh>
                         ) : null}
@@ -925,7 +863,7 @@ export const CADViewer = memo(function CADViewer({
             </Canvas>
 
             {/* Enhanced CAD Toolbar */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <div className="absolute right-4 top-[60%] -translate-y-1/2">
                 <CADToolbar
                     onExport={handleExport}
                     onMove={handleMove}

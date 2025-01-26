@@ -40,9 +40,9 @@ const Slider = React.forwardRef<
             {...props}
         >
             <SliderPrimitive.Track
-                className="relative h-1 w-full grow overflow-hidden rounded-full bg-primary/20"
+                className="relative h-1 w-full grow overflow-hidden rounded-none bg-zinc-200/20 dark:bg-zinc-600/20"
             >
-                <SliderPrimitive.Range className="absolute h-full bg-primary" />
+                <SliderPrimitive.Range className="absolute h-full bg-zinc-500/50 dark:bg-zinc-400" />
             </SliderPrimitive.Track>
 
             <TooltipProvider>
@@ -50,10 +50,10 @@ const Slider = React.forwardRef<
                     <TooltipTrigger asChild>
                         <SliderPrimitive.Thumb
                             className={cn(
-                                "block h-3 w-3 rounded-full border border-primary/50 bg-background ring-offset-background",
+                                "block h-2 w-2 rounded-none bg-zinc-500/50 dark:bg-zinc-400",
                                 "transition-all duration-100 ease-out",
-                                "hover:h-4 hover:w-4 hover:border-primary",
-                                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                                "hover:h-3 hover:w-3",
+                                "focus-visible:outline-none",
                                 "disabled:pointer-events-none disabled:opacity-50"
                             )}
                         />
@@ -61,7 +61,7 @@ const Slider = React.forwardRef<
                     <TooltipContent
                         side="top"
                         align="center"
-                        className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded-sm"
+                        className="px-2 py-1 text-xs bg-transparent border-0 shadow-none"
                     >
                         {tooltipValue !== null && formatValue(tooltipValue)}
                     </TooltipContent>

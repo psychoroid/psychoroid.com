@@ -426,7 +426,7 @@ export function DownloadModal({ isOpen, onClose, product, onDownload }: Download
                 ) : (
                     <>
                         <div className="p-4 border-b border-border">
-                            <h3 className="font-medium text-sm">Download Format</h3>
+                            <h3 className="font-medium text-sm">Download</h3>
                         </div>
 
                         <div className="p-2">
