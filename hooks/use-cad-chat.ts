@@ -161,6 +161,7 @@ export function useCADChat(chatId?: string) {
         createChat,
         loadChat,
         saveMessage,
-        loadUserChats
+        loadUserChats,
+        setMessages
     }
 } 

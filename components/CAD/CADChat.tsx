@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Paperclip, ArrowUp, X, Loader2 } from 'lucide-react'
+import { ArrowUp, Loader2 } from 'lucide-react'
 import { cn } from "@/lib/actions/utils"
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import RippleButton from "@/components/ui/magic/ripple-button"
 import { Textarea } from "@/components/ui/textarea"
 import { useTheme } from 'next-themes'
@@ -47,33 +47,66 @@ export function ChatInstance({
     sessionId
 }: ChatInstanceProps) {
     const [inputValue, setInputValue] = useState(value || '')
+    const [progress, setProgress] = useState(0)
+    const [isGenerating, setIsGenerating] = useState(false)
     const [mounted, setMounted] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
-    const [isGenerating, setIsGenerating] = useState(false)
-    const [progress, setProgress] = useState(0)
-    const progressInterval = useRef<NodeJS.Timeout>()
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const messagesEndRef = useRef<HTMLDivElement>(null)
     const { theme } = useTheme()
     const {
         messages,
         currentChat,
         createChat,
         loadChat,
-        saveMessage
+        saveMessage,
+        setMessages
     } = useCADChat(sessionId)
 
     useEffect(() => {
         setMounted(true)
     }, [])
 
-    // Cleanup progress interval
-    useEffect(() => {
-        return () => {
-            if (progressInterval.current) {
-                clearInterval(progressInterval.current)
-            }
+    // Add scroll to bottom effect
+    const scrollToBottom = useCallback(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'end',
+                inline: 'nearest'
+            });
+            // Force another scroll after a small delay to ensure we reach the bottom
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({
+                    behavior: 'auto',
+                    block: 'end',
+                    inline: 'nearest'
+                });
+            }, 150);
         }
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        // Initial scroll with a delay to ensure content is rendered
+        setTimeout(scrollToBottom, 100);
+    }, [messages, scrollToBottom]);
+
+    // Load chat messages when sessionId changes
+    useEffect(() => {
+        const loadMessages = async () => {
+            if (sessionId) {
+                await loadChat(sessionId);
+            }
+        };
+        loadMessages();
+    }, [sessionId, loadChat]);
+
+    // Auto-focus input after message sent
+    useEffect(() => {
+        if (!isGenerating && textareaRef.current) {
+            textareaRef.current.focus();
+        }
+    }, [isGenerating]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value;
@@ -93,108 +126,149 @@ export function ChatInstance({
             return
         }
 
-        if (inputValue.trim() && onPromptSubmit && !showPreview && !isGenerating) {
+        if (inputValue.trim()) {
             try {
                 setIsGenerating(true)
 
-                // Start progress simulation
-                setProgress(0)
-                if (progressInterval.current) {
-                    clearInterval(progressInterval.current)
-                }
-                progressInterval.current = setInterval(() => {
-                    setProgress(prev => {
-                        if (prev >= 90) {
-                            return prev
-                        }
-                        return prev + Math.random() * 10
-                    })
-                }, 1000)
-
                 // Create a new chat if we don't have one
                 let chatId = currentChat?.id || sessionId
+                console.log('Current chat state:', { currentChat, sessionId, chatId })
+
                 if (!chatId) {
+                    console.log('Creating new chat...')
                     const chat = await createChat(inputValue.trim())
                     if (!chat) {
                         throw new Error('Failed to create CAD chat')
                     }
                     chatId = chat.id
+                    console.log('Created new chat:', chatId)
                 }
 
                 // Save user message first
-                const userMessage = await saveMessage(inputValue.trim(), 'user')
-                if (!userMessage) {
+                console.log('Saving user message...', {
+                    chatId,
+                    content: inputValue.trim(),
+                    role: 'user'
+                })
+
+                // Use the RPC function to save message
+                const { data: userMessage, error: userMessageError } = await supabase
+                    .rpc('save_cad_message', {
+                        p_chat_id: chatId,
+                        p_role: 'user',
+                        p_content: inputValue.trim(),
+                        p_parameters: {}
+                    })
+
+                if (userMessageError) {
+                    console.error('Error saving user message:', userMessageError)
                     throw new Error('Failed to save user message')
                 }
 
-                // Clear input immediately after saving user message
-                setInputValue('')
-                onChange?.('')
-                if (textareaRef.current) {
-                    textareaRef.current.style.height = 'auto'
+                // Update messages state with user message
+                const newUserMessage = {
+                    id: userMessage,
+                    role: 'user' as const,
+                    content: inputValue.trim(),
+                    parameters: {},
+                    created_at: new Date().toISOString()
                 }
 
-                // Call the API
-                const result = await onPromptSubmit(inputValue)
-
-                // Handle API errors but still save the message
-                if (result?.error) {
-                    console.error('API Error:', result.error, result.details)
-                    await saveMessage(result.error, 'assistant', {
-                        error: true,
-                        details: result.details
+                // Generate and update title only for the first message
+                if (messages.length === 0) {
+                    console.log('Generating AI title...')
+                    const titleResponse = await fetch('/api/chat/title', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: inputValue.trim() })
                     })
-                    toast.error(result.error)
-                    return
-                }
 
-                // Save assistant message
-                if (result?.message) {
-                    const assistantMessage = await saveMessage(result.message, 'assistant', {
-                        modelUrl: result.modelUrl,
-                        format: result.format,
-                        modelId: result.modelId
-                    })
-                    if (!assistantMessage) {
-                        throw new Error('Failed to save assistant message')
+                    if (!titleResponse.ok) {
+                        throw new Error('Failed to generate title')
+                    }
+
+                    const { title } = await titleResponse.json()
+                    console.log('Generated AI title:', title)
+
+                    // Update chat title using RPC
+                    const { error: titleError } = await supabase
+                        .rpc('rename_cad_chat', {
+                            p_chat_id: chatId,
+                            p_title: title
+                        })
+
+                    if (titleError) {
+                        console.error('Error updating chat title:', titleError)
+                        throw titleError
                     }
                 }
 
-                // Validate model data
-                if (result?.modelUrl) {
-                    console.log('CADChat: Received model data', {
-                        hasModelUrl: !!result.modelUrl,
-                        modelUrl: result.modelUrl,
-                        format: result.format,
-                        modelId: result.modelId
+                // Save assistant response
+                console.log('Saving assistant response...')
+                const { data: assistantMessage, error: assistantMessageError } = await supabase
+                    .rpc('save_cad_message', {
+                        p_chat_id: chatId,
+                        p_role: 'assistant',
+                        p_content: 'Message received! (CAD generation temporarily disabled for testing)',
+                        p_parameters: {}
                     })
 
-                    toast.success(result.message || 'CAD model generated successfully')
-                    onSuccess?.(result)
-                } else {
-                    const errorMsg = 'No model data received'
-                    console.error(errorMsg)
-                    await saveMessage(errorMsg, 'assistant', { error: true })
-                    toast.error(errorMsg)
+                if (assistantMessageError) {
+                    console.error('Error saving assistant message:', assistantMessageError)
+                    throw new Error('Failed to save assistant message')
                 }
+
+                // Update messages state with assistant response
+                const newAssistantMessage = {
+                    id: assistantMessage,
+                    role: 'assistant' as const,
+                    content: 'Message received! (CAD generation temporarily disabled for testing)',
+                    parameters: {},
+                    created_at: new Date().toISOString()
+                }
+
+                // Update messages state with both messages
+                const updatedMessages = [...messages, newUserMessage, newAssistantMessage];
+                setMessages(updatedMessages);
+
+                // Clear input and focus
+                setInputValue('');
+                onChange?.('');
+                if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto';
+                    textareaRef.current.focus();
+                }
+
+                // Force scroll after messages update
+                setTimeout(scrollToBottom, 100);
+
+                setProgress(100);
+                setTimeout(() => setProgress(0), 1000);
+
             } catch (error) {
-                console.error('Failed to generate CAD:', error)
-                const errorMessage = error instanceof Error ? error.message : 'Failed to generate CAD model. Please try again.'
-                await saveMessage(errorMessage, 'assistant', { error: true })
+                console.error('Chat error details:', {
+                    error,
+                    currentChat,
+                    sessionId,
+                    user: user?.id
+                })
+                const errorMessage = error instanceof Error ? error.message : 'An error occurred'
                 toast.error(errorMessage)
             } finally {
                 setIsGenerating(false)
-                setProgress(100)
-                if (progressInterval.current) {
-                    clearInterval(progressInterval.current)
-                }
-                setTimeout(() => setProgress(0), 1000)
             }
         }
     }, [
-        user, setShowAuthModal, inputValue, onPromptSubmit, showPreview, isGenerating,
-        currentChat, sessionId, createChat, saveMessage, onChange, onSuccess,
-        setProgress, progressInterval
+        user,
+        setShowAuthModal,
+        inputValue,
+        currentChat,
+        sessionId,
+        createChat,
+        messages,
+        setMessages,
+        onChange,
+        scrollToBottom
     ]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -214,30 +288,8 @@ export function ChatInstance({
     // Update chat title when first message is sent
     useEffect(() => {
         const updateChatTitle = async () => {
-            if (messages.length === 1 && messages[0].role === 'user') {
-                try {
-                    // Generate title using Claude
-                    const response = await fetch('/api/chat/title', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ prompt: messages[0].content })
-                    })
-
-                    if (!response.ok) throw new Error('Failed to generate title')
-
-                    const { title } = await response.json()
-
-                    // Update chat title in database
-                    const { error } = await supabase
-                        .from('cad_chats')
-                        .update({ title })
-                        .eq('id', sessionId)
-
-                    if (error) throw error
-                } catch (error) {
-                    console.error('Error updating chat title:', error)
-                }
-            }
+            // Title is now handled in handleSubmit
+            console.log('Title update is now handled during message submission')
         }
 
         updateChatTitle()
@@ -245,73 +297,81 @@ export function ChatInstance({
 
     return (
         <div className="w-full h-full flex flex-col">
-            {/* Chat Messages - Scrollable */}
-            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 scrollbar-thin scrollbar-thumb-black/10 dark:scrollbar-thumb-white/10 hover:scrollbar-thumb-black/20 dark:hover:scrollbar-thumb-white/20 scrollbar-track-transparent">
-                <div className="flex flex-col">
-                    {messages.map((message) => (
-                        <motion.div
-                            key={message.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                                type: "spring",
-                                stiffness: 500,
-                                damping: 30,
-                                mass: 1
-                            }}
-                            layout
-                            className={cn(
-                                "flex gap-2 items-start mb-4",
-                                message.role === 'assistant' ? "justify-start" : "justify-end"
-                            )}
-                        >
-                            <motion.div
-                                layout
-                                className={cn(
-                                    "inline-flex items-center px-4 py-2",
-                                    "text-sm rounded-md max-w-[80%]",
-                                    message.role === 'assistant'
-                                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                                        : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300",
-                                    "shadow-sm hover:shadow-md transition-shadow duration-200"
-                                )}
-                            >
-                                <span className="relative flex h-2 w-2 mr-2">
-                                    <span className={cn(
-                                        "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-                                        message.role === 'assistant'
-                                            ? "bg-blue-400"
-                                            : "bg-emerald-400"
-                                    )} />
-                                    <span className={cn(
-                                        "relative inline-flex rounded-full h-2 w-2",
-                                        message.role === 'assistant'
-                                            ? "bg-blue-500"
-                                            : "bg-emerald-500"
-                                    )} />
-                                </span>
-                                <div className="flex flex-col">
-                                    <p className="whitespace-pre-wrap">{message.content}</p>
-                                    {message.parameters && Object.keys(message.parameters).length > 0 && (
+            {/* Chat Messages - Scrollable Container */}
+            <div className="flex-1 min-h-0 relative -mt-32">
+                <div className="absolute inset-0 overflow-y-auto scrollbar-thin scrollbar-thumb-black/10 dark:scrollbar-thumb-white/10 hover:scrollbar-thumb-black/20 dark:hover:scrollbar-thumb-white/20 scrollbar-track-transparent">
+                    <div className="flex flex-col justify-start min-h-full">
+                        <div className="space-y-2">
+                            <AnimatePresence initial={false}>
+                                {messages.map((message) => (
+                                    <motion.div
+                                        key={message.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{
+                                            type: "spring",
+                                            stiffness: 500,
+                                            damping: 30,
+                                            mass: 1
+                                        }}
+                                        layout
+                                        className={cn(
+                                            "flex gap-2 items-start px-6 py-2",
+                                            message.role === 'assistant' ? "justify-start" : "justify-end"
+                                        )}
+                                    >
                                         <motion.div
-                                            initial={{ opacity: 0, height: 0 }}
-                                            animate={{ opacity: 1, height: "auto" }}
-                                            className="mt-2 text-xs opacity-80 bg-black/5 dark:bg-white/5 p-2 rounded-md overflow-hidden"
+                                            layout
+                                            className={cn(
+                                                "inline-flex items-center px-4 py-2",
+                                                "text-sm rounded-md max-w-[80%]",
+                                                message.role === 'assistant'
+                                                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                                                    : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300",
+                                                "shadow-sm hover:shadow-md transition-shadow duration-200"
+                                            )}
                                         >
-                                            <pre className="overflow-x-auto">
-                                                {JSON.stringify(message.parameters, null, 2)}
-                                            </pre>
+                                            <span className="relative flex h-2 w-2 mr-2">
+                                                <span className={cn(
+                                                    "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                                                    message.role === 'assistant'
+                                                        ? "bg-blue-400"
+                                                        : "bg-emerald-400"
+                                                )} />
+                                                <span className={cn(
+                                                    "relative inline-flex rounded-full h-2 w-2",
+                                                    message.role === 'assistant'
+                                                        ? "bg-blue-500"
+                                                        : "bg-emerald-500"
+                                                )} />
+                                            </span>
+                                            <div className="flex flex-col">
+                                                <p className="whitespace-pre-wrap">{message.content}</p>
+                                                {message.parameters && Object.keys(message.parameters).length > 0 && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: "auto" }}
+                                                        className="mt-2 text-xs opacity-80 bg-black/5 dark:bg-white/5 p-2 rounded-md overflow-hidden"
+                                                    >
+                                                        <pre className="overflow-x-auto">
+                                                            {JSON.stringify(message.parameters, null, 2)}
+                                                        </pre>
+                                                    </motion.div>
+                                                )}
+                                            </div>
                                         </motion.div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    ))}
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                            <div ref={messagesEndRef} />
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Chat Input - Fixed at bottom */}
-            <div className="flex-shrink-0 p-2">
+            <div className="flex-shrink-0 p-3 sticky bottom-0 bg-background/80 backdrop-blur-sm border-t">
                 <motion.div
                     className={cn(
                         "relative flex flex-col justify-between rounded-none p-2 shadow-sm cursor-text w-full",

@@ -18,7 +18,7 @@ export async function POST(req: Request) {
             max_tokens: 50,
             messages: [{
                 role: 'user',
-                content: `Generate a concise, descriptive title (max 5 words) for a 3D modeling chat conversation that starts with this prompt: "${prompt}". Return only the title, no quotes or additional text.`
+                content: `Generate a very short, practical title (2-4 words) for a CAD modeling chat that starts with this prompt: "${prompt}". The title should be simple and descriptive of the object being created, without any additional text or fancy words. For example, "Simple Gear Design" or "Basic Cube Model". Return only the title, no quotes or additional text.`
             }],
         })
 
