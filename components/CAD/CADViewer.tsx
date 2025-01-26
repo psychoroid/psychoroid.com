@@ -17,8 +17,8 @@ const INITIAL_CAMERA_POSITION = [50, 50, 50] as const;
 const INITIAL_TARGET = [0, 0, 0] as const;
 const INITIAL_ZOOM = 1;
 const MIN_ZOOM = 0.1;
-const MAX_ZOOM = 100;
-const MIN_DISTANCE = 20;
+const MAX_ZOOM = 115;
+const MIN_DISTANCE = 15;
 const MAX_DISTANCE = 500;
 
 // Type definitions
@@ -368,38 +368,52 @@ export const CADViewer = memo(function CADViewer({
                                 onPointerMove={(e) => {
                                     e.stopPropagation();
                                     if (e.face && e.object instanceof Mesh && typeof e.faceIndex === 'number') {
+                                        const radiusPercent = Number(parameters.radius) || 0;
+
+                                        // For high radius values (near sphere), treat as a single surface
+                                        if (radiusPercent >= 94) {
+                                            const material = new MeshStandardMaterial({
+                                                color: '#161B2A', // Set to hover color directly
+                                                roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
+                                                metalness: parameters.metalness ? Number(parameters.metalness) : 0,
+                                                transparent: true,
+                                                opacity: parameters.opacity ? Number(parameters.opacity) : 1,
+                                                wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false,
+                                                emissive: '#161B2A',
+                                                emissiveIntensity: 0.3
+                                            });
+                                            e.object.material = material;
+                                            return;
+                                        }
+
                                         // Get the intersection point in local coordinates
                                         const localPoint = e.point.clone().applyMatrix4(e.object.matrixWorld.invert());
-
-                                        // Get current radius percentage from parameters
-                                        const radiusPercent = Number(parameters.radius) || 0;
 
                                         // Determine which face we're on based on the intersection point
                                         let faceIndex;
 
-                                        // For high radius values (near sphere), treat as a single face
-                                        if (radiusPercent > 90) {
-                                            faceIndex = 0; // Single face for near-spherical shapes
-                                        } else {
-                                            // Check which face we're closest to
-                                            const absX = Math.abs(localPoint.x);
-                                            const absY = Math.abs(localPoint.y);
-                                            const absZ = Math.abs(localPoint.z);
+                                        // Check which face we're closest to
+                                        const absX = Math.abs(localPoint.x);
+                                        const absY = Math.abs(localPoint.y);
+                                        const absZ = Math.abs(localPoint.z);
 
-                                            if (absX > absY && absX > absZ) {
-                                                faceIndex = localPoint.x > 0 ? 0 : 1; // Right/Left
-                                            } else if (absY > absX && absY > absZ) {
-                                                faceIndex = localPoint.y > 0 ? 2 : 3; // Top/Bottom
-                                            } else {
-                                                faceIndex = localPoint.z > 0 ? 4 : 5; // Front/Back
-                                            }
+                                        if (absX > absY && absX > absZ) {
+                                            faceIndex = localPoint.x > 0 ? 0 : 1; // Right/Left
+                                        } else if (absY > absX && absY > absZ) {
+                                            faceIndex = localPoint.y > 0 ? 2 : 3; // Top/Bottom
+                                        } else {
+                                            faceIndex = localPoint.z > 0 ? 4 : 5; // Front/Back
                                         }
 
                                         // Create materials array with the hovered face highlighted
                                         const materials = Array(6).fill(null).map((_, i) => {
                                             const mat = new MeshStandardMaterial({
                                                 color: parameters.color ? String(parameters.color) : '#D73D57',
-                                                wireframe: parameters.wireframe ? Number(parameters.wireframe) > 0 : false
+                                                roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
+                                                metalness: parameters.metalness ? Number(parameters.metalness) : 0,
+                                                transparent: true,
+                                                opacity: parameters.opacity ? Number(parameters.opacity) : 1,
+                                                wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false
                                             });
                                             if (i === faceIndex) {
                                                 mat.color.set('#161B2A');
@@ -415,10 +429,16 @@ export const CADViewer = memo(function CADViewer({
                                 }}
                                 onPointerOut={(e) => {
                                     if (e.object instanceof Mesh) {
+                                        const radiusPercent = Number(parameters.radius) || 0;
+
                                         // Reset to a single material with original color
                                         e.object.material = new MeshStandardMaterial({
                                             color: parameters.color ? String(parameters.color) : '#D73D57',
-                                            wireframe: parameters.wireframe ? Number(parameters.wireframe) > 0 : false
+                                            roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
+                                            metalness: parameters.metalness ? Number(parameters.metalness) : 0,
+                                            transparent: true,
+                                            opacity: parameters.opacity ? Number(parameters.opacity) : 1,
+                                            wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false
                                         });
                                     }
                                 }}
@@ -427,10 +447,18 @@ export const CADViewer = memo(function CADViewer({
                                     e.stopPropagation();
                                 }}
                             >
-                                <boxGeometry args={[10, 10, 10, 32, 32, 32]} />
+                                {Number(parameters.radius) >= 90 ? (
+                                    <sphereGeometry args={[5, 512, 512]} />
+                                ) : (
+                                    <boxGeometry args={[10, 10, 10, 64, 64, 64]} />
+                                )}
                                 <meshStandardMaterial
                                     color={parameters.color ? String(parameters.color) : '#D73D57'}
-                                    wireframe={parameters.wireframe ? Number(parameters.wireframe) > 0 : false}
+                                    roughness={parameters.roughness ? Number(parameters.roughness) : 0.5}
+                                    metalness={parameters.metalness ? Number(parameters.metalness) : 0}
+                                    transparent={true}
+                                    opacity={parameters.opacity ? Number(parameters.opacity) : 1}
+                                    wireframe={parameters.wireframe ? Boolean(parameters.wireframe) : false}
                                 />
                             </mesh>
                         )}

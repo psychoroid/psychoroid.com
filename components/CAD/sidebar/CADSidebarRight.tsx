@@ -4,19 +4,13 @@ import { memo, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Undo, RotateCcw, Lock, Unlock } from 'lucide-react';
+import { Undo, RotateCcw } from 'lucide-react';
 import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/actions/utils";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { HexColorPicker } from "react-colorful";
-import { Mesh, BoxGeometry, MeshStandardMaterial } from 'three';
+import { Mesh, BoxGeometry, MeshStandardMaterial, SphereGeometry } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
 
 // Types
@@ -228,7 +222,7 @@ ParameterGroup.displayName = "ParameterGroup";
 
 // Main Component
 const CADParameters = memo(({ parameters, onChange, onReset, onUndo, className }: CADParametersProps) => {
-    const meshRef = useRef<Mesh<BoxGeometry | RoundedBoxGeometry, MeshStandardMaterial>>(null);
+    const meshRef = useRef<Mesh<BoxGeometry | RoundedBoxGeometry | SphereGeometry, MeshStandardMaterial>>(null);
 
     const groupedParameters = useMemo(() => {
         const groups: Record<string, Parameter[]> = {};
@@ -288,13 +282,23 @@ const CADParameters = memo(({ parameters, onChange, onReset, onUndo, className }
             }
         };
 
-        // For the default cube
-        if (mesh.geometry) {
-            mesh.geometry.dispose();
-        }
+        // Use SphereGeometry for high radius values, RoundedBoxGeometry for partial rounding, or BoxGeometry for no rounding
+        if (clampedParams.radius >= 90) {
+            // For perfect sphere, use SphereGeometry with ultra-high quality segments
+            const radius = Math.min(
+                clampedParams.width,
+                Math.min(clampedParams.height, clampedParams.depth)
+            ) / 2;
 
-        // Use RoundedBoxGeometry when radius > 0, otherwise use regular BoxGeometry
-        if (clampedParams.radius > 0) {
+            if (mesh.geometry) {
+                mesh.geometry.dispose();
+            }
+            mesh.geometry = new SphereGeometry(
+                radius,
+                512,  // widthSegments - ultra HQ
+                512   // heightSegments - ultra HQ
+            );
+        } else if (clampedParams.radius > 0) {
             const minDimension = Math.min(
                 clampedParams.width,
                 Math.min(clampedParams.height, clampedParams.depth)
@@ -302,8 +306,10 @@ const CADParameters = memo(({ parameters, onChange, onReset, onUndo, className }
             // Calculate radius as a percentage of the smallest dimension
             const effectiveRadius = (clampedParams.radius / 100) * (minDimension / 2);
 
-            // Always use maximum segments (128) for perfect spherical quality
-            const segments = 256;
+            // Ultra high segment count for smooth transition
+            const baseSegments = 256;
+            const additionalSegments = Math.floor((clampedParams.radius / 100) * 256);
+            const segments = Math.min(512, baseSegments + additionalSegments);
 
             mesh.geometry = new RoundedBoxGeometry(
                 clampedParams.width,
@@ -317,9 +323,9 @@ const CADParameters = memo(({ parameters, onChange, onReset, onUndo, className }
                 clampedParams.width,
                 clampedParams.height,
                 clampedParams.depth,
-                32, // Default high quality for cube
-                32,
-                32
+                64, // Higher quality for cube
+                64,
+                64
             );
         }
 
