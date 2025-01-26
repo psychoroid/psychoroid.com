@@ -23,8 +23,14 @@ export async function POST(req: Request) {
             messages: [{ role: 'user', content: prompt }],
         });
 
+        // Extract text from the first content block
+        const firstContent = message.content[0];
+        const responseText = typeof firstContent === 'object' && 'text' in firstContent 
+            ? firstContent.text 
+            : 'Non-text response received';
+
         return NextResponse.json({
-            response: message.content[0].text,
+            response: responseText,
             messageId: message.id
         });
 

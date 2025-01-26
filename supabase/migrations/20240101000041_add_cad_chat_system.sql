@@ -5,12 +5,15 @@ create schema if not exists private;
 create or replace function private.log_cad_action(
     p_action text,
     p_details jsonb
-) returns void as $$
+) returns void
+security definer
+set search_path = public, pg_temp
+as $$
 begin
     insert into audit_logs (action, details)
     values (p_action, p_details);
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql;
 
 -- Create audit logs table if it doesn't exist
 create table if not exists public.audit_logs (
@@ -19,6 +22,80 @@ create table if not exists public.audit_logs (
     details jsonb not null,
     created_at timestamptz default now()
 );
+
+-- Enable RLS on tables
+alter table public.cad_chats enable row level security;
+alter table public.cad_messages enable row level security;
+alter table public.audit_logs enable row level security;
+
+-- Add RLS policies for cad_chats
+create policy "Users can view their own chats"
+    on public.cad_chats for select
+    to authenticated
+    using (user_id = auth.uid());
+
+create policy "Users can create their own chats"
+    on public.cad_chats for insert
+    to authenticated
+    with check (user_id = auth.uid());
+
+create policy "Users can update their own chats"
+    on public.cad_chats for update
+    to authenticated
+    using (user_id = auth.uid())
+    with check (user_id = auth.uid());
+
+create policy "Users can delete their own chats"
+    on public.cad_chats for delete
+    to authenticated
+    using (user_id = auth.uid());
+
+-- Add RLS policies for cad_messages
+create policy "Users can view messages in their chats"
+    on public.cad_messages for select
+    to authenticated
+    using (
+        chat_id in (
+            select id from public.cad_chats
+            where user_id = auth.uid()
+        )
+    );
+
+create policy "Users can create messages in their chats"
+    on public.cad_messages for insert
+    to authenticated
+    with check (
+        chat_id in (
+            select id from public.cad_chats
+            where user_id = auth.uid()
+        )
+    );
+
+create policy "Users can update messages in their chats"
+    on public.cad_messages for update
+    to authenticated
+    using (
+        chat_id in (
+            select id from public.cad_chats
+            where user_id = auth.uid()
+        )
+    )
+    with check (
+        chat_id in (
+            select id from public.cad_chats
+            where user_id = auth.uid()
+        )
+    );
+
+create policy "Users can delete messages in their chats"
+    on public.cad_messages for delete
+    to authenticated
+    using (
+        chat_id in (
+            select id from public.cad_chats
+            where user_id = auth.uid()
+        )
+    );
 
 -- Add RLS policies for audit_logs
 create policy "Only authenticated users can view audit logs"
@@ -62,7 +139,7 @@ begin
 
     return v_chat_id;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- Create RPC function to save a message
 create or replace function public.save_cad_message(
@@ -117,7 +194,7 @@ begin
 
     return v_message_id;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- Create RPC function to load chat messages
 create or replace function public.load_cad_chat(
@@ -161,7 +238,7 @@ begin
     where m.chat_id = p_chat_id
     order by m.created_at asc;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- Function to rename a chat
 create or replace function public.rename_cad_chat(
@@ -183,7 +260,7 @@ begin
     where id = p_chat_id
     and user_id = auth.uid();
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- Function to toggle favorite status
 create or replace function public.toggle_cad_chat_favorite(
@@ -209,7 +286,7 @@ begin
     where id = p_chat_id
     and user_id = auth.uid();
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- Function to toggle archive status
 create or replace function public.toggle_cad_chat_archive(
@@ -231,7 +308,7 @@ begin
     where id = p_chat_id
     and user_id = auth.uid();
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- Grant necessary permissions
 grant usage on schema public to anon, authenticated;
@@ -264,6 +341,7 @@ returns table (
 )
 language plpgsql
 security definer
+set search_path = public, pg_temp
 as $$
 begin
     perform private.log_cad_action('get_archived_chats', jsonb_build_object(

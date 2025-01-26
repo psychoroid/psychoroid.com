@@ -37,13 +37,11 @@ interface ChatInstanceProps {
 
 export function ChatInstance({
     isUploading,
-    onPromptSubmit,
     showPreview = false,
     user,
     setShowAuthModal,
     value,
     onChange,
-    onSuccess,
     sessionId
 }: ChatInstanceProps) {
     const [inputValue, setInputValue] = useState(value || '')
@@ -59,7 +57,6 @@ export function ChatInstance({
         currentChat,
         createChat,
         loadChatData,
-        saveMessage,
         setMessages
     } = useCADChat(sessionId)
 
@@ -319,7 +316,7 @@ export function ChatInstance({
     return (
         <div className="w-full h-full flex flex-col">
             {/* Chat Messages - Scrollable Container */}
-            <div className="flex-1 min-h-0 relative -mt-32">
+            <div className="flex-1 min-h-0 relative -mt-24">
                 <div className="absolute inset-0 overflow-y-auto scrollbar-thin scrollbar-thumb-black/10 dark:scrollbar-thumb-white/10 hover:scrollbar-thumb-black/20 dark:hover:scrollbar-thumb-white/20 scrollbar-track-transparent">
                     <div className="flex flex-col justify-start min-h-full">
                         <div className="space-y-2">
@@ -392,7 +389,7 @@ export function ChatInstance({
             </div>
 
             {/* Chat Input - Fixed at bottom */}
-            <div className="flex-shrink-0 p-3 sticky bottom-0 bg-background/80 backdrop-blur-sm border-t">
+            <div className="flex-shrink-0 p-3 sticky bottom-0 bg-background/80 backdrop-blur-sm">
                 <motion.div
                     className={cn(
                         "relative flex flex-col justify-between rounded-none p-2 shadow-sm cursor-text w-full",

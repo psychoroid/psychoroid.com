@@ -51,7 +51,7 @@ begin
         'timestamp', now()
     ));
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- Grant execute permission
 grant execute on function public.get_cad_chat_history_v2 to authenticated; 
