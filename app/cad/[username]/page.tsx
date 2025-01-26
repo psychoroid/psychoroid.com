@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useUser } from '@/lib/contexts/UserContext'
 import { supabase } from '@/lib/supabase'
@@ -31,8 +31,49 @@ interface CADMessage {
 }
 
 interface CADParameters {
-    [key: string]: number | string | boolean;
+    width: number;
+    height: number;
+    depth: number;
+    radius: number;
+    segments: number;
+    color: string;
+    roughness: number;
+    metalness: number;
+    opacity: number;
+    wireframe: boolean;
+    rotationX: number;
+    rotationY: number;
+    rotationZ: number;
+    positionX: number;
+    positionY: number;
+    positionZ: number;
+    scaleX: number;
+    scaleY: number;
+    scaleZ: number;
+    [key: string]: number | string | boolean; // Allow string indexing
 }
+
+const initialParameters: CADParameters = {
+    width: 1,
+    height: 1,
+    depth: 1,
+    radius: 0,
+    segments: 4,
+    color: '#ffffff',
+    roughness: 0.5,
+    metalness: 0,
+    opacity: 1,
+    wireframe: false,
+    rotationX: 0,
+    rotationY: 0,
+    rotationZ: 0,
+    positionX: 0,
+    positionY: 0,
+    positionZ: 0,
+    scaleX: 1,
+    scaleY: 1,
+    scaleZ: 1
+};
 
 interface NumberParameter {
     name: string;
@@ -78,27 +119,10 @@ export default function CADPage({ params }: PageProps) {
     const [modelUrl, setModelUrl] = useState<string | null>(null)
     const [showAuthModal, setShowAuthModal] = useState(false)
     const [isGenerating, setIsGenerating] = useState(false)
-    const [parameters, setParameters] = useState<CADParameters>({
-        width: 1,
-        height: 1,
-        depth: 1,
-        radius: 0,
-        segments: 4,
-        color: '#ffffff',
-        roughness: 0.5,
-        metalness: 0,
-        opacity: 1,
-        wireframe: false,
-        rotationX: 0,
-        rotationY: 0,
-        rotationZ: 0,
-        positionX: 0,
-        positionY: 0,
-        positionZ: 0,
-        scaleX: 1,
-        scaleY: 1,
-        scaleZ: 1
-    })
+    const [parameters, setParameters] = useState<CADParameters>(initialParameters)
+    const [parameterHistory, setParameterHistory] = useState<CADParameters[]>([initialParameters])
+    const [currentHistoryIndex, setCurrentHistoryIndex] = useState(0)
+    const isUndoingRef = useRef(false)
     const [selectedModel, setSelectedModel] = useState('basic')
     const [showSidebar, setShowSidebar] = useState(true)
     const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
@@ -147,28 +171,46 @@ export default function CADPage({ params }: PageProps) {
         return params;
     }, [parameters]);
 
-    const handleReset = useCallback(() => {
-        setParameters({
-            width: 1,
-            height: 1,
-            depth: 1,
-            radius: 0,
-            segments: 4,
-            color: '#ffffff',
-            roughness: 0.5,
-            metalness: 0,
-            opacity: 1,
-            wireframe: false,
-            rotationX: 0,
-            rotationY: 0,
-            rotationZ: 0,
-            positionX: 0,
-            positionY: 0,
-            positionZ: 0,
-            scaleX: 1,
-            scaleY: 1,
-            scaleZ: 1
+    // Modified parameter change handler to track history
+    const handleParameterChange = useCallback((name: string, value: number | string | boolean) => {
+        if (isUndoingRef.current) return;
+
+        requestAnimationFrame(() => {
+            setParameters(prev => {
+                if (prev[name] === value) return prev;
+                const newParameters = { ...prev, [name]: value };
+
+                // Update history
+                setParameterHistory(history => {
+                    // Remove any future history if we're not at the latest state
+                    const newHistory = history.slice(0, currentHistoryIndex + 1);
+                    return [...newHistory, newParameters];
+                });
+                setCurrentHistoryIndex(index => index + 1);
+
+                return newParameters;
+            });
         });
+    }, [currentHistoryIndex]);
+
+    const handleUndo = useCallback(() => {
+        if (currentHistoryIndex > 0) {
+            isUndoingRef.current = true;
+            const previousState = parameterHistory[currentHistoryIndex - 1];
+            setParameters(previousState);
+            setCurrentHistoryIndex(index => index - 1);
+
+            // Reset the undo flag after a short delay
+            setTimeout(() => {
+                isUndoingRef.current = false;
+            }, 50);
+        }
+    }, [currentHistoryIndex, parameterHistory]);
+
+    const handleReset = useCallback(() => {
+        setParameters(initialParameters);
+        setParameterHistory([initialParameters]);
+        setCurrentHistoryIndex(0);
     }, []);
 
     const handleNewProject = useCallback(async () => {
@@ -192,26 +234,6 @@ export default function CADPage({ params }: PageProps) {
             return null;
         }
     }, [user]);
-
-    const handleUndo = useCallback(() => {
-        // TODO: Implement undo functionality
-        toast.success('Undo feature coming soon');
-    }, []);
-
-    // Memoize parameter change handler with throttling
-    const handleParameterChange = useCallback((name: string, value: number | string | boolean) => {
-        // Use requestAnimationFrame to sync with browser's render cycle
-        requestAnimationFrame(() => {
-            setParameters(prev => {
-                // Only update if the value has actually changed
-                if (prev[name] === value) return prev;
-                return {
-                    ...prev,
-                    [name]: value
-                };
-            });
-        });
-    }, []);
 
     // Memoize operation change handler
     const handleOperationChange = useCallback((operation: string | null) => {
