@@ -36,10 +36,7 @@ interface CADParameters {
     depth: number;
     radius: number;
     color: string;
-    roughness: number;
-    metalness: number;
-    opacity: number;
-    wireframe: boolean;
+    wireframe: number;  // Integer values 0-5 only
     rotationX: number;
     rotationY: number;
     rotationZ: number;
@@ -49,19 +46,16 @@ interface CADParameters {
     scaleX: number;
     scaleY: number;
     scaleZ: number;
-    [key: string]: number | string | boolean; // Allow string indexing
+    [key: string]: number | string | boolean;
 }
 
 const initialParameters: CADParameters = {
-    width: 1,
-    height: 1,
-    depth: 1,
+    width: 10,
+    height: 10,
+    depth: 10,
     radius: 0,
-    color: '#ffffff',
-    roughness: 0.5,
-    metalness: 0,
-    opacity: 1,
-    wireframe: false,
+    color: '#D73D57',
+    wireframe: 0,     // Start with no wireframe
     rotationX: 0,
     rotationY: 0,
     rotationZ: 0,
@@ -82,6 +76,7 @@ interface NumberParameter {
     unit?: string;
     group: string;
     type: 'number';
+    description?: string;  // Optional description field
 }
 
 interface ColorParameter {
@@ -92,6 +87,7 @@ interface ColorParameter {
     step: number;
     group: string;
     type: 'color';
+    description?: string;  // Optional description field
 }
 
 type Parameter = NumberParameter | ColorParameter;
@@ -171,41 +167,58 @@ export default function CADPage({ params }: PageProps) {
     const defaultParameters = useMemo(() => {
         const params: Parameter[] = [
             // Dimensions
-            { name: 'width', value: Number(parameters.width), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
-            { name: 'height', value: Number(parameters.height), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
-            { name: 'depth', value: Number(parameters.depth), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number' },
-            { name: 'radius', value: Number(parameters.radius), min: 0, max: 100, step: 1, unit: '%', group: 'dimensions', type: 'number' },
+            { name: 'width', value: Number(parameters.width), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number', description: 'Width of the model' },
+            { name: 'height', value: Number(parameters.height), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number', description: 'Height of the model' },
+            { name: 'depth', value: Number(parameters.depth), min: 0.1, max: 100, step: 0.1, unit: 'mm', group: 'dimensions', type: 'number', description: 'Depth of the model' },
+            { name: 'radius', value: Number(parameters.radius), min: 0, max: 100, step: 1, unit: '%', group: 'dimensions', type: 'number', description: 'Radius of the model' },
 
             // Transform
-            { name: 'rotationX', value: Number(parameters.rotationX), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number' },
-            { name: 'rotationY', value: Number(parameters.rotationY), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number' },
-            { name: 'rotationZ', value: Number(parameters.rotationZ), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number' },
-            { name: 'positionX', value: Number(parameters.positionX), min: -100, max: 100, step: 0.1, unit: 'mm', group: 'transform', type: 'number' },
-            { name: 'positionY', value: Number(parameters.positionY), min: -100, max: 100, step: 0.1, unit: 'mm', group: 'transform', type: 'number' },
-            { name: 'positionZ', value: Number(parameters.positionZ), min: -100, max: 100, step: 0.1, unit: 'mm', group: 'transform', type: 'number' },
+            { name: 'rotationX', value: Number(parameters.rotationX), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number', description: 'Rotation around the X-axis' },
+            { name: 'rotationY', value: Number(parameters.rotationY), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number', description: 'Rotation around the Y-axis' },
+            { name: 'rotationZ', value: Number(parameters.rotationZ), min: -360, max: 360, step: 1, unit: '°', group: 'transform', type: 'number', description: 'Rotation around the Z-axis' },
+            { name: 'positionX', value: Number(parameters.positionX), min: -100, max: 100, step: 0.1, unit: 'mm', group: 'transform', type: 'number', description: 'Position along the X-axis' },
+            { name: 'positionY', value: Number(parameters.positionY), min: -100, max: 100, step: 0.1, unit: 'mm', group: 'transform', type: 'number', description: 'Position along the Y-axis' },
+            { name: 'positionZ', value: Number(parameters.positionZ), min: -100, max: 100, step: 0.1, unit: 'mm', group: 'transform', type: 'number', description: 'Position along the Z-axis' },
 
-            // Material
-            { name: 'color', value: String(parameters.color), min: 0, max: 0, step: 0, group: 'material', type: 'color' },
-            { name: 'roughness', value: Number(parameters.roughness), min: 0, max: 1, step: 0.01, group: 'material', type: 'number' },
-            { name: 'metalness', value: Number(parameters.metalness), min: 0, max: 1, step: 0.01, group: 'material', type: 'number' },
-            { name: 'opacity', value: Number(parameters.opacity), min: 0, max: 1, step: 0.01, group: 'material', type: 'number' },
-            { name: 'wireframe', value: Number(parameters.wireframe ? 1 : 0), min: 0, max: 1, step: 1, group: 'material', type: 'number' }
+            // Material Properties
+            {
+                name: 'color',
+                value: String(parameters.color),
+                min: 0,
+                max: 0,
+                step: 0,
+                group: 'material',
+                type: 'color',
+                description: 'Base color of the material'
+            },
+            {
+                name: 'wireframe',
+                value: Number(parameters.wireframe),
+                min: 0,
+                max: 5,
+                step: 1,
+                description: 'Wireframe density (0 = none, 5 = dense)',
+                group: 'material',
+                type: 'number'
+            }
         ];
         return params;
     }, [parameters]);
 
-    // Modified parameter change handler to track history
+    // Modified parameter change handler to ensure integer wireframe values
     const handleParameterChange = useCallback((name: string, value: number | string | boolean) => {
         if (isUndoingRef.current) return;
 
         requestAnimationFrame(() => {
             setParameters(prev => {
                 if (prev[name] === value) return prev;
-                const newParameters = { ...prev, [name]: value };
+
+                // Ensure wireframe is always an integer
+                const processedValue = name === 'wireframe' ? Math.round(Number(value)) : value;
+                const newParameters = { ...prev, [name]: processedValue };
 
                 // Update history
                 setParameterHistory(history => {
-                    // Remove any future history if we're not at the latest state
                     const newHistory = history.slice(0, currentHistoryIndex + 1);
                     return [...newHistory, newParameters];
                 });

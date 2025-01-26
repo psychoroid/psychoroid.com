@@ -4,7 +4,7 @@ import React, { Suspense, useRef, useState, useCallback, memo, useEffect } from 
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, Environment, PerspectiveCamera, Html } from '@react-three/drei';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
-import { Vector3, MOUSE, TOUCH, Box3, BoxGeometry, Mesh, MeshStandardMaterial, Raycaster, Vector2, ACESFilmicToneMapping, Fog, Scene } from 'three';
+import { Vector3, MOUSE, TOUCH, Box3, BoxGeometry, Mesh, MeshStandardMaterial, Raycaster, Vector2, ACESFilmicToneMapping, Fog, Scene, DoubleSide } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
 import { CADToolbar } from './CADToolbar';
 import { XModal } from './XModal';
@@ -176,12 +176,54 @@ export const CADViewer = memo(function CADViewer({
 
         // Update material
         if (mesh.material) {
+            // Base color only
             mesh.material.color.set(parameters.color ? String(parameters.color) : '#D73D57');
-            mesh.material.roughness = parameters.roughness ? Number(parameters.roughness) : 0.5;
-            mesh.material.metalness = parameters.metalness ? Number(parameters.metalness) : 0;
-            mesh.material.opacity = parameters.opacity ? Number(parameters.opacity) : 1;
-            mesh.material.transparent = (parameters.opacity ? Number(parameters.opacity) : 1) < 1;
-            mesh.material.wireframe = parameters.wireframe ? Boolean(parameters.wireframe) : false;
+
+            // Wireframe implementation (levels 0-5, where 0 is normal cube)
+            const wireframeLevel = Math.min(5, Math.max(0, Math.round(Number(parameters.wireframe) || 0)));
+            mesh.material.wireframe = wireframeLevel > 0;
+
+            // Adjust geometry based on wireframe level
+            if (mesh.geometry) {
+                mesh.geometry.dispose();
+
+                // Calculate segments:
+                // Level 0: normal cube (no wireframe)
+                // Level 1: 8 segments
+                // Level 2: 16 segments
+                // Level 3: 20 segments
+                // Level 4: 26 segments
+                // Level 5: 32 segments
+                const segmentCount = wireframeLevel === 0 ? 1 : 8 + ((wireframeLevel - 1) * 6);
+
+                if (radiusPercent > 0) {
+                    // Calculate max possible radius (half of smallest dimension)
+                    const maxRadius = Math.min(width, Math.min(height, depth)) / 2;
+                    // Convert percentage to actual radius
+                    const effectiveRadius = (radiusPercent / 100) * maxRadius;
+
+                    mesh.geometry = new RoundedBoxGeometry(
+                        width,
+                        height,
+                        depth,
+                        segmentCount,
+                        effectiveRadius
+                    );
+                } else {
+                    mesh.geometry = new BoxGeometry(
+                        width,
+                        height,
+                        depth,
+                        segmentCount,
+                        segmentCount,
+                        segmentCount
+                    );
+                }
+            }
+
+            // Basic quality settings
+            mesh.material.needsUpdate = true;
+            mesh.material.side = DoubleSide;
         }
 
         // Reset scale since we're using actual dimensions in geometry
@@ -734,51 +776,10 @@ export const CADViewer = memo(function CADViewer({
                                 onPointerMove={(e) => {
                                     e.stopPropagation();
                                     if (e.face && e.object instanceof Mesh && typeof e.faceIndex === 'number') {
-                                        const radiusPercent = Number(parameters.radius) ?? 0;
-
-                                        // If radius is near 100%, treat as a sphere (single surface)
-                                        if (radiusPercent >= 95) {
-                                            // Create a single material for the entire mesh
-                                            const material = new MeshStandardMaterial({
-                                                color: '#00ff00', // Green highlight
-                                                roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
-                                                metalness: parameters.metalness ? Number(parameters.metalness) : 0,
-                                                transparent: true,
-                                                opacity: parameters.opacity ? Number(parameters.opacity) : 1,
-                                                wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false,
-                                                emissive: '#00ff00',
-                                                emissiveIntensity: 0.5
-                                            });
-
-                                            e.object.material = material;
-
-                                            // Calculate dimensions for the entire sphere
-                                            const geometry = e.object.geometry;
-                                            const box = new Box3().setFromObject(e.object);
-                                            const size = box.getSize(new Vector3());
-
-                                            // Surface area of a sphere = 4πr²
-                                            const radius = Math.max(size.x, size.y, size.z) / 2;
-                                            const area = 4 * Math.PI * radius * radius;
-
-                                            setMeasurementState({
-                                                hoveredFace: 0,
-                                                dimensions: {
-                                                    width: 2 * Math.PI * radius,  // Circumference
-                                                    height: 2 * Math.PI * radius, // Circumference
-                                                    area: area,
-                                                    normal: e.face.normal,
-                                                    point: e.point
-                                                }
-                                            });
-                                            return;
-                                        }
-
                                         // Get the intersection point in local coordinates
                                         const localPoint = e.point.clone().applyMatrix4(e.object.matrixWorld.invert());
 
                                         // Determine which face we're on based on the intersection point
-                                        const epsilon = 0.0001;
                                         let faceIndex;
 
                                         // Check which face we're closest to
@@ -798,14 +799,10 @@ export const CADViewer = memo(function CADViewer({
                                         const materials = Array(6).fill(null).map((_, i) => {
                                             const mat = new MeshStandardMaterial({
                                                 color: parameters.color ? String(parameters.color) : '#D73D57',
-                                                roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
-                                                metalness: parameters.metalness ? Number(parameters.metalness) : 0,
-                                                transparent: true,
-                                                opacity: parameters.opacity ? Number(parameters.opacity) : 1,
-                                                wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false
+                                                wireframe: parameters.wireframe ? Number(parameters.wireframe) > 0 : false
                                             });
                                             if (i === faceIndex) {
-                                                mat.color.set('#00ff00'); // Green highlight
+                                                mat.color.set('#00ff00'); // Bright green highlight
                                                 mat.emissive.set('#00ff00');
                                                 mat.emissiveIntensity = 0.5;
                                             }
@@ -814,58 +811,14 @@ export const CADViewer = memo(function CADViewer({
 
                                         // Update the mesh materials
                                         e.object.material = materials;
-
-                                        // Calculate face dimensions
-                                        const geometry = e.object.geometry;
-                                        const positionAttribute = geometry.getAttribute('position');
-                                        const face = e.face;
-
-                                        const vA = new Vector3();
-                                        const vB = new Vector3();
-                                        const vC = new Vector3();
-
-                                        vA.fromBufferAttribute(positionAttribute, face.a);
-                                        vB.fromBufferAttribute(positionAttribute, face.b);
-                                        vC.fromBufferAttribute(positionAttribute, face.c);
-
-                                        // Apply object's world matrix
-                                        vA.applyMatrix4(e.object.matrixWorld);
-                                        vB.applyMatrix4(e.object.matrixWorld);
-                                        vC.applyMatrix4(e.object.matrixWorld);
-
-                                        const width = vA.distanceTo(vB);
-                                        const height = vB.distanceTo(vC);
-                                        const area = width * height;
-
-                                        setMeasurementState({
-                                            hoveredFace: face.a,
-                                            dimensions: {
-                                                width,
-                                                height,
-                                                area,
-                                                normal: face.normal,
-                                                point: e.point
-                                            }
-                                        });
                                     }
                                 }}
                                 onPointerOut={(e) => {
                                     if (e.object instanceof Mesh) {
-                                        const radiusPercent = Number(parameters.radius) ?? 0;
-
                                         // Reset to a single material with original color
                                         e.object.material = new MeshStandardMaterial({
                                             color: parameters.color ? String(parameters.color) : '#D73D57',
-                                            roughness: parameters.roughness ? Number(parameters.roughness) : 0.5,
-                                            metalness: parameters.metalness ? Number(parameters.metalness) : 0,
-                                            transparent: true,
-                                            opacity: parameters.opacity ? Number(parameters.opacity) : 1,
-                                            wireframe: parameters.wireframe ? Boolean(parameters.wireframe) : false
-                                        });
-
-                                        setMeasurementState({
-                                            hoveredFace: null,
-                                            dimensions: null
+                                            wireframe: parameters.wireframe ? Number(parameters.wireframe) > 0 : false
                                         });
                                     }
                                 }}
@@ -877,11 +830,7 @@ export const CADViewer = memo(function CADViewer({
                                 <boxGeometry args={[10, 10, 10, 32, 32, 32]} />
                                 <meshStandardMaterial
                                     color={parameters.color ? String(parameters.color) : '#D73D57'}
-                                    roughness={parameters.roughness ? Number(parameters.roughness) : 0.5}
-                                    metalness={parameters.metalness ? Number(parameters.metalness) : 0}
-                                    transparent
-                                    opacity={parameters.opacity ? Number(parameters.opacity) : 1}
-                                    wireframe={parameters.wireframe ? Boolean(parameters.wireframe) : false}
+                                    wireframe={parameters.wireframe ? Number(parameters.wireframe) > 0 : false}
                                 />
                             </mesh>
                         )}

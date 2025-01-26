@@ -187,7 +187,7 @@ const MaterialSection = memo(({ parameters, onChange }: { parameters: Parameter[
     }, [onChange]);
 
     return (
-        <ParameterGroup title="Material">
+        <ParameterGroup title="Shape">
             <div className="space-y-2 mb-4 mx-2">
                 <Label className="text-xs text-muted-foreground">Color</Label>
                 <div className="w-full aspect-square rounded-none overflow-hidden border border-border/50 [&_.react-colorful__pointer]:!h-1 [&_.react-colorful__pointer]:!w-1">
