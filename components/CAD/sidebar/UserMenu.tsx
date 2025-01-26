@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from '@/lib/supabase';
+import { PricingModal } from '@/components/pricing/PricingModal';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 interface UserMenuProps {
     user: User | undefined;
@@ -83,6 +85,8 @@ export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProp
     const router = useRouter();
     const [showArchive, setShowArchive] = useState(false);
     const [archivedChats, setArchivedChats] = useState<any[]>([]);
+    const [showPricingModal, setShowPricingModal] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
 
     // Memoize user metadata calculations
     const {
@@ -321,8 +325,8 @@ export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProp
                     {/* Upgrade Plan */}
                     <div className="p-4 border-t">
                         <Button
-                            className="w-full h-10 rounded-sm text-sm font-medium bg-transparent hover:bg-transparent border border-foreground/20 text-foreground hover:border-foreground/40 transition-colors"
-                            onClick={() => router.push('/dashboard/settings/billing')}
+                            className="w-full h-10 rounded-none text-sm font-medium bg-transparent hover:bg-transparent border border-foreground/20 text-foreground hover:border-foreground/40 transition-colors"
+                            onClick={() => setShowPricingModal(true)}
                         >
                             Upgrade
                         </Button>
@@ -373,6 +377,13 @@ export const UserMenu = memo(function UserMenu({ user, collapsed }: UserMenuProp
                     </ScrollArea>
                 </DialogContent>
             </Dialog>
+
+            {/* Add PricingModal */}
+            <PricingModal
+                isOpen={showPricingModal}
+                onClose={() => setShowPricingModal(false)}
+            />
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </>
     );
 });
