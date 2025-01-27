@@ -97,12 +97,12 @@ const mainNavItems: NavItem[] = [
             {
                 title: "Give us a review",
                 icon: HeartHandshake,
-                url: "/feedback/review"
+                url: "https://www.producthunt.com/products/psychoroid-com/reviews"
             },
             {
                 title: "Support request",
                 icon: MessageSquareHeart,
-                url: "/feedback/support"
+                url: "/dashboard/settings/support"
             }
         ]
     }
