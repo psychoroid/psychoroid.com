@@ -8,9 +8,7 @@ import { Vector3 } from 'three';
 const MODEL_URLS = [
     process.env.NEXT_PUBLIC_LANDING_MODEL_URL_1,
     process.env.NEXT_PUBLIC_LANDING_MODEL_URL_2,
-    process.env.NEXT_PUBLIC_LANDING_MODEL_URL_3,
-    process.env.NEXT_PUBLIC_LANDING_MODEL_URL_4,
-    process.env.NEXT_PUBLIC_LANDING_MODEL_URL_5,
+    process.env.NEXT_PUBLIC_LANDING_MODEL_URL_3
 ].filter(Boolean) as string[];
 
 // Preload all models

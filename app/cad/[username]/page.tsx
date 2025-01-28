@@ -14,7 +14,7 @@ import { ChatInstance } from '@/components/CAD/CADChat'
 import { cn } from "@/lib/actions/utils"
 import { SidebarProvider } from '@/components/ui/sidebar'
 import Loader from '@/components/design/loader'
-import { useCADChat } from '@/hooks/use-cad-chat'
+import { useCADChat } from '@/lib/hooks/use-cad-chat'
 
 // Remove heavy components from initial bundle
 const DynamicCADViewer = dynamic(() => import('@/components/3D/ProductViewer').then(mod => ({ default: mod.ProductViewer })), {

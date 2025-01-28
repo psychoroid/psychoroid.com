@@ -8,7 +8,7 @@ import RippleButton from "@/components/ui/magic/ripple-button"
 import { Textarea } from "@/components/ui/textarea"
 import { useTheme } from 'next-themes'
 import { toast } from 'react-hot-toast'
-import { useCADChat } from '@/hooks/use-cad-chat'
+import { useCADChat } from '@/lib/hooks/use-cad-chat'
 import { supabase } from '@/lib/supabase'
 
 interface CADResponse {
