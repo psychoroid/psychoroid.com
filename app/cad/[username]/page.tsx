@@ -93,11 +93,17 @@ interface ColorParameter {
 type Parameter = NumberParameter | ColorParameter;
 
 interface CADResponse {
-    modelUrl?: string;
-    format?: string;
-    modelId: string;
+    id?: string;
+    status: 'completed' | 'error' | 'pending' | 'in_progress';
     message: string;
+    modelUrl?: string;
     error?: string;
+    format?: string;
+    details?: {
+        format: string;
+        size: number;
+        timestamp: string;
+    };
 }
 
 interface PageProps {
@@ -130,6 +136,7 @@ export default function CADPage({ params }: PageProps) {
     const [currentPrompt, setCurrentPrompt] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const initialLoadDone = useRef(false)
+    const [currentModel, setCurrentModel] = useState<string | null>(null);
 
     // Use our CAD chat hook
     const {
@@ -325,8 +332,12 @@ export default function CADPage({ params }: PageProps) {
                 {
                     modelUrl: data.modelUrl,
                     format: data.format,
-                    modelId: data.modelId,
-                    parameters: data.shapes?.[0]?.parameters
+                    status: 'completed',
+                    details: {
+                        format: data.format || 'glb',
+                        size: data.size || 0,
+                        timestamp: new Date().toISOString()
+                    }
                 }
             )
 
@@ -343,10 +354,15 @@ export default function CADPage({ params }: PageProps) {
             toast.success('CAD model generated successfully')
 
             return {
+                status: 'completed',
+                message: 'CAD model generated successfully',
                 modelUrl: meshUrl,
                 format: 'glb',
-                modelId: data.modelId || Date.now().toString(),
-                message: 'CAD model generated successfully'
+                details: {
+                    format: 'glb',
+                    size: data.mesh ? JSON.stringify(data.mesh).length : 0,
+                    timestamp: new Date().toISOString()
+                }
             }
 
         } catch (error) {
@@ -354,7 +370,7 @@ export default function CADPage({ params }: PageProps) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to generate CAD model'
             toast.error(errorMessage)
             return {
-                modelId: Date.now().toString(),
+                status: 'error',
                 message: errorMessage,
                 error: errorMessage
             }
@@ -421,6 +437,21 @@ export default function CADPage({ params }: PageProps) {
         await handlePromptSubmit(prompt);
     };
 
+    // Add a handler for CAD success
+    const handleCADSuccess = (response: CADResponse) => {
+        console.log('CAD success handler called with:', {
+            status: response.status,
+            hasModelUrl: !!response.modelUrl,
+            modelUrlPreview: response.modelUrl?.substring(0, 100) + '...'
+        });
+
+        if (response.modelUrl) {
+            console.log('Setting current model URL, length:', response.modelUrl.length);
+            setCurrentModel(response.modelUrl);
+            setModelUrl(response.modelUrl); // Update both state variables
+        }
+    };
+
     return (
         <>
             {isLoading && <Loader />}
@@ -453,7 +484,7 @@ export default function CADPage({ params }: PageProps) {
                         {/* CAD Visualizer */}
                         <div className="flex-1 relative bg-muted/50">
                             <CADViewer
-                                modelUrl={modelUrl}
+                                modelUrl={currentModel}
                                 parameters={parameters}
                                 onParameterChange={handleParameterChange}
                                 onExport={handleExport}
@@ -475,6 +506,7 @@ export default function CADPage({ params }: PageProps) {
                                     value={currentPrompt}
                                     onChange={setCurrentPrompt}
                                     sessionId={currentChat?.id}
+                                    onSuccess={handleCADSuccess}
                                 />
                             </div>
                         </div>

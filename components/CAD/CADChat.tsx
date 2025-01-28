@@ -12,15 +12,17 @@ import { useCADChat } from '@/hooks/use-cad-chat'
 import { supabase } from '@/lib/supabase'
 
 interface CADResponse {
-    step?: string;
-    gltf?: string;
-    obj?: string;
+    id?: string;
+    status: 'pending' | 'completed' | 'error' | 'in_progress';
     message: string;
-    modelId: string;
-    error?: string;
-    details?: string;
     modelUrl?: string;
+    error?: string;
     format?: string;
+    details?: {
+        format: string;
+        size: number;
+        timestamp: string;
+    };
 }
 
 interface ChatInstanceProps {
@@ -42,6 +44,7 @@ export function ChatInstance({
     setShowAuthModal,
     value,
     onChange,
+    onSuccess,
     sessionId
 }: ChatInstanceProps) {
     const [inputValue, setInputValue] = useState(value || '')
@@ -188,6 +191,104 @@ export function ChatInstance({
                     created_at: new Date().toISOString()
                 }
 
+                // Submit prompt to CAD generation API
+                console.log('Submitting prompt to CAD API...')
+                const submitResponse = await fetch('/api/cad/submit-prompt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: inputValue.trim() })
+                })
+
+                if (!submitResponse.ok) {
+                    throw new Error('Failed to submit CAD generation request')
+                }
+
+                const submitResult: CADResponse = await submitResponse.json()
+                console.log('CAD generation submitted:', submitResult)
+
+                if (submitResult.status === 'error' || !submitResult.id) {
+                    throw new Error(submitResult.error || 'Failed to start CAD generation')
+                }
+
+                // Start polling for results
+                const pollInterval = setInterval(async () => {
+                    try {
+                        console.log('Polling generation status for ID:', submitResult.id)
+                        const pollResponse = await fetch(`/api/cad/get-generation?id=${submitResult.id}`)
+
+                        if (!pollResponse.ok) {
+                            throw new Error('Failed to check generation status')
+                        }
+
+                        const pollResult: CADResponse = await pollResponse.json()
+                        console.log('Poll result:', pollResult)
+
+                        if (pollResult.status === 'error') {
+                            clearInterval(pollInterval)
+                            throw new Error(pollResult.error || 'CAD generation failed')
+                        }
+
+                        if (pollResult.status === 'completed' && pollResult.modelUrl) {
+                            clearInterval(pollInterval)
+                            console.log('Generation completed with model URL:', pollResult.modelUrl.substring(0, 50) + '...')
+
+                            // Create a more informative message
+                            const modelInfo = pollResult.details
+                                ? `\n\nModel Details:\n• Format: ${pollResult.details.format}\n• Size: ${(pollResult.details.size / 1024).toFixed(2)}KB\n• Generated: ${new Date(pollResult.details.timestamp).toLocaleString()}`
+                                : '';
+
+                            // Save assistant response with the model URL
+                            const { data: assistantMessage, error: assistantMessageError } = await supabase
+                                .rpc('save_cad_message', {
+                                    p_chat_id: activeId,
+                                    p_role: 'assistant',
+                                    p_content: `Here's your generated 3D model!${modelInfo}`,
+                                    p_parameters: {
+                                        modelUrl: pollResult.modelUrl,
+                                        format: pollResult.format || 'glb',
+                                        status: 'completed',
+                                        details: pollResult.details
+                                    }
+                                })
+
+                            if (assistantMessageError) {
+                                console.error('Error saving assistant message:', assistantMessageError)
+                                throw new Error('Failed to save assistant message')
+                            }
+
+                            // Update messages state with both messages
+                            const newAssistantMessage = {
+                                id: assistantMessage,
+                                role: 'assistant' as const,
+                                content: `Here's your generated 3D model!${modelInfo}`,
+                                parameters: {
+                                    modelUrl: pollResult.modelUrl,
+                                    format: pollResult.format || 'glb',
+                                    status: 'completed',
+                                    details: pollResult.details
+                                },
+                                created_at: new Date().toISOString()
+                            }
+
+                            setMessages([...messages, newUserMessage, newAssistantMessage])
+                            setProgress(100)
+
+                            // Notify parent component if callback exists
+                            if (onSuccess) {
+                                onSuccess(pollResult)
+                            }
+                        } else if (pollResult.status === 'in_progress') {
+                            // Update progress for pending state
+                            setProgress((prev) => Math.min(90, prev + 5))
+                        }
+                    } catch (error) {
+                        clearInterval(pollInterval)
+                        console.error('Polling error:', error)
+                        toast.error('Failed to check CAD generation status')
+                        setProgress(0)
+                    }
+                }, 2000) // Poll every 2 seconds
+
                 // Generate and update title for the first message
                 if (messages.length === 0) {
                     console.log('Generating AI title...')
@@ -220,47 +321,13 @@ export function ChatInstance({
                     await loadChatData(activeId)
                 }
 
-                // Save assistant response
-                console.log('Saving assistant response...')
-                const { data: assistantMessage, error: assistantMessageError } = await supabase
-                    .rpc('save_cad_message', {
-                        p_chat_id: activeId,
-                        p_role: 'assistant',
-                        p_content: 'Message received! (CAD generation temporarily disabled for testing)',
-                        p_parameters: {}
-                    })
-
-                if (assistantMessageError) {
-                    console.error('Error saving assistant message:', assistantMessageError)
-                    throw new Error('Failed to save assistant message')
-                }
-
-                // Update messages state with assistant response
-                const newAssistantMessage = {
-                    id: assistantMessage,
-                    role: 'assistant' as const,
-                    content: 'Message received! (CAD generation temporarily disabled for testing)',
-                    parameters: {},
-                    created_at: new Date().toISOString()
-                }
-
-                // Update messages state with both messages
-                const updatedMessages = [...messages, newUserMessage, newAssistantMessage];
-                setMessages(updatedMessages);
-
                 // Clear input and focus
-                setInputValue('');
-                onChange?.('');
+                setInputValue('')
+                onChange?.('')
                 if (textareaRef.current) {
-                    textareaRef.current.style.height = 'auto';
-                    textareaRef.current.focus();
+                    textareaRef.current.style.height = 'auto'
+                    textareaRef.current.focus()
                 }
-
-                // Force scroll after messages update
-                setTimeout(scrollToBottom, 100);
-
-                setProgress(100);
-                setTimeout(() => setProgress(0), 1000);
 
             } catch (error) {
                 console.error('Chat error details:', {
@@ -271,6 +338,7 @@ export function ChatInstance({
                 })
                 const errorMessage = error instanceof Error ? error.message : 'An error occurred'
                 toast.error(errorMessage)
+                setProgress(0)
             } finally {
                 setIsGenerating(false)
             }
@@ -284,9 +352,9 @@ export function ChatInstance({
         messages,
         setMessages,
         onChange,
-        scrollToBottom,
         loadChatData,
-        createChat
+        createChat,
+        onSuccess
     ]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -342,7 +410,7 @@ export function ChatInstance({
                                         <motion.div
                                             layout
                                             className={cn(
-                                                "inline-flex items-center px-4 py-2",
+                                                "inline-flex flex-col items-start px-4 py-2",
                                                 "text-sm rounded-md max-w-[80%]",
                                                 message.role === 'assistant'
                                                     ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
@@ -364,18 +432,45 @@ export function ChatInstance({
                                                         : "bg-emerald-500"
                                                 )} />
                                             </span>
-                                            <div className="flex flex-col">
+                                            <div className="flex flex-col w-full">
                                                 <p className="whitespace-pre-wrap">{message.content}</p>
-                                                {message.parameters && Object.keys(message.parameters).length > 0 && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, height: 0 }}
-                                                        animate={{ opacity: 1, height: "auto" }}
-                                                        className="mt-2 text-xs opacity-80 bg-black/5 dark:bg-white/5 p-2 rounded-md overflow-hidden"
-                                                    >
-                                                        <pre className="overflow-x-auto">
-                                                            {JSON.stringify(message.parameters, null, 2)}
-                                                        </pre>
-                                                    </motion.div>
+                                                {message.parameters?.modelUrl && (
+                                                    <div className="mt-2 p-2 bg-black/5 dark:bg-white/5 rounded-md">
+                                                        <p className="text-xs opacity-80">3D Model Ready</p>
+                                                        <div className="mt-1 text-xs opacity-60">
+                                                            Format: {message.parameters.format || 'GLB'}
+                                                        </div>
+                                                        {message.parameters.details && (
+                                                            <div className="mt-1 text-xs opacity-60">
+                                                                Size: {(message.parameters.details.size / 1024).toFixed(2)}KB
+                                                            </div>
+                                                        )}
+                                                        <button
+                                                            onClick={() => {
+                                                                console.log('View Model clicked, URL:', message.parameters?.modelUrl?.substring(0, 100) + '...');
+                                                                if (onSuccess && message.parameters?.modelUrl) {
+                                                                    // Log the full URL for debugging
+                                                                    console.log('Full model URL length:', message.parameters.modelUrl.length);
+                                                                    console.log('Model URL format check:', {
+                                                                        startsWithData: message.parameters.modelUrl.startsWith('data:'),
+                                                                        includesBase64: message.parameters.modelUrl.includes('base64'),
+                                                                        format: message.parameters.format
+                                                                    });
+
+                                                                    onSuccess({
+                                                                        status: 'completed',
+                                                                        message: 'Model loaded',
+                                                                        modelUrl: message.parameters.modelUrl,
+                                                                        format: message.parameters.format || 'glb',
+                                                                        details: message.parameters.details
+                                                                    });
+                                                                }
+                                                            }}
+                                                            className="mt-2 text-xs px-2 py-1 bg-blue-500/10 hover:bg-blue-500/20 dark:bg-blue-500/20 dark:hover:bg-blue-500/30 rounded-md transition-colors duration-200"
+                                                        >
+                                                            View Model
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </div>
                                         </motion.div>

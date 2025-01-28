@@ -11,6 +11,7 @@ import { XModal } from './XModal';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { LoadingManager } from 'three';
 import { toast } from 'react-hot-toast';
+import { createModelUrlFromBase64 } from '@/lib/utils/base64ToBlob';
 
 // Constants
 const INITIAL_CAMERA_POSITION = [50, 50, 50] as const;
@@ -90,6 +91,7 @@ export const CADViewer = memo(function CADViewer({
     const raycasterRef = useRef(new Raycaster());
     const mouseRef = useRef(new Vector2());
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const objectUrlRef = useRef<string | null>(null);
 
     const updateParameters = useCallback((updates: Record<string, number | string | boolean>) => {
         if (onParameterChange) {
@@ -208,81 +210,125 @@ export const CADViewer = memo(function CADViewer({
         mesh.scale.set(1, 1, 1);
     }, [parameters]);
 
-    // Load mesh data when modelUrl changes
+    // Cleanup object URL on unmount or when modelUrl changes
+    useEffect(() => {
+        return () => {
+            if (objectUrlRef.current) {
+                URL.revokeObjectURL(objectUrlRef.current);
+                objectUrlRef.current = null;
+            }
+        };
+    }, []);
+
+    // Handle model URL changes
     useEffect(() => {
         if (modelUrl) {
-            console.log('CADViewer: Loading model from URL:', modelUrl.substring(0, 100) + '...')
-
             try {
-                const manager = new LoadingManager()
-                manager.onError = (url) => {
-                    console.error('CADViewer: Failed to load resource:', url)
-                    toast.error('Failed to load model resource')
+                console.log('CADViewer: Attempting to load model URL:', modelUrl.substring(0, 100) + '...');
+                console.log('CADViewer: Model URL length:', modelUrl.length);
+                console.log('CADViewer: Model URL format check:', {
+                    startsWithData: modelUrl.startsWith('data:'),
+                    includesBase64: modelUrl.includes('base64'),
+                    includesGLTF: modelUrl.includes('gltf-binary')
+                });
+
+                // Clean up previous object URL
+                if (objectUrlRef.current) {
+                    URL.revokeObjectURL(objectUrlRef.current);
+                    objectUrlRef.current = null;
                 }
 
-                const loader = new GLTFLoader(manager)
-                loader.setCrossOrigin('anonymous')
-
-                const loadModel = async (url: string) => {
-                    try {
-                        const gltf = await loader.loadAsync(url);
-
-                        if (!gltf.scene) {
-                            throw new Error('No scene in loaded model')
-                        }
-
-                        const newScene = new Scene();
-                        const gltfScene = gltf.scene.clone();
-                        newScene.add(gltfScene);
-
-                        const box = new Box3().setFromObject(gltfScene);
-                        const center = box.getCenter(new Vector3());
-                        const size = box.getSize(new Vector3());
-                        const maxDimension = Math.max(size.x, size.y, size.z);
-                        const targetScale = 3 / maxDimension;
-
-                        gltfScene.position.set(-center.x, -center.y, -center.z);
-                        gltfScene.scale.setScalar(targetScale);
-
-                        gltfScene.traverse((child) => {
-                            if (child instanceof Mesh) {
-                                if (child.material) {
-                                    child.material.needsUpdate = true;
-                                    child.castShadow = true;
-                                    child.receiveShadow = true;
-                                }
-                            }
-                        });
-
-                        setScene(newScene);
-                    } catch (error) {
-                        console.error('CADViewer: Error loading model:', error)
-                        toast.error('Failed to load 3D model')
-                        setScene(null)
-                    }
-                };
-
-                // If it's a data URL, convert it to a Blob URL
+                // If the modelUrl is a base64 string, convert it to an object URL
                 if (modelUrl.startsWith('data:')) {
-                    const base64Data = modelUrl.split(',')[1]
-                    const binaryString = atob(base64Data)
-                    const bytes = new Uint8Array(binaryString.length)
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i)
-                    }
-                    const blob = new Blob([bytes.buffer], { type: 'model/gltf-binary' })
-                    const blobUrl = URL.createObjectURL(blob)
+                    console.log('CADViewer: Converting base64 to object URL...');
+                    try {
+                        // Create object URL from base64
+                        const objectUrl = createModelUrlFromBase64(modelUrl);
+                        console.log('CADViewer: Object URL created:', objectUrl);
+                        objectUrlRef.current = objectUrl;
+                        setScene(null); // Clear current scene
 
-                    loadModel(blobUrl).finally(() => {
-                        URL.revokeObjectURL(blobUrl)
-                    });
+                        // Load the model with the new object URL
+                        const manager = new LoadingManager();
+                        manager.onProgress = (url, loaded, total) => {
+                            console.log(`CADViewer: Loading progress - ${Math.round((loaded / total) * 100)}%`);
+                        };
+                        manager.onError = (url) => {
+                            console.error('CADViewer: Failed to load resource:', url);
+                            toast.error('Failed to load model resource');
+                        };
+
+                        const loader = new GLTFLoader(manager);
+                        loader.setCrossOrigin('anonymous');
+
+                        console.log('CADViewer: Loading model from object URL...');
+                        loader.load(
+                            objectUrl,
+                            (gltf) => {
+                                console.log('CADViewer: Model loaded successfully');
+                                if (gltf.scene) {
+                                    const newScene = new Scene();
+                                    const gltfScene = gltf.scene.clone();
+                                    newScene.add(gltfScene);
+
+                                    // Center and scale the model
+                                    const box = new Box3().setFromObject(gltfScene);
+                                    const center = box.getCenter(new Vector3());
+                                    const size = box.getSize(new Vector3());
+                                    const maxDimension = Math.max(size.x, size.y, size.z);
+                                    const targetScale = 3 / maxDimension;
+
+                                    gltfScene.position.set(-center.x, -center.y, -center.z);
+                                    gltfScene.scale.setScalar(targetScale);
+
+                                    // Set up materials and shadows
+                                    gltfScene.traverse((child) => {
+                                        if (child instanceof Mesh) {
+                                            if (child.material) {
+                                                child.material.needsUpdate = true;
+                                                child.castShadow = true;
+                                                child.receiveShadow = true;
+                                            }
+                                        }
+                                    });
+
+                                    setScene(newScene);
+                                    console.log('CADViewer: Scene updated with new model');
+                                    toast.success('3D model loaded successfully');
+                                }
+                            },
+                            (progress) => {
+                                const percent = Math.round((progress.loaded / progress.total) * 100);
+                                console.log(`CADViewer: Loading progress - ${percent}%`);
+                            },
+                            (error) => {
+                                console.error('CADViewer: Error loading GLB:', error);
+                                if (error instanceof Error) {
+                                    console.error('CADViewer: Error details:', {
+                                        message: error.message,
+                                        name: error.name,
+                                        stack: error.stack
+                                    });
+                                }
+                                toast.error('Failed to load 3D model');
+                            }
+                        );
+                    } catch (error) {
+                        console.error('CADViewer: Error creating object URL:', error);
+                        console.error('CADViewer: Error details:', {
+                            message: error instanceof Error ? error.message : 'Unknown error',
+                            modelUrlLength: modelUrl.length,
+                            modelUrlStart: modelUrl.substring(0, 50)
+                        });
+                        toast.error('Failed to process model data');
+                    }
                 } else {
-                    loadModel(modelUrl);
+                    console.error('CADViewer: Invalid model URL format - expected data URL');
+                    toast.error('Invalid model format');
                 }
             } catch (error) {
-                console.error('CADViewer: Failed to load model:', error)
-                toast.error('Failed to initialize model loader')
-                setScene(null)
+                console.error('CADViewer: Error processing model URL:', error);
+                toast.error('Failed to process 3D model');
             }
         }
     }, [modelUrl]);

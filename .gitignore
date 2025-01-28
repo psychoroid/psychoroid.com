@@ -17,6 +17,8 @@
 /freeCAD
 /Text2CAD
 /.sanity/
+litterbox-main
+
 
 # AI Prompts
 /lib/huggingface/prompts/

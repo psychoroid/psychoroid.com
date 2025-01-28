@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
 
+const ZOO_API_URL = process.env.ZOO_API_URL
+const ZOO_API_TOKEN = process.env.ZOO_API_TOKEN
+
 export async function POST(req: Request) {
     try {
         // Validate Zoo API token and URL
-        if (!process.env.ZOO_API_TOKEN || !process.env.ZOO_API_URL) {
+        if (!ZOO_API_TOKEN || !ZOO_API_URL) {
             console.error('Missing required environment variables')
             return NextResponse.json({
                 error: 'CAD service is not properly configured',
@@ -24,12 +27,12 @@ export async function POST(req: Request) {
 
         try {
             // Submit prompt to Zoo text-to-CAD API
-            const response = await fetch(`${process.env.ZOO_API_URL}/ai/text-to-cad/glb`, {
+            const response = await fetch(`${ZOO_API_URL}/ai/text-to-cad/glb`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${process.env.ZOO_API_TOKEN}`
+                    'Authorization': `Bearer ${ZOO_API_TOKEN}`
                 },
                 body: JSON.stringify({
                     prompt: prompt.trim(),
@@ -59,12 +62,15 @@ export async function POST(req: Request) {
                 }, { status: 500 })
             }
 
-            console.log('CAD generation initiated successfully:', result.id)
-
+            // Return the generation ID and status for polling
             return NextResponse.json({
                 id: result.id,
                 status: 'pending',
-                message: 'CAD generation initiated successfully'
+                message: 'CAD generation initiated successfully',
+                details: {
+                    prompt: prompt.trim(),
+                    generationId: result.id
+                }
             })
 
         } catch (apiError) {

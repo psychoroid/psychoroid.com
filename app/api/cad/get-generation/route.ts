@@ -23,55 +23,80 @@ export async function GET(req: Request) {
             }, { status: 400 })
         }
 
-        const response = await fetch(`${ZOO_API_URL}/user/text-to-cad/${generationId}`, {
+        console.log('Checking generation status:', generationId)
+
+        // First, check the generation status
+        const statusResponse = await fetch(`${ZOO_API_URL}/user/text-to-cad/${generationId}`, {
             headers: {
                 'Authorization': `Bearer ${ZOO_API_TOKEN}`,
                 'Accept': 'application/json'
             }
         })
 
-        if (!response.ok) {
+        if (!statusResponse.ok) {
             return NextResponse.json({ 
                 error: 'Failed to check generation status',
                 status: 'error'
-            }, { status: response.status })
+            }, { status: statusResponse.status })
         }
 
-        const result = await response.json()
+        const statusResult = await statusResponse.json()
+        console.log('Generation status:', statusResult.status)
 
-        if (result.status === 'failed') {
+        if (statusResult.status === 'failed') {
             return NextResponse.json({ 
-                error: result.error || 'Failed to generate CAD model',
+                error: statusResult.error || 'Failed to generate CAD model',
                 status: 'error'
             }, { status: 400 })
         }
 
-        if (result.status === 'completed' && result.outputs) {
-            const glbData = result.outputs['source.glb']
-            if (!glbData) {
+        if (statusResult.status === 'completed') {
+            // If completed, get the GLB data from the outputs
+            console.log('Generation completed, processing GLB data...')
+            
+            if (!statusResult.outputs || !statusResult.outputs['source.glb']) {
                 return NextResponse.json({ 
-                    error: 'No GLB file generated',
+                    error: 'No GLB file in outputs',
                     status: 'error'
                 }, { status: 400 })
             }
 
+            // Get the GLB data from outputs
+            const glbData = statusResult.outputs['source.glb']
+            
+            // Convert to base64 if not already
+            let base64Data = typeof glbData === 'string' ? glbData : Buffer.from(glbData).toString('base64')
+            
+            // Ensure it has the correct data URL prefix
+            if (!base64Data.startsWith('data:')) {
+                base64Data = `data:model/gltf-binary;base64,${base64Data}`
+            }
+
+            console.log('GLB data processed successfully')
+
             return NextResponse.json({
-                modelUrl: glbData,
-                dataUrl: glbData,
+                modelUrl: base64Data,
                 format: 'glb',
-                modelId: result.id,
-                status: 'success',
-                message: 'Model generated successfully'
+                status: 'completed',
+                message: 'Model generated successfully',
+                id: generationId,
+                details: {
+                    format: 'glb',
+                    size: base64Data.length,
+                    timestamp: new Date().toISOString()
+                }
             })
         }
 
         // Still processing
         return NextResponse.json({
-            status: result.status,
-            message: 'Generation in progress'
+            status: statusResult.status || 'in_progress',
+            message: 'Generation in progress',
+            id: generationId
         })
 
     } catch (error) {
+        console.error('Error processing GLB data:', error)
         return NextResponse.json({ 
             error: error instanceof Error ? error.message : 'Unknown error occurred',
             status: 'error'
