@@ -22,6 +22,8 @@ CREATE TYPE activity_type_enum AS ENUM (
 );
 CREATE TYPE api_key_status_enum AS ENUM ('active', 'revoked');
 CREATE TYPE view_type_enum AS ENUM ('click', 'scroll', 'page_load');
+CREATE TYPE cad_model_status AS ENUM ('pending', 'processing', 'completed', 'failed');
+CREATE TYPE cad_model_format AS ENUM ('glb', 'gltf', 'obj', 'stl', 'fbx', 'usdz');
 
 --------------- TABLES ---------------
 
@@ -237,6 +239,31 @@ CREATE TABLE cad_messages (
 CREATE INDEX idx_cad_messages_chat_id ON cad_messages(chat_id);
 CREATE INDEX idx_cad_messages_user_id ON cad_messages(user_id);
 
+-- CAD Model Tracking table
+CREATE TABLE cad_model_tracking (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    model_id TEXT NOT NULL,
+    original_prompt TEXT,
+    enhanced_prompt TEXT,
+    model_path TEXT,
+    preview_path TEXT,
+    format cad_model_format DEFAULT 'glb',
+    status cad_model_status DEFAULT 'pending',
+    parameters JSONB DEFAULT '{}'::jsonb,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    error_message TEXT,
+    processing_time INTERVAL,
+    started_at TIMESTAMPTZ DEFAULT now(),
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_cad_model_tracking_user_id ON cad_model_tracking(user_id);
+CREATE INDEX idx_cad_model_tracking_model_id ON cad_model_tracking(model_id);
+CREATE INDEX idx_cad_model_tracking_status ON cad_model_tracking(status);
+
 -- CAD Models table
 CREATE TABLE cad_models (
     id uuid primary key default uuid_generate_v4(),
@@ -246,8 +273,8 @@ CREATE TABLE cad_models (
     model_path text not null,
     preview_path text,
     parameters jsonb not null default '{}'::jsonb,
-    format text not null,
-    status text not null default 'processing' check (status in ('processing', 'completed', 'failed')),
+    format cad_model_format not null default 'glb',
+    status cad_model_status not null default 'processing',
     created_at timestamptz default now(),
     updated_at timestamptz default now(),
     metadata jsonb default '{}'::jsonb
@@ -265,7 +292,7 @@ CREATE TABLE cad_operations (
     parameters jsonb not null default '{}'::jsonb,
     created_at timestamptz default now(),
     updated_at timestamptz default now(),
-    status text not null default 'pending' check (status in ('pending', 'processing', 'completed', 'failed')),
+    status cad_model_status not null default 'pending',
     metadata jsonb default '{}'::jsonb
 );
 

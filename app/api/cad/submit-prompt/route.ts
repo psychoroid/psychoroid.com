@@ -1,24 +1,17 @@
 import { NextResponse } from 'next/server'
 
-const ZOO_API_URL = process.env.ZOO_API_URL
-const ZOO_API_TOKEN = process.env.ZOO_API_TOKEN
-
-interface PromptRequest {
-    prompt: string;
-    referenceId?: string;  // ID of the previous generation to reference
-    modifications?: string; // Specific modifications to make to the reference
-}
-
 export async function POST(req: Request) {
-    if (!ZOO_API_URL || !ZOO_API_TOKEN) {
-        return NextResponse.json({ 
-            error: 'Server configuration error',
-            status: 'error'
-        }, { status: 500 })
-    }
-
     try {
-        const { prompt, referenceId, modifications } = await req.json() as PromptRequest
+        // Validate Zoo API token and URL
+        if (!process.env.ZOO_API_TOKEN || !process.env.ZOO_API_URL) {
+            console.error('Missing required environment variables')
+            return NextResponse.json({
+                error: 'CAD service is not properly configured',
+                status: 'error'
+            }, { status: 500 })
+        }
+
+        const { prompt } = await req.json()
         
         if (!prompt || typeof prompt !== 'string' || prompt.trim().length < 3) {
             return NextResponse.json({
@@ -27,71 +20,64 @@ export async function POST(req: Request) {
             }, { status: 400 })
         }
 
-        // If we have a reference ID, fetch the previous generation details
-        let enhancedPrompt = prompt
-        if (referenceId) {
-            try {
-                const refResponse = await fetch(`${ZOO_API_URL}/user/text-to-cad/${referenceId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${ZOO_API_TOKEN}`,
-                        'Accept': 'application/json'
-                    }
+        console.log('Submitting prompt to Zoo API:', prompt.trim())
+
+        try {
+            // Submit prompt to Zoo text-to-CAD API
+            const response = await fetch(`${process.env.ZOO_API_URL}/ai/text-to-cad/glb`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${process.env.ZOO_API_TOKEN}`
+                },
+                body: JSON.stringify({
+                    prompt: prompt.trim(),
+                    formats: ['glb']
                 })
-
-                if (refResponse.ok) {
-                    const refData = await refResponse.json()
-                    if (refData.status === 'completed') {
-                        // Construct an enhanced prompt that references the previous generation
-                        enhancedPrompt = `Reference Model ID: ${referenceId}.\n`
-                        enhancedPrompt += modifications ? 
-                            `Modifications Required: ${modifications}.\n` :
-                            `Base Modification: ${prompt}.\n`
-                        enhancedPrompt += `Original Prompt: ${refData.prompt}\n`
-                        enhancedPrompt += `Please maintain the core characteristics of the reference model while applying these modifications.`
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching reference model:', error)
-                // Continue with original prompt if reference fetch fails
-            }
-        }
-
-        const response = await fetch(`${ZOO_API_URL}/ai/text-to-cad/glb`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${ZOO_API_TOKEN}`
-            },
-            body: JSON.stringify({
-                prompt: enhancedPrompt,
-                formats: ['glb', 'step'],
-                reference_id: referenceId // Include reference ID if available
             })
-        })
 
-        if (!response.ok) {
-            const errorData = await response.json()
+            if (!response.ok) {
+                const errorData = await response.json()
+                console.error('Zoo API error:', errorData)
+                return NextResponse.json({ 
+                    error: errorData.message || 'Failed to initiate CAD generation',
+                    status: 'error',
+                    details: errorData
+                }, { status: response.status })
+            }
+
+            const result = await response.json()
+            console.log('Zoo API response:', result)
+
+            if (!result.id) {
+                console.error('Invalid response from Zoo API:', result)
+                return NextResponse.json({
+                    error: 'Invalid response from CAD service - no generation ID',
+                    status: 'error',
+                    details: result
+                }, { status: 500 })
+            }
+
+            console.log('CAD generation initiated successfully:', result.id)
+
+            return NextResponse.json({
+                id: result.id,
+                status: 'pending',
+                message: 'CAD generation initiated successfully'
+            })
+
+        } catch (apiError) {
+            console.error('Zoo API call failed:', apiError)
             return NextResponse.json({ 
-                error: errorData.message || 'Failed to initiate CAD generation',
+                error: apiError instanceof Error ? apiError.message : 'Failed to connect to CAD service',
                 status: 'error',
-                details: errorData
-            }, { status: response.status })
+                details: apiError
+            }, { status: 500 })
         }
-
-        const result = await response.json()
-        
-        return NextResponse.json({
-            id: result.id,
-            status: 'pending',
-            message: 'CAD generation initiated successfully',
-            isModification: !!referenceId,
-            referenceId,
-            originalPrompt: prompt,
-            enhancedPrompt
-        })
 
     } catch (error) {
+        console.error('Error in submit-prompt:', error)
         return NextResponse.json({ 
             error: error instanceof Error ? error.message : 'Unknown error occurred',
             status: 'error'

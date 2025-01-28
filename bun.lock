@@ -11,7 +11,7 @@
         "@gltf-transform/functions": "^3.10.1",
         "@hookform/resolvers": "^3.9.1",
         "@huggingface/inference": "^2.8.1",
-        "@kittycad/lib": "^2.0.13",
+        "@kittycad/lib": "^2.0.14",
         "@radix-ui/react-alert-dialog": "^1.1.2",
         "@radix-ui/react-avatar": "^1.1.2",
         "@radix-ui/react-collapsible": "^1.1.2",
@@ -548,7 +548,7 @@
 
     "@juggle/resize-observer": ["@juggle/resize-observer@3.4.0", "", {}, "sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA=="],
 
-    "@kittycad/lib": ["@kittycad/lib@2.0.13", "", { "dependencies": { "openapi-types": "^12.0.0", "ts-node": "^10.9.1", "tslib": "~2.4" } }, "sha512-wLn6/iRVdqbRCvf6t2FhNr8No6+I6elpCEVHGUexyHLoE+1XeUS1lHeapQqcfR0pEQiwtGpcKTDfUNSlmnmaFw=="],
+    "@kittycad/lib": ["@kittycad/lib@2.0.14", "", { "dependencies": { "openapi-types": "^12.0.0", "ts-node": "^10.9.1", "tslib": "~2.4" } }, "sha512-vqXk6tt9PT195zc8feJPNnns3E3IrHjp3oWaLnImBkJh5keR1MQNyUNV0xdMaZjiiBH7a/s/TBMWifEozJ6Yuw=="],
 
     "@lezer/common": ["@lezer/common@1.2.3", "", {}, "sha512-w7ojc8ejBqr2REPsWxJjrMFsA/ysDCFICn8zEOR9mrqzOu2amhITYuLD8ag6XZf0CFXDrhKqw7+tW8cX66NaDA=="],
 

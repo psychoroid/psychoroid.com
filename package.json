@@ -19,7 +19,7 @@
     "@gltf-transform/functions": "^3.10.1",
     "@hookform/resolvers": "^3.9.1",
     "@huggingface/inference": "^2.8.1",
-    "@kittycad/lib": "^2.0.13",
+    "@kittycad/lib": "^2.0.14",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-collapsible": "^1.1.2",
