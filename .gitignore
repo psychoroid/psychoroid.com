@@ -16,6 +16,7 @@
 .cache
 /freeCAD
 /Text2CAD
+/.sanity/
 
 # AI Prompts
 /lib/huggingface/prompts/
